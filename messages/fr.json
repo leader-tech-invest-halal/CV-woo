@@ -1,0 +1,132 @@
+{
+  "meta": {
+    "title": "CV Woo — Adaptez votre CV à chaque offre, sans rien inventer",
+    "description": "CV Woo analyse une offre d'emploi et réécrit votre CV pour la cibler, en gardant uniquement ce que vous avez vraiment fait."
+  },
+  "nav": {
+    "how": "Fonctionnement",
+    "features": "Avantages",
+    "faq": "Questions",
+    "pricing": "Tarifs",
+    "cta": "Essayer gratuitement",
+    "openMenu": "Ouvrir le menu",
+    "language": "English"
+  },
+  "hero": {
+    "badge": "Bêta gratuite",
+    "title": "Votre CV, adapté à chaque offre. Sans rien inventer.",
+    "subtitle": "Importez votre CV, collez une offre d'emploi : CV Woo repère ce que le recruteur cherche, met en avant vos vraies expériences et génère un CV prêt pour les logiciels de recrutement.",
+    "cta": "Adapter mon CV gratuitement",
+    "secondary": "Voir comment ça marche",
+    "note": "5 analyses par mois offertes pendant la bêta. Aucune carte bancaire."
+  },
+  "preview": {
+    "title": "Développeuse front-end — Lyon",
+    "score": "Compatibilité",
+    "disclaimer": "Estimation interne, pas un score ATS officiel.",
+    "present": "Présente dans votre CV",
+    "weak": "Non démontrée",
+    "missing": "Absente",
+    "change": "Reformulé : « Développement de l'interface » → « Développement d'une interface React utilisée par 3 équipes »",
+    "source": "Source : votre expérience chez Atelier Nova"
+  },
+  "how": {
+    "title": "Comment ça marche",
+    "subtitle": "Trois étapes, quelques minutes.",
+    "step1": { "title": "Importez votre CV", "text": "PDF ou Word. Vous relisez et corrigez les informations extraites." },
+    "step2": { "title": "Collez l'offre d'emploi", "text": "CV Woo en tire les compétences obligatoires, souhaitées et les mots-clés." },
+    "step3": { "title": "Récupérez votre CV adapté", "text": "Chaque modification est expliquée. Vous validez, puis exportez en PDF ou DOCX." }
+  },
+  "features": {
+    "title": "Pourquoi CV Woo",
+    "noInvent": { "title": "Zéro invention", "text": "Chaque phrase réécrite est reliée à une ligne de votre CV d'origine. Un chiffre ou un diplôme nouveau est bloqué jusqu'à votre validation." },
+    "ats": { "title": "Lisible par les ATS", "text": "Une colonne, titres standards, texte sélectionnable : les logiciels de recrutement lisent tout." },
+    "score": { "title": "Un score explicable", "text": "Le score est calculé à partir de preuves trouvées dans votre CV, pas deviné. Vous voyez ce qui compte." },
+    "privacy": { "title": "Vos données protégées", "text": "Hébergement en Europe, fichiers privés, suppression automatique après 90 jours (réglable)." }
+  },
+  "honesty": {
+    "title": "Ce qui manque reste visible, jamais ajouté",
+    "text": "Si l'offre demande une compétence que vous n'avez pas, CV Woo vous le dit clairement. Il ne l'écrit pas dans votre CV à votre place.",
+    "item1": "Compétences présentes, avec la phrase de votre CV qui le prouve",
+    "item2": "Compétences non démontrées, à mieux mettre en valeur",
+    "item3": "Compétences absentes, listées à part pour vous aider à progresser"
+  },
+  "faq": {
+    "title": "Questions fréquentes",
+    "q1": "Est-ce vraiment gratuit ?",
+    "a1": "Oui, pendant la bêta : 5 analyses et 5 générations de CV par mois, tous les modèles, export PDF et Word.",
+    "q2": "CV Woo peut-il inventer des expériences ?",
+    "a2": "Non. Le modèle a l'interdiction d'ajouter des informations, et une vérification automatique signale tout chiffre, date, diplôme ou employeur absent de votre CV d'origine.",
+    "q3": "Que devient mon CV ?",
+    "a3": "Il est stocké dans un espace privé hébergé en Europe et supprimé automatiquement après la durée choisie. Vous pouvez aussi le supprimer à tout moment.",
+    "q4": "Le score garantit-il un entretien ?",
+    "a4": "Non. C'est une estimation interne de compatibilité avec l'offre, pas un score ATS officiel."
+  },
+  "finalCta": {
+    "title": "Prêt à envoyer un CV qui correspond vraiment ?",
+    "cta": "Commencer gratuitement"
+  },
+  "footer": {
+    "tagline": "Adaptez votre CV à chaque offre, sans rien inventer.",
+    "rights": "Tous droits réservés."
+  },
+  "pricing": {
+    "title": "Tarifs",
+    "subtitle": "CV Woo est entièrement gratuit pendant la bêta.",
+    "betaTitle": "Bêta gratuite",
+    "betaPrice": "0 €",
+    "betaPeriod": "par mois",
+    "f1": "5 analyses d'offres par mois",
+    "f2": "5 générations de CV par mois",
+    "f3": "4 modèles de CV compatibles ATS",
+    "f4": "Export PDF et Word",
+    "f5": "Historique de vos versions",
+    "cta": "Commencer gratuitement",
+    "soonTitle": "Offres Pro et Premium",
+    "soonBadge": "Bientôt disponible",
+    "soonText": "Plus d'analyses, lettres de motivation et suivi des candidatures. Les utilisateurs de la bêta seront prévenus en premier."
+  },
+  "app": {
+    "nav": {
+      "dashboard": "Tableau de bord",
+      "resumes": "Mes CV",
+      "history": "Historique",
+      "profile": "Profil",
+      "soon": "Bientôt"
+    },
+    "betaBanner": "Version de démonstration : la connexion et l'enregistrement arrivent dans les prochaines étapes."
+  },
+  "dashboard": {
+    "greeting": "Bonjour 👋",
+    "subtitle": "Adaptez votre CV à une nouvelle offre en quelques minutes.",
+    "cta": "Adapter mon CV à une offre",
+    "steps": {
+      "resume": "CV",
+      "offer": "Offre",
+      "analysis": "Analyse",
+      "editor": "Éditeur"
+    },
+    "quota": {
+      "title": "Votre bêta gratuite",
+      "analyses": "Analyses",
+      "generations": "Générations de CV",
+      "used": "{used} sur {total} ce mois-ci",
+      "reset": "Remise à zéro le 1er de chaque mois."
+    },
+    "resumes": {
+      "title": "Mes CV",
+      "emptyTitle": "Aucun CV pour l'instant",
+      "emptyText": "Importez votre CV en PDF ou Word (5 Mo maximum).",
+      "import": "Importer un CV"
+    },
+    "analyses": {
+      "title": "Analyses récentes",
+      "emptyTitle": "Aucune analyse pour l'instant",
+      "emptyText": "Vos comparaisons CV / offre apparaîtront ici avec leur score."
+    },
+    "tip": {
+      "title": "Conseil",
+      "text": "Collez l'offre complète, y compris la section « profil recherché » : c'est là que se trouvent la plupart des compétences obligatoires."
+    }
+  }
+}
