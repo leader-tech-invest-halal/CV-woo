@@ -7,7 +7,31 @@ import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScoreGauge } from "@/components/analysis/score-gauge";
 import { SkillChip } from "@/components/analysis/skill-chip";
-import type { AnalysisResult, Rewrite, SkillImportance, SkillStatus } from "@/lib/cv/types";
+import type { AnalysisResult, ParsedResume, Rewrite, SkillImportance, SkillStatus } from "@/lib/cv/types";
+
+/**
+ * Origine d'une phrase dans le CV : rubrique + expérience (ex. « Expérience professionnelle ·
+ * Chargée de communication — Association Envol »), pour savoir d'où vient chaque reformulation.
+ */
+export function useOrigin(resume: ParsedResume) {
+  const t = useTranslations("adapt.flow.changes");
+  const text = (id: string | null | undefined) => (id ? resume.blocks.find((b) => b.id === id)?.text ?? "" : "");
+  return (blockId: string): string | null => {
+    const s = resume.structure;
+    if (blockId === s.headlineBlockId) return t("headline");
+    if (s.summaryBlockIds.includes(blockId)) return t("summary");
+    for (const section of s.sections) {
+      for (const entry of section.entries) {
+        if (entry.bulletBlockIds.includes(blockId) || entry.headerBlockIds.includes(blockId)) {
+          const heading = section.headingBlockId ? text(section.headingBlockId) : section.heading;
+          const header = text(entry.headerBlockIds[0]);
+          return header ? `${heading} · ${header}` : heading;
+        }
+      }
+    }
+    return null;
+  };
+}
 
 // Écrans 3 à 6 du parcours : exigences de l'offre, comparaison avec le CV,
 // propositions (accepter / refuser / modifier) et validation avant génération.
@@ -194,16 +218,21 @@ export function CompareStep({ result, onBack, onNext }: { result: AnalysisResult
 /** Étape 5 — Propositions : accepter, refuser ou modifier chaque phrase. */
 export function ChangesStep({
   result,
+  resume,
   accepted,
   onToggle,
+  onSetAll,
   edits,
   onEdit,
   onBack,
   onNext,
 }: {
   result: AnalysisResult;
+  resume: ParsedResume;
   accepted: Record<string, boolean>;
   onToggle: (blockId: string) => void;
+  /** Tout accepter (sauf les propositions à vérifier) ou tout refuser. */
+  onSetAll: (accept: boolean) => void;
   edits: Record<string, string>;
   onEdit: (blockId: string, text: string) => void;
   onBack: () => void;
@@ -212,6 +241,8 @@ export function ChangesStep({
   const t = useTranslations("adapt.flow.changes");
   const ta = useTranslations("adapt.analysis");
   const count = result.rewrites.filter((r) => accepted[r.blockId]).length;
+  const origin = useOrigin(resume);
+  const hasFlagged = result.rewrites.some((r) => r.flags.length > 0);
 
   return (
     <StepShell title={t("title")} hint={t("hint")} onBack={onBack} onNext={onNext} nextLabel={t("next")}>
@@ -220,11 +251,23 @@ export function ChangesStep({
           <p className="text-sm text-muted-foreground">{ta("noChanges")}</p>
         ) : (
           <>
-            <p className="text-sm text-muted-foreground tabular-nums">{ta("accepted", { count, total: result.rewrites.length })}</p>
-            <ul className="mt-4 space-y-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm font-medium tabular-nums">{ta("accepted", { count, total: result.rewrites.length })}</p>
+              <div className="flex gap-2">
+                <button type="button" className={buttonClass("outline", "md", "flex-1 sm:flex-none")} onClick={() => onSetAll(true)}>
+                  {t("acceptAll")}
+                </button>
+                <button type="button" className={buttonClass("ghost", "md", "flex-1 sm:flex-none")} onClick={() => onSetAll(false)}>
+                  {t("rejectAll")}
+                </button>
+              </div>
+            </div>
+            {hasFlagged && <p className="mt-2 text-xs text-muted-foreground">{t("acceptAllHint")}</p>}
+            <ul className="mt-5 space-y-3">
               {result.rewrites.map((r) => (
                 <RewriteCard
                   key={r.blockId}
+                  origin={origin(r.blockId)}
                   rewrite={r}
                   on={!!accepted[r.blockId]}
                   edit={edits[r.blockId]}
@@ -242,25 +285,42 @@ export function ChangesStep({
 
 function RewriteCard({
   rewrite: r,
+  origin,
   on,
   edit,
   onToggle,
   onEdit,
 }: {
   rewrite: Rewrite;
+  origin: string | null;
   on: boolean;
   edit: string | undefined;
   onToggle: () => void;
   onEdit: (text: string) => void;
 }) {
   const t = useTranslations("adapt.analysis");
+  const tc = useTranslations("adapt.flow.changes");
   return (
     <li className={`rounded-lg border p-4 transition-colors ${on ? "border-primary/40 bg-accent/30" : "border-border"}`}>
       <div className="flex gap-3">
         <input type="checkbox" checked={on} aria-label={r.after} onChange={onToggle} className="mt-1 size-4 shrink-0 accent-[var(--primary)]" />
-        <div className="min-w-0 flex-1 space-y-2 text-sm">
-          <p className="text-muted-foreground line-through decoration-muted-foreground/50">{r.before}</p>
-          <EditableText value={edit ?? r.after} edited={edit !== undefined} onChange={onEdit} />
+        <div className="min-w-0 flex-1 space-y-3 text-sm">
+          {origin && (
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium">{tc("origin")}</span> {origin}
+            </p>
+          )}
+          {/* Avant / après : côte à côte sur ordinateur, l'un sous l'autre sur mobile */}
+          <div className="grid gap-3 md:grid-cols-2">
+            <div>
+              <p className="mb-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">{tc("before")}</p>
+              <p className="rounded-md bg-muted/60 px-2 py-1 text-muted-foreground">{r.before}</p>
+            </div>
+            <div>
+              <p className="mb-1 text-[11px] font-semibold tracking-wide text-accent-foreground uppercase">{tc("after")}</p>
+              <EditableText value={edit ?? r.after} edited={edit !== undefined} onChange={onEdit} />
+            </div>
+          </div>
           <p className="text-xs text-muted-foreground">{r.reason}</p>
           {r.keywords.length > 0 && (
             <p className="text-xs">
@@ -297,18 +357,21 @@ function FlagList({ flags }: { flags: string[] }) {
 /** Étape 6 — Validation : récapitulatif exact de ce qui va changer. */
 export function ReviewStep({
   result,
+  resume,
   accepted,
   edits,
   onBack,
   onNext,
 }: {
   result: AnalysisResult;
+  resume: ParsedResume;
   accepted: Record<string, boolean>;
   edits: Record<string, string>;
   onBack: () => void;
   onNext: () => void;
 }) {
   const t = useTranslations("adapt.flow.review");
+  const origin = useOrigin(resume);
   const kept = result.rewrites.filter((r) => accepted[r.blockId]);
   // Une modification signalée reste à vérifier sauf si la personne l'a réécrite elle-même
   const flagged = kept.filter((r) => r.flags.length > 0 && edits[r.blockId] === undefined);
@@ -326,6 +389,7 @@ export function ReviewStep({
                   {i + 1}
                 </span>
                 <div className="min-w-0">
+                  {origin(r.blockId) && <p className="text-xs text-muted-foreground">{origin(r.blockId)}</p>}
                   <p>{edits[r.blockId] ?? r.after}</p>
                   {edits[r.blockId] !== undefined && <p className="text-xs text-muted-foreground">({t("edited")})</p>}
                 </div>

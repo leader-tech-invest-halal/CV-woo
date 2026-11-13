@@ -325,7 +325,15 @@
       "changes": {
         "title": "Propositions de reformulation",
         "hint": "Acceptez, refusez ou modifiez chaque phrase. Les propositions à vérifier ne sont pas cochées.",
-        "next": "Valider mes choix"
+        "next": "Valider mes choix",
+        "before": "Avant",
+        "after": "Après",
+        "acceptAll": "Tout accepter",
+        "rejectAll": "Tout refuser",
+        "acceptAllHint": "« Tout accepter » ne coche pas les propositions à vérifier : validez-les une par une.",
+        "origin": "Origine :",
+        "headline": "Accroche (titre sous le nom)",
+        "summary": "Profil / résumé"
       },
       "review": {
         "title": "Vérifiez avant de générer votre CV",

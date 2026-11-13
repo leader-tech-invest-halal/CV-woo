@@ -200,11 +200,20 @@ export function AdaptWizard() {
         <CompareStep result={result} onBack={() => go("requirements")} onNext={() => go("changes")} />
       )}
 
-      {step === "changes" && result && (
+      {step === "changes" && result && resume && (
         <ChangesStep
           result={result}
+          resume={resume}
           accepted={accepted}
           onToggle={(id) => setAccepted((a) => ({ ...a, [id]: !a[id] }))}
+          onSetAll={(accept) =>
+            setAccepted(
+              Object.fromEntries(
+                // « Tout accepter » ne coche jamais une proposition signalée, sauf si la personne l'a réécrite
+                result.rewrites.map((r) => [r.blockId, accept && (r.flags.length === 0 || edits[r.blockId] !== undefined)]),
+              ),
+            )
+          }
           edits={edits}
           onEdit={(id, text) => {
             setEdits((e) => ({ ...e, [id]: text }));
@@ -216,8 +225,8 @@ export function AdaptWizard() {
         />
       )}
 
-      {step === "review" && result && (
-        <ReviewStep result={result} accepted={accepted} edits={edits} onBack={() => go("changes")} onNext={() => go("preview")} />
+      {step === "review" && result && resume && (
+        <ReviewStep result={result} resume={resume} accepted={accepted} edits={edits} onBack={() => go("changes")} onNext={() => go("preview")} />
       )}
 
       {step === "preview" && file && resume && (

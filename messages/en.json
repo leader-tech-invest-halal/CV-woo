@@ -325,7 +325,15 @@
       "changes": {
         "title": "Rewording suggestions",
         "hint": "Accept, decline or edit each sentence. Suggestions that need checking are unticked.",
-        "next": "Confirm my choices"
+        "next": "Confirm my choices",
+        "before": "Before",
+        "after": "After",
+        "acceptAll": "Accept all",
+        "rejectAll": "Decline all",
+        "acceptAllHint": "“Accept all” doesn't tick suggestions that need checking: confirm those one by one.",
+        "origin": "From:",
+        "headline": "Headline (under your name)",
+        "summary": "Profile / summary"
       },
       "review": {
         "title": "Check before generating your resume",
