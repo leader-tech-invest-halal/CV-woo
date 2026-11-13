@@ -8,7 +8,10 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@react-pdf/renderer", "unpdf", "docx", "pdf-lib"],
   // Polices intégrées aux PDF générés (lues sur le disque par la route d'export)
   outputFileTracingIncludes: {
-    "/api/export": ["./node_modules/@fontsource/*/files/*-latin-400-normal.woff", "./node_modules/@fontsource/*/files/*-latin-700-normal.woff"],
+    "/api/export": ["./node_modules/@fontsource/*/files/*-latin-400-normal.woff", "./node_modules/@fontsource/*/files/*-latin-700-normal.woff",
+      // Polices intégrées du moteur PDF, chargées dynamiquement (non détectées automatiquement)
+      "./node_modules/pdfkit/js/standard-fonts/**",
+    ],
   },
 };
 
