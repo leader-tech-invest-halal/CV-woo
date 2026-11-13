@@ -42,7 +42,11 @@ export function ResumeStep({
 
   if (resume && file) {
     const s = resume.structure;
-    const name = s.nameBlockId ? resume.blocks.find((b) => b.id === s.nameBlockId)?.text : null;
+    // Nom complet, même s'il est écrit sur plusieurs lignes (prénom puis NOM)
+    const name = [s.nameBlockId, ...(s.nameExtraBlockIds ?? [])]
+      .map((id) => resume.blocks.find((b) => b.id === id)?.text)
+      .filter(Boolean)
+      .join(" ");
     return (
       <Card className="p-6">
         <div className="flex items-start gap-3">

@@ -128,7 +128,7 @@
       "resume": "CV",
       "offer": "Offre",
       "analysis": "Analyse",
-      "editor": "Éditeur"
+      "editor": "Téléchargement"
     },
     "quota": {
       "title": "Vos adaptations",
@@ -293,6 +293,55 @@
       "network": "Connexion impossible. Vérifiez votre accès à Internet.",
       "auth_required": "Créez un compte gratuit pour continuer.",
       "quota_reached": "Vous avez utilisé vos 5 adaptations du mois. Elles reviennent le 1er du mois prochain."
+    },
+    "flow": {
+      "steps": {
+        "resume": "Votre CV",
+        "offer": "L'offre",
+        "requirements": "Exigences",
+        "compare": "Comparaison",
+        "changes": "Propositions",
+        "review": "Validation",
+        "preview": "Téléchargement"
+      },
+      "progress": "Étape {current} sur {total}",
+      "back": "Retour",
+      "requirements": {
+        "title": "Ce que recherche le recruteur",
+        "hint": "Vérifiez que l'offre a bien été comprise. Les éléments indispensables comptent le plus dans le score.",
+        "required": "Indispensables",
+        "nice": "Souhaités",
+        "keyword": "Mots-clés importants",
+        "empty": "Aucune exigence n'a été détectée dans cette offre.",
+        "next": "Comparer avec mon CV"
+      },
+      "compare": {
+        "title": "Ce que votre CV prouve déjà",
+        "hint": "Chaque compétence est vérifiée avec une phrase de votre CV. Rien n'est inventé.",
+        "proof": "Preuve dans votre CV :",
+        "advice": "Conseil :",
+        "next": "Voir les propositions"
+      },
+      "changes": {
+        "title": "Propositions de reformulation",
+        "hint": "Acceptez, refusez ou modifiez chaque phrase. Les propositions à vérifier ne sont pas cochées.",
+        "next": "Valider mes choix"
+      },
+      "review": {
+        "title": "Vérifiez avant de générer votre CV",
+        "hint": "Voici exactement ce qui va changer. Tout le reste de votre CV reste identique, mot pour mot.",
+        "count": "{count, plural, =0 {Aucune modification acceptée : votre CV restera identique.} one {# modification acceptée} other {# modifications acceptées}}",
+        "flagged": "{count, plural, one {# modification acceptée contient un élément absent de votre CV d'origine. Vérifiez qu'il est exact avant d'envoyer votre CV.} other {# modifications acceptées contiennent un élément absent de votre CV d'origine. Vérifiez qu'ils sont exacts avant d'envoyer votre CV.}}",
+        "edited": "modifiée par vous",
+        "missing": "Non ajouté à votre CV, car absent de votre parcours :",
+        "next": "Générer mon CV",
+        "back": "Revoir les propositions"
+      },
+      "success": {
+        "parsed": "CV lu : {count, plural, one {# rubrique détectée} other {# rubriques détectées}}.",
+        "analyzed": "Analyse terminée."
+      },
+      "retry": "Réessayer"
     }
   },
   "ats": {

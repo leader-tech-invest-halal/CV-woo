@@ -128,7 +128,7 @@
       "resume": "Resume",
       "offer": "Job",
       "analysis": "Analysis",
-      "editor": "Editor"
+      "editor": "Download"
     },
     "quota": {
       "title": "Your tailorings",
@@ -293,6 +293,55 @@
       "network": "Can't connect. Check your internet access.",
       "auth_required": "Create a free account to continue.",
       "quota_reached": "You've used your 5 tailorings this month. They reset on the 1st of next month."
+    },
+    "flow": {
+      "steps": {
+        "resume": "Your resume",
+        "offer": "The job",
+        "requirements": "Requirements",
+        "compare": "Comparison",
+        "changes": "Suggestions",
+        "review": "Review",
+        "preview": "Download"
+      },
+      "progress": "Step {current} of {total}",
+      "back": "Back",
+      "requirements": {
+        "title": "What the recruiter is looking for",
+        "hint": "Check that the posting was understood correctly. Must-haves weigh the most in the score.",
+        "required": "Must-haves",
+        "nice": "Nice-to-haves",
+        "keyword": "Important keywords",
+        "empty": "No requirements were found in this posting.",
+        "next": "Compare with my resume"
+      },
+      "compare": {
+        "title": "What your resume already proves",
+        "hint": "Each skill is checked against a sentence from your resume. Nothing is made up.",
+        "proof": "Evidence in your resume:",
+        "advice": "Tip:",
+        "next": "See the suggestions"
+      },
+      "changes": {
+        "title": "Rewording suggestions",
+        "hint": "Accept, decline or edit each sentence. Suggestions that need checking are unticked.",
+        "next": "Confirm my choices"
+      },
+      "review": {
+        "title": "Check before generating your resume",
+        "hint": "Here is exactly what will change. Everything else in your resume stays identical, word for word.",
+        "count": "{count, plural, =0 {No change accepted: your resume will stay identical.} one {# change accepted} other {# changes accepted}}",
+        "flagged": "{count, plural, one {# accepted change contains something not in your original resume. Make sure it's accurate before sending your resume.} other {# accepted changes contain something not in your original resume. Make sure they're accurate before sending your resume.}}",
+        "edited": "edited by you",
+        "missing": "Not added to your resume, since it isn't in your background:",
+        "next": "Generate my resume",
+        "back": "Review the suggestions"
+      },
+      "success": {
+        "parsed": "Resume read: {count, plural, one {# section found} other {# sections found}}.",
+        "analyzed": "Analysis complete."
+      },
+      "retry": "Try again"
     }
   },
   "ats": {
