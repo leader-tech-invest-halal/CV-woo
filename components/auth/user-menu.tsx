@@ -25,7 +25,7 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
     return (
       <Link href="/login" className="inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
         <LogIn className="size-4" strokeWidth={1.5} aria-hidden />
-        {t("navLogin")}
+        <span className={compact ? "sr-only sm:not-sr-only" : undefined}>{t("navLogin")}</span>
       </Link>
     );
   }
@@ -35,6 +35,7 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
       {!compact && <p className="truncate px-3 text-xs text-muted-foreground" title={email}>{email}</p>}
       <button
         type="button"
+        title={t("logout")}
         onClick={async () => {
           await supabase.auth.signOut();
           router.refresh();
@@ -42,7 +43,8 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
         className="inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
       >
         <LogOut className="size-4" strokeWidth={1.5} aria-hidden />
-        {t("logout")}
+        {/* En version compacte (mobile), l'icône seule suffit ; le texte reste lu par les lecteurs d'écran */}
+        <span className={compact ? "sr-only" : undefined}>{t("logout")}</span>
       </button>
     </div>
   );

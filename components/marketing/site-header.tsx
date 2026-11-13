@@ -35,7 +35,7 @@ export function SiteHeader() {
             <UserMenu compact />
             <LocaleSwitcher />
           </div>
-          <Link href="/dashboard" className={buttonClass("outline", "md")}>
+          <Link href="/adapt" className={buttonClass("outline", "md")}>
             {t("cta")}
           </Link>
         </div>

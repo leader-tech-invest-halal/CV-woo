@@ -34,7 +34,7 @@ export default function PricingPage({ params }: { params: Promise<{ locale: stri
               </li>
             ))}
           </ul>
-          <Link href="/dashboard" className={buttonClass("primary", "md", "mt-8 w-full")}>
+          <Link href="/adapt" className={buttonClass("primary", "md", "mt-8 w-full")}>
             {t("cta")}
           </Link>
         </Card>

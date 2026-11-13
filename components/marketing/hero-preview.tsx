@@ -4,14 +4,17 @@ import { Card } from "@/components/ui/card";
 import { ScoreGauge } from "@/components/analysis/score-gauge";
 import { SkillChip } from "@/components/analysis/skill-chip";
 
-// Aperçu illustratif d'un résultat d'analyse (exemple, pas de vraies données).
+// Aperçu illustratif d'un résultat d'analyse : exemple fictif, clairement signalé comme tel.
+// La reformulation montrée respecte la règle du produit : aucun chiffre ni fait ajouté.
 export function HeroPreview() {
   const t = useTranslations("preview");
   return (
     <Card className="w-full max-w-md p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">CV Woo</p>
+          <span className="inline-flex rounded-full bg-warning/15 px-2 py-0.5 text-xs font-medium text-[oklch(0.42_0.1_60)]">
+            {t("badge")}
+          </span>
           <p className="mt-1 font-semibold">{t("title")}</p>
           <p className="mt-2 text-xs text-muted-foreground">{t("disclaimer")}</p>
         </div>

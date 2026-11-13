@@ -19,17 +19,18 @@
     "subtitle": "Upload your resume, paste a job posting: CV Woo spots what the recruiter wants, highlights your real experience and produces a resume ready for applicant tracking systems.",
     "cta": "Tailor my resume for free",
     "secondary": "See how it works",
-    "note": "5 analyses a month free during the beta. No credit card."
+    "note": "1 free tailoring without an account, then 5 a month with a free account. No credit card."
   },
   "preview": {
     "title": "Front-end developer — Lyon",
     "score": "Match",
     "disclaimer": "Internal estimate, not an official ATS score.",
-    "present": "In your resume",
+    "present": "In the resume",
     "weak": "Not demonstrated",
     "missing": "Missing",
-    "change": "Rewritten: “Built the interface” → “Built a React interface used by 3 teams”",
-    "source": "Source: your experience at Atelier Nova"
+    "change": "Rewritten: “Built the site interface” → “Built the site's web interface in React”",
+    "source": "Linked to the “Atelier Nova” experience in the sample resume",
+    "badge": "Fictional example"
   },
   "how": {
     "title": "How it works",
@@ -62,8 +63,8 @@
       "text": "The score is calculated from evidence found in your resume, not guessed. You see what counts."
     },
     "privacy": {
-      "title": "Your data protected",
-      "text": "Hosted in Europe, private files, automatic deletion after 90 days (adjustable)."
+      "title": "Your resume isn't kept",
+      "text": "Your file is read, analyzed then forgotten: it is never saved. The site and database are hosted in Paris. The analysis is done by the Claude AI (Anthropic)."
     }
   },
   "honesty": {
@@ -76,11 +77,11 @@
   "faq": {
     "title": "Frequently asked questions",
     "q1": "Is it really free?",
-    "a1": "Yes, during the beta: 5 analyses and 5 resume generations a month, every template, PDF and Word export.",
+    "a1": "Yes, during the beta: 1 free tailoring without an account, then 5 a month with a free account. The ATS checker is free with no sign-up. PDF and Word downloads are unlimited.",
     "q2": "Can CV Woo invent experience?",
     "a2": "No. The model is forbidden from adding information, and an automatic check flags any number, date, degree or employer that isn't in your original resume.",
-    "q3": "What happens to my resume?",
-    "a3": "It's kept in a private space hosted in Europe and deleted automatically after the period you choose. You can also delete it at any time.",
+    "q3": "What happens to my resume and my data?",
+    "a3": "Your file is never saved on our servers: it's read in memory, analyzed, then forgotten. For the analysis, its text is sent to Anthropic, the provider of the Claude AI. If you create an account, we only keep your email and your number of tailorings this month.",
     "q4": "Does the score guarantee an interview?",
     "a4": "No. It's an internal estimate of how well you match the job, not an official ATS score."
   },
@@ -98,26 +99,26 @@
     "betaTitle": "Free beta",
     "betaPrice": "€0",
     "betaPeriod": "per month",
-    "f1": "5 job analyses a month",
-    "f2": "5 resume generations a month",
-    "f3": "4 ATS-friendly resume templates",
-    "f4": "PDF and Word export",
-    "f5": "Version history",
+    "f1": "1 free tailoring without an account",
+    "f2": "5 tailorings a month with a free account",
+    "f3": "Your original design + 3 ATS-friendly templates",
+    "f4": "Unlimited PDF and Word downloads",
+    "f5": "Free ATS checker, no sign-up",
     "cta": "Start for free",
     "soonTitle": "Pro and Premium plans",
     "soonBadge": "Coming soon",
-    "soonText": "More analyses, cover letters and application tracking. Beta users will hear about it first."
+    "soonText": "More tailorings, resume history, cover letters and application tracking. These features aren't available yet; beta users will hear about them first."
   },
   "app": {
     "nav": {
-      "dashboard": "Dashboard",
+      "dashboard": "Home",
       "resumes": "My resumes",
       "history": "History",
       "profile": "Profile",
       "soon": "Soon",
       "adapt": "Tailor a resume"
     },
-    "betaBanner": "Demo version: sign-in and saving arrive in the next steps."
+    "betaBanner": "Free beta: resume history and cover letters are coming soon."
   },
   "dashboard": {
     "greeting": "Hello 👋",
@@ -130,27 +131,30 @@
       "editor": "Editor"
     },
     "quota": {
-      "title": "Your free beta",
-      "analyses": "Analyses",
-      "generations": "Resume generations",
-      "used": "{used} of {total} this month",
-      "reset": "Resets on the 1st of each month."
+      "title": "Your tailorings",
+      "analyses": "Tailorings this month",
+      "used": "{used} of {total}",
+      "reset": "Resets on the 1st of each month.",
+      "guestTitle": "Without an account",
+      "guestText": "1 free tailoring. Create a free account to get 5 a month.",
+      "guestCta": "Create an account"
     },
     "resumes": {
       "title": "My resumes",
-      "emptyTitle": "No resume yet",
-      "emptyText": "Upload your resume as PDF or Word (5 MB max).",
-      "import": "Upload a resume"
+      "emptyTitle": "Your resumes aren't kept",
+      "emptyText": "To protect your data, upload your resume for each tailoring. Optional history is coming soon.",
+      "import": "Tailor a resume"
     },
     "analyses": {
       "title": "Recent analyses",
-      "emptyTitle": "No analysis yet",
-      "emptyText": "Your resume / job comparisons will appear here with their score."
+      "emptyTitle": "Coming soon",
+      "emptyText": "You'll find your previous tailorings and their score here."
     },
     "tip": {
       "title": "Tip",
       "text": "Paste the full posting, including the “who we're looking for” section: that's where most required skills are."
-    }
+    },
+    "greetingUser": "Hello {email} 👋"
   },
   "adapt": {
     "title": "Tailor my resume to a job",
@@ -162,7 +166,7 @@
     },
     "resume": {
       "title": "Upload your resume",
-      "subtitle": "PDF or Word, 5 MB max. Your file is not kept.",
+      "subtitle": "PDF or Word, 5 MB max. Your file isn't kept; its text is analyzed by the Claude AI (Anthropic).",
       "drop": "Drop your resume here",
       "or": "or",
       "browse": "Choose a file",

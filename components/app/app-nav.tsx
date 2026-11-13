@@ -59,7 +59,7 @@ export function BottomNav() {
     <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
       {ITEMS.map(({ href, key, icon: Icon, ready }) => {
         const active = pathname.startsWith(href);
-        const cls = `flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] ${
+        const cls = `flex min-h-14 flex-col items-center justify-center gap-0.5 px-0.5 text-center text-[10px] leading-tight ${
           active ? "font-medium text-primary" : "text-muted-foreground"
         }`;
         const content = (

@@ -36,6 +36,24 @@ async function trialUsed(request: Request): Promise<boolean> {
   return process.env.NODE_ENV === "production" && anonymousIps.has(ipOf(request));
 }
 
+type Supabase = Awaited<ReturnType<typeof getCurrentUser>>["supabase"];
+
+/** Adaptations utilisées ce mois-ci et quota de la formule (bêta gratuite : 5). */
+export async function monthlyUsage(supabase: Supabase, userId: string): Promise<{ used: number; quota: number }> {
+  const { data: plan } = await supabase.from("plans").select("analyses_quota").eq("tier", "free").maybeSingle();
+  const quota = plan?.analyses_quota ?? 5;
+  const monthStart = new Date();
+  monthStart.setUTCDate(1);
+  monthStart.setUTCHours(0, 0, 0, 0);
+  const { count } = await supabase
+    .from("usage_events")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("kind", "analysis")
+    .gte("created_at", monthStart.toISOString());
+  return { used: count ?? 0, quota };
+}
+
 export type AccessContext = Awaited<ReturnType<typeof getCurrentUser>> & { remaining: number | null };
 
 /** À appeler avant une analyse : refuse si l'essai gratuit est épuisé ou si le quota est atteint. */
@@ -47,18 +65,7 @@ export async function checkAnalyzeAccess(request: Request): Promise<AccessContex
     return { ...ctx, remaining: null };
   }
 
-  const { data: plan } = await ctx.supabase.from("plans").select("analyses_quota").eq("tier", "free").maybeSingle();
-  const quota = plan?.analyses_quota ?? 5;
-  const monthStart = new Date();
-  monthStart.setUTCDate(1);
-  monthStart.setUTCHours(0, 0, 0, 0);
-  const { count } = await ctx.supabase
-    .from("usage_events")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", ctx.user.id)
-    .eq("kind", "analysis")
-    .gte("created_at", monthStart.toISOString());
-  const used = count ?? 0;
+  const { used, quota } = await monthlyUsage(ctx.supabase, ctx.user.id);
   if (used >= quota) throw new UserFacingError("quota_reached", 429);
   return { ...ctx, remaining: quota - used };
 }

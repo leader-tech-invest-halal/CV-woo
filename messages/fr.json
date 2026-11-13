@@ -19,17 +19,18 @@
     "subtitle": "Importez votre CV, collez une offre d'emploi : CV Woo repère ce que le recruteur cherche, met en avant vos vraies expériences et génère un CV prêt pour les logiciels de recrutement.",
     "cta": "Adapter mon CV gratuitement",
     "secondary": "Voir comment ça marche",
-    "note": "5 analyses par mois offertes pendant la bêta. Aucune carte bancaire."
+    "note": "1 adaptation offerte sans compte, puis 5 par mois avec un compte gratuit. Aucune carte bancaire."
   },
   "preview": {
     "title": "Développeuse front-end — Lyon",
     "score": "Compatibilité",
     "disclaimer": "Estimation interne, pas un score ATS officiel.",
-    "present": "Présente dans votre CV",
+    "present": "Présente dans le CV",
     "weak": "Non démontrée",
     "missing": "Absente",
-    "change": "Reformulé : « Développement de l'interface » → « Développement d'une interface React utilisée par 3 équipes »",
-    "source": "Source : votre expérience chez Atelier Nova"
+    "change": "Reformulé : « Développement de l'interface du site » → « Développement de l'interface web du site en React »",
+    "source": "Rattaché à l'expérience « Atelier Nova » du CV d'exemple",
+    "badge": "Exemple fictif"
   },
   "how": {
     "title": "Comment ça marche",
@@ -62,8 +63,8 @@
       "text": "Le score est calculé à partir de preuves trouvées dans votre CV, pas deviné. Vous voyez ce qui compte."
     },
     "privacy": {
-      "title": "Vos données protégées",
-      "text": "Hébergement en Europe, fichiers privés, suppression automatique après 90 jours (réglable)."
+      "title": "Votre CV n'est pas conservé",
+      "text": "Votre fichier est lu, analysé puis oublié : il n'est jamais enregistré. Le site et la base de données sont hébergés à Paris. L'analyse est faite par l'IA Claude (Anthropic)."
     }
   },
   "honesty": {
@@ -76,11 +77,11 @@
   "faq": {
     "title": "Questions fréquentes",
     "q1": "Est-ce vraiment gratuit ?",
-    "a1": "Oui, pendant la bêta : 5 analyses et 5 générations de CV par mois, tous les modèles, export PDF et Word.",
+    "a1": "Oui, pendant la bêta : 1 adaptation offerte sans compte, puis 5 adaptations par mois avec un compte gratuit. Le vérificateur ATS est gratuit et sans inscription. Les téléchargements PDF et Word sont illimités.",
     "q2": "CV Woo peut-il inventer des expériences ?",
     "a2": "Non. Le modèle a l'interdiction d'ajouter des informations, et une vérification automatique signale tout chiffre, date, diplôme ou employeur absent de votre CV d'origine.",
-    "q3": "Que devient mon CV ?",
-    "a3": "Il est stocké dans un espace privé hébergé en Europe et supprimé automatiquement après la durée choisie. Vous pouvez aussi le supprimer à tout moment.",
+    "q3": "Que devient mon CV et mes données ?",
+    "a3": "Votre fichier n'est jamais enregistré sur nos serveurs : il est lu en mémoire, analysé, puis oublié. Pour l'analyse, son texte est transmis à Anthropic, le fournisseur de l'IA Claude. Si vous créez un compte, nous conservons uniquement votre e-mail et le nombre d'adaptations du mois.",
     "q4": "Le score garantit-il un entretien ?",
     "a4": "Non. C'est une estimation interne de compatibilité avec l'offre, pas un score ATS officiel."
   },
@@ -98,26 +99,26 @@
     "betaTitle": "Bêta gratuite",
     "betaPrice": "0 €",
     "betaPeriod": "par mois",
-    "f1": "5 analyses d'offres par mois",
-    "f2": "5 générations de CV par mois",
-    "f3": "4 modèles de CV compatibles ATS",
-    "f4": "Export PDF et Word",
-    "f5": "Historique de vos versions",
+    "f1": "1 adaptation offerte sans compte",
+    "f2": "5 adaptations par mois avec un compte gratuit",
+    "f3": "Votre design d'origine + 3 modèles compatibles ATS",
+    "f4": "Téléchargements PDF et Word illimités",
+    "f5": "Vérificateur ATS gratuit, sans inscription",
     "cta": "Commencer gratuitement",
     "soonTitle": "Offres Pro et Premium",
     "soonBadge": "Bientôt disponible",
-    "soonText": "Plus d'analyses, lettres de motivation et suivi des candidatures. Les utilisateurs de la bêta seront prévenus en premier."
+    "soonText": "Plus d'adaptations, historique de vos CV, lettres de motivation et suivi des candidatures. Ces fonctions ne sont pas encore disponibles ; les utilisateurs de la bêta seront prévenus en premier."
   },
   "app": {
     "nav": {
-      "dashboard": "Tableau de bord",
+      "dashboard": "Accueil",
       "resumes": "Mes CV",
       "history": "Historique",
       "profile": "Profil",
       "soon": "Bientôt",
       "adapt": "Adapter un CV"
     },
-    "betaBanner": "Version de démonstration : la connexion et l'enregistrement arrivent dans les prochaines étapes."
+    "betaBanner": "Bêta gratuite : l'historique de vos CV et les lettres de motivation arrivent bientôt."
   },
   "dashboard": {
     "greeting": "Bonjour 👋",
@@ -130,27 +131,30 @@
       "editor": "Éditeur"
     },
     "quota": {
-      "title": "Votre bêta gratuite",
-      "analyses": "Analyses",
-      "generations": "Générations de CV",
-      "used": "{used} sur {total} ce mois-ci",
-      "reset": "Remise à zéro le 1er de chaque mois."
+      "title": "Vos adaptations",
+      "analyses": "Adaptations ce mois-ci",
+      "used": "{used} sur {total}",
+      "reset": "Remise à zéro le 1er de chaque mois.",
+      "guestTitle": "Sans compte",
+      "guestText": "1 adaptation offerte. Créez un compte gratuit pour en avoir 5 par mois.",
+      "guestCta": "Créer un compte"
     },
     "resumes": {
       "title": "Mes CV",
-      "emptyTitle": "Aucun CV pour l'instant",
-      "emptyText": "Importez votre CV en PDF ou Word (5 Mo maximum).",
-      "import": "Importer un CV"
+      "emptyTitle": "Vos CV ne sont pas conservés",
+      "emptyText": "Pour protéger vos données, importez votre CV à chaque adaptation. L'historique (optionnel) arrive bientôt.",
+      "import": "Adapter un CV"
     },
     "analyses": {
       "title": "Analyses récentes",
-      "emptyTitle": "Aucune analyse pour l'instant",
-      "emptyText": "Vos comparaisons CV / offre apparaîtront ici avec leur score."
+      "emptyTitle": "Bientôt disponible",
+      "emptyText": "Vous retrouverez ici vos adaptations précédentes et leur score."
     },
     "tip": {
       "title": "Conseil",
       "text": "Collez l'offre complète, y compris la section « profil recherché » : c'est là que se trouvent la plupart des compétences obligatoires."
-    }
+    },
+    "greetingUser": "Bonjour {email} 👋"
   },
   "adapt": {
     "title": "Adapter mon CV à une offre",
@@ -162,7 +166,7 @@
     },
     "resume": {
       "title": "Importez votre CV",
-      "subtitle": "PDF ou Word, 5 Mo maximum. Votre fichier n'est pas conservé.",
+      "subtitle": "PDF ou Word, 5 Mo maximum. Votre fichier n'est pas conservé ; son texte est analysé par l'IA Claude (Anthropic).",
       "drop": "Glissez votre CV ici",
       "or": "ou",
       "browse": "Choisir un fichier",

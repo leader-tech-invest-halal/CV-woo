@@ -48,7 +48,7 @@ export default function HomePage({ params }: { params: Promise<{ locale: string 
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">{t("hero.subtitle")}</p>
             <div className="mt-8 flex flex-col flex-wrap gap-3 sm:flex-row">
-              <Link href="/dashboard" className={buttonClass("primary", "lg")}>
+              <Link href="/adapt" className={buttonClass("primary", "lg")}>
                 {t("hero.cta")}
                 <ArrowRight className="size-4" strokeWidth={1.75} aria-hidden />
               </Link>
@@ -149,7 +149,7 @@ export default function HomePage({ params }: { params: Promise<{ locale: string 
           <h2 className="mx-auto max-w-2xl text-3xl font-semibold tracking-tight text-balance">
             {t("finalCta.title")}
           </h2>
-          <Link href="/dashboard" className={buttonClass("outline", "lg", "mt-8")}>
+          <Link href="/adapt" className={buttonClass("outline", "lg", "mt-8")}>
             {t("finalCta.cta")}
             <ArrowRight className="size-4" strokeWidth={1.75} aria-hidden />
           </Link>
