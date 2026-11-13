@@ -1,5 +1,7 @@
 # CV Woo
 
+Site en ligne : https://cv-woo.vercel.app (bêta)
+
 SaaS qui adapte un CV à une offre d'emploi grâce à l'IA, sans jamais inventer d'informations.
 
 - Architecture : [ARCHITECTURE.md](ARCHITECTURE.md)
