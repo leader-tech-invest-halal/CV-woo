@@ -173,6 +173,49 @@ NEXT_PUBLIC_APP_URL=
 CRON_SECRET=
 ```
 
+## 6 bis. Adaptation du CV : ce qui est en place (12 nov. 2026)
+
+Parcours `/[locale]/adapt` : importer le CV → ajouter l'offre (lien ou texte) → analyse → aperçu et téléchargement.
+
+- **Rien n'est stocké** pour l'instant : le navigateur garde le fichier et les résultats ; le serveur lit en mémoire puis oublie. L'enregistrement en base (tables `resumes`, `analyses`, `resume_versions`) arrivera avec les comptes (étape 10).
+- **Modèle en blocs** : le CV est découpé en paragraphes (Word) ou lignes (PDF) avec un identifiant stable. L'IA ne manipule que ces identifiants ; chaque réécriture porte l'id du bloc d'origine (traçabilité).
+- **2 appels IA** au lieu de 6, pour la rapidité :
+  1. `POST /api/cv/parse` (Haiku) : range les blocs en rubriques et décrit le style (couleurs, police, colonnes). Pour un PDF, le fichier est joint pour que le modèle voie la mise en page.
+  2. `POST /api/analyze` (Sonnet) : analyse de l'offre + comparaison avec preuves + réécritures. Repli automatique côté serveur en cas de refus du modèle.
+- **Garde-fous** (`lib/ai/guardrails.ts`) : seuls résumé, accroche et puces sont modifiables (jamais nom, coordonnées, titres, postes, entreprises, dates). Tout chiffre, outil, nom propre ou mot-clé absent du CV d'origine est signalé ; la modification est alors décochée par défaut. Chaque preuve citée est vérifiée mot pour mot.
+- **Design préservé** :
+  - CV Word → export Word : le fichier d'origine est modifié sur place (`lib/cv/docx.ts`) ; seul le texte change, la mise en forme est identique.
+  - CV PDF, ou export PDF d'un Word : le CV est recomposé avec le style détecté (`lib/export/pdf.tsx`, `lib/export/docx-template.ts`) : couleurs, police avec ou sans empattement, une colonne ou colonne latérale, casse et filets des titres.
+  - Limite connue : les polices exactes d'un PDF ne sont pas reprises (Helvetica ou Times selon le style), et les icônes ou photos ne sont pas recopiées.
+- **Offre par lien** (`lib/offer/fetch.ts`) : http(s) uniquement, adresses internes refusées (y compris après redirection), 10 s et 3 Mo maximum, lecture prioritaire des données schema.org `JobPosting`. LinkedIn et Indeed bloquent souvent la lecture : l'utilisateur est alors invité à coller le texte.
+- **Anti-abus en attendant les comptes** : limite par adresse IP en mémoire (20 imports/h, 10 analyses/jour). Les vrais quotas (5 analyses/mois) viendront avec la connexion.
+
+## 6 ter. Vérificateur ATS gratuit (13 nov. 2026)
+
+Page publique `/[locale]/ats-checker`, sans inscription : porte d'entrée gratuite (référencement Google) vers l'adaptation payante.
+
+- **Sans IA** pour l'essentiel (`lib/ats/`) : lisibilité du texte (PDF scanné = 0), colonnes / tableaux / zones de texte, icônes et emojis, images, e-mail et téléphone (y compris s'ils sont cachés dans l'en-tête Word), titres de rubrique standards, longueur, résultats chiffrés, cohérence des dates, nombre de pages, poids et nom du fichier. Score pondéré reproductible.
+- **Option offre d'emploi** : Haiku extrait les mots-clés (effort bas, coût minime), puis le code vérifie leur présence dans le CV. Limite : 15 par jour et par adresse IP.
+- **« Ce que lit un logiciel de recrutement »** : affiche le texte brut extrait, dans l'ordre de lecture d'un robot.
+- Rien n'est stocké. Limite de 30 vérifications par heure et par adresse IP.
+
+## 6 quater. Comptes et essai gratuit (13 nov. 2026)
+
+- **Connexion par e-mail + mot de passe** (Supabase Auth, `@supabase/ssr`). Clé publique (publishable) uniquement côté navigateur ; session vérifiée côté serveur avec `getClaims()`. Le middleware combine la langue (next-intl) et le rafraîchissement de session.
+- **Règle d'accès** (`lib/access.ts`) : 1 adaptation offerte sans compte (cookie signé avec `APP_SECRET` + adresse IP), puis compte obligatoire ; ensuite 5 analyses / mois (quota lu dans `plans`, compté dans `usage_events`).
+- Migration `0004_usage_insertion.sql` : un utilisateur connecté peut ajouter des lignes d'usage **pour lui seul** (pas de modification ni de suppression possible).
+- Dans le parcours, la fenêtre « Créez votre compte » s'ouvre sans perdre le CV ni l'offre, puis relance l'analyse automatiquement. Si l'e-mail doit être confirmé, la page détecte la confirmation au retour sur l'onglet.
+- **À régler avant le lancement public** : l'envoi d'e-mails par défaut de Supabase n'atteint que les membres de l'équipe du projet. Il faut soit désactiver la confirmation d'e-mail (bêta), soit brancher un service d'envoi (SMTP, ex. Resend) avec un nom de domaine.
+
+## 6 quinquies. Fidélité au design et choix du modèle (13 nov. 2026)
+
+Décision d'après les leaders (Jobstep, Enhancv, Teal, Rezi, Jobscan) : aucun ne modifie le PDF d'origine ; ils régénèrent le CV dans un modèle et laissent modifier le texte. CV Woo fait de même, avec en plus « Votre design » (reproduction du CV d'origine) par défaut.
+
+- **Lecture PDF** (`lib/cv/pdf.ts`) : lecture directe avec pdf.js (police de chaque morceau de texte), puis recollage des lignes coupées d'un même paragraphe ou d'une même puce (même police, même taille, alignées, ligne précédente pleine, phrase qui continue). Les coupures de mots « con- / tenus » sont recollées.
+- **Police d'origine** (`lib/fonts.ts`) : noms lus dans le PDF (pdf-lib) ou le Word, puis remplacés par un équivalent libre intégré au PDF (Arial→Arimo, Calibri→Carlito, Times→Tinos, Cambria→Caladea, Montserrat, Poppins, Lato, Open Sans…, paquets `@fontsource`). Plus de coupure automatique des mots.
+- **Modèles** (`lib/export/templates.ts`) : Votre design, Classique, Moderne, Minimaliste (une colonne, les plus sûrs pour les ATS).
+- **Modification manuelle** de chaque phrase proposée avant l'export. Une réécriture plus longue que 1,6 × l'original + 40 caractères est refusée (évite les doublons).
+
 ## 7. Suite du développement
 
 5. Landing page + dashboard → 6. Import et extraction → 7. Analyse des offres → 8. Connexion Claude → 9. Éditeur et exports → 10. Auth, abonnements, sécurité → 11. Tests.

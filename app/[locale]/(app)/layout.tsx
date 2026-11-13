@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Logo } from "@/components/logo";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { BottomNav, SidebarNav } from "@/components/app/app-nav";
+import { UserMenu } from "@/components/auth/user-menu";
 
 // La vérification de session (Supabase Auth) sera ajoutée à l'étape 10.
 export default function AppLayout({
@@ -25,13 +26,17 @@ export default function AppLayout({
         <div className="mt-6 flex-1">
           <SidebarNav />
         </div>
+        <UserMenu />
         <LocaleSwitcher />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center justify-between border-b border-border bg-background px-4 md:hidden">
           <Logo href="/" />
-          <LocaleSwitcher />
+          <div className="flex items-center">
+            <UserMenu compact />
+            <LocaleSwitcher />
+          </div>
         </header>
         <div className="border-b border-warning/30 bg-warning/10 px-4 py-2 text-center text-xs text-[oklch(0.42_0.1_60)] sm:text-sm">
           {t("betaBanner")}

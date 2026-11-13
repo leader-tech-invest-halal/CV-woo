@@ -10,7 +10,8 @@
     "pricing": "Tarifs",
     "cta": "Essayer gratuitement",
     "openMenu": "Ouvrir le menu",
-    "language": "English"
+    "language": "English",
+    "ats": "Vérificateur ATS"
   },
   "hero": {
     "badge": "Bêta gratuite",
@@ -33,16 +34,37 @@
   "how": {
     "title": "Comment ça marche",
     "subtitle": "Trois étapes, quelques minutes.",
-    "step1": { "title": "Importez votre CV", "text": "PDF ou Word. Vous relisez et corrigez les informations extraites." },
-    "step2": { "title": "Collez l'offre d'emploi", "text": "CV Woo en tire les compétences obligatoires, souhaitées et les mots-clés." },
-    "step3": { "title": "Récupérez votre CV adapté", "text": "Chaque modification est expliquée. Vous validez, puis exportez en PDF ou DOCX." }
+    "step1": {
+      "title": "Importez votre CV",
+      "text": "PDF ou Word. Vous relisez et corrigez les informations extraites."
+    },
+    "step2": {
+      "title": "Collez l'offre d'emploi",
+      "text": "CV Woo en tire les compétences obligatoires, souhaitées et les mots-clés."
+    },
+    "step3": {
+      "title": "Récupérez votre CV adapté",
+      "text": "Chaque modification est expliquée. Vous validez, puis exportez en PDF ou DOCX."
+    }
   },
   "features": {
     "title": "Pourquoi CV Woo",
-    "noInvent": { "title": "Zéro invention", "text": "Chaque phrase réécrite est reliée à une ligne de votre CV d'origine. Un chiffre ou un diplôme nouveau est bloqué jusqu'à votre validation." },
-    "ats": { "title": "Lisible par les ATS", "text": "Une colonne, titres standards, texte sélectionnable : les logiciels de recrutement lisent tout." },
-    "score": { "title": "Un score explicable", "text": "Le score est calculé à partir de preuves trouvées dans votre CV, pas deviné. Vous voyez ce qui compte." },
-    "privacy": { "title": "Vos données protégées", "text": "Hébergement en Europe, fichiers privés, suppression automatique après 90 jours (réglable)." }
+    "noInvent": {
+      "title": "Zéro invention",
+      "text": "Chaque phrase réécrite est reliée à une ligne de votre CV d'origine. Un chiffre ou un diplôme nouveau est bloqué jusqu'à votre validation."
+    },
+    "ats": {
+      "title": "Lisible par les ATS",
+      "text": "Une colonne, titres standards, texte sélectionnable : les logiciels de recrutement lisent tout."
+    },
+    "score": {
+      "title": "Un score explicable",
+      "text": "Le score est calculé à partir de preuves trouvées dans votre CV, pas deviné. Vous voyez ce qui compte."
+    },
+    "privacy": {
+      "title": "Vos données protégées",
+      "text": "Hébergement en Europe, fichiers privés, suppression automatique après 90 jours (réglable)."
+    }
   },
   "honesty": {
     "title": "Ce qui manque reste visible, jamais ajouté",
@@ -92,7 +114,8 @@
       "resumes": "Mes CV",
       "history": "Historique",
       "profile": "Profil",
-      "soon": "Bientôt"
+      "soon": "Bientôt",
+      "adapt": "Adapter un CV"
     },
     "betaBanner": "Version de démonstration : la connexion et l'enregistrement arrivent dans les prochaines étapes."
   },
@@ -127,6 +150,319 @@
     "tip": {
       "title": "Conseil",
       "text": "Collez l'offre complète, y compris la section « profil recherché » : c'est là que se trouvent la plupart des compétences obligatoires."
+    }
+  },
+  "adapt": {
+    "title": "Adapter mon CV à une offre",
+    "steps": {
+      "resume": "CV",
+      "offer": "Offre",
+      "analysis": "Analyse",
+      "preview": "Aperçu"
+    },
+    "resume": {
+      "title": "Importez votre CV",
+      "subtitle": "PDF ou Word, 5 Mo maximum. Votre fichier n'est pas conservé.",
+      "drop": "Glissez votre CV ici",
+      "or": "ou",
+      "browse": "Choisir un fichier",
+      "formats": "PDF ou DOCX · 5 Mo max",
+      "reading": "Lecture de votre CV…",
+      "readingHint": "Nous repérons vos rubriques et le style de votre CV.",
+      "detected": "Ce que nous avons compris",
+      "name": "Nom",
+      "sections": "Rubriques",
+      "lines": "{count, plural, one {# ligne} other {# lignes}}",
+      "style": "Style détecté",
+      "font": {
+        "sans": "Police sans empattement",
+        "serif": "Police avec empattement"
+      },
+      "layout": {
+        "single": "Une colonne",
+        "sidebar-left": "Colonne à gauche",
+        "sidebar-right": "Colonne à droite"
+      },
+      "docxNote": "Fichier Word : nous modifierons directement votre fichier, son design restera identique.",
+      "pdfNote": "Fichier PDF : nous recréerons votre CV avec les mêmes couleurs, police et disposition.",
+      "change": "Changer de fichier",
+      "next": "Continuer"
+    },
+    "offer": {
+      "title": "Ajoutez l'offre d'emploi",
+      "subtitle": "Collez le lien de l'annonce ou son texte complet.",
+      "tabUrl": "Lien de l'offre",
+      "tabText": "Texte de l'offre",
+      "urlLabel": "Adresse de l'annonce",
+      "urlPlaceholder": "https://…",
+      "fetch": "Récupérer",
+      "fetching": "Récupération…",
+      "fetched": "Texte récupéré. Vérifiez-le et complétez-le si besoin.",
+      "textLabel": "Description du poste",
+      "textPlaceholder": "Collez ici l'annonce complète : missions, profil recherché, compétences…",
+      "chars": "{count} caractères",
+      "minChars": "Au moins 200 caractères",
+      "back": "Retour",
+      "analyze": "Lancer l'analyse"
+    },
+    "analyzing": {
+      "title": "Analyse en cours…",
+      "s1": "Lecture de l'offre",
+      "s2": "Recherche des compétences dans votre CV",
+      "s3": "Reformulation de vos expériences",
+      "s4": "Vérification : aucune information inventée",
+      "hint": "Cela prend en général entre 20 et 60 secondes."
+    },
+    "analysis": {
+      "for": "Pour le poste",
+      "disclaimer": "Estimation interne de compatibilité, pas un score ATS officiel.",
+      "skills": "Compétences de l'offre",
+      "present": "Présentes",
+      "weak": "Non démontrées",
+      "missing": "Absentes",
+      "required": "obligatoire",
+      "evidence": "Preuve :",
+      "changes": "Modifications proposées",
+      "changesHint": "Décochez celles que vous ne voulez pas garder.",
+      "noChanges": "Votre CV correspond déjà bien : aucune reformulation utile n'a été trouvée.",
+      "before": "Avant",
+      "after": "Après",
+      "keywords": "Mots-clés :",
+      "flagTitle": "À vérifier avant d'accepter",
+      "flag": {
+        "number": "Le chiffre « {value} » n'apparaît pas dans votre CV.",
+        "term": "« {value} » n'apparaît pas dans votre CV.",
+        "keyword": "Le mot-clé « {value} » n'est pas prouvé par votre CV."
+      },
+      "flagHelp": "Par sécurité, cette modification n'est pas cochée. Acceptez-la seulement si c'est vrai.",
+      "accepted": "{count} sur {total} acceptées",
+      "missingTitle": "Compétences absentes de votre CV",
+      "missingHint": "Elles ne sont pas ajoutées à votre CV. Si vous les avez réellement, ajoutez-les vous-même.",
+      "back": "Modifier l'offre",
+      "next": "Voir l'aperçu",
+      "score": "Compatibilité",
+      "edit": "Modifier",
+      "done": "Valider",
+      "edited": "Modifié par vous"
+    },
+    "preview": {
+      "title": "Aperçu de votre nouveau CV",
+      "tabPdf": "PDF",
+      "tabDocx": "Word",
+      "loading": "Préparation de l'aperçu…",
+      "downloadPdf": "Télécharger en PDF",
+      "downloadDocx": "Télécharger en Word",
+      "docxSame": "Le fichier Word est votre fichier d'origine, seul le texte a changé : son design est identique.",
+      "pdfFromDocx": "Le PDF est recréé avec le style de votre CV (couleurs, police, colonnes). Pour un rendu identique à l'original, ouvrez le fichier Word et exportez-le en PDF depuis Word.",
+      "fromPdf": "Votre CV est recréé avec ses couleurs, sa police et sa disposition. Le texte reste lisible par les logiciels de recrutement.",
+      "back": "Revoir les modifications",
+      "restart": "Adapter à une autre offre",
+      "printHint": "Utilisez les boutons « Télécharger ». N’imprimez pas la page en PDF : le fichier deviendrait une image que les logiciels de recrutement ne savent pas lire.",
+      "templates": {
+        "title": "Modèle",
+        "original": "Votre design",
+        "classique": "Classique",
+        "moderne": "Moderne",
+        "minimaliste": "Minimaliste"
+      },
+      "templateHint": "Modèle une colonne, le plus sûr pour les logiciels de recrutement.",
+      "font": "Police reprise : {font}"
+    },
+    "errors": {
+      "file_too_large": "Le fichier dépasse 5 Mo.",
+      "unsupported_file": "Format non reconnu. Importez un PDF ou un fichier Word (.docx).",
+      "scanned_pdf": "Ce PDF ne contient pas de texte lisible : c’est une image (scan, photo, ou PDF « imprimé »). Importez la version Word, ou un PDF exporté avec « Enregistrer sous / Exporter en PDF » depuis Word, Google Docs ou Canva.",
+      "too_many_pages": "Ce PDF a trop de pages pour un CV (6 maximum).",
+      "empty_resume": "Aucun texte n'a été trouvé dans ce fichier.",
+      "invalid_url": "Ce lien n'est pas valide.",
+      "offer_unreachable": "Impossible d'ouvrir ce lien. Copiez plutôt le texte de l'offre.",
+      "offer_blocked": "Ce site ne laisse pas lire l'annonce automatiquement (c'est fréquent sur LinkedIn ou Indeed). Copiez le texte de l'offre dans l'onglet « Texte de l'offre ».",
+      "offer_too_short": "L'offre est trop courte : collez au moins 200 caractères.",
+      "ai_not_configured": "L'IA n'est pas encore configurée (clé API manquante).",
+      "ai_busy": "L'IA est très demandée en ce moment. Réessayez dans une minute.",
+      "ai_budget": "Le budget IA du mois est atteint. Revenez le mois prochain.",
+      "ai_refused": "L'IA n'a pas pu traiter ce contenu. Vérifiez le CV et l'offre.",
+      "ai_failed": "L'analyse a échoué. Réessayez.",
+      "rate_limited": "Vous avez atteint la limite d'utilisation pour aujourd'hui. Réessayez demain.",
+      "invalid_request": "Requête invalide. Rechargez la page et recommencez.",
+      "server_error": "Une erreur est survenue. Réessayez.",
+      "network": "Connexion impossible. Vérifiez votre accès à Internet.",
+      "auth_required": "Créez un compte gratuit pour continuer.",
+      "quota_reached": "Vous avez utilisé vos 5 adaptations du mois. Elles reviennent le 1er du mois prochain."
+    }
+  },
+  "ats": {
+    "meta": {
+      "title": "Vérificateur de CV ATS gratuit — CV Woo",
+      "description": "Testez gratuitement si votre CV passe les logiciels de recrutement (ATS) : lisibilité, mise en page, rubriques, mots-clés de l'offre. Sans inscription, aucun fichier conservé."
+    },
+    "hero": {
+      "badge": "Gratuit · sans inscription",
+      "title": "Votre CV passe-t-il les robots de recrutement ?",
+      "subtitle": "La plupart des entreprises trient les candidatures avec un logiciel (ATS). Vérifiez en quelques secondes s'il peut lire votre CV, et ce qu'il faut corriger.",
+      "privacy": "Votre fichier est analysé puis oublié : rien n'est conservé."
+    },
+    "form": {
+      "offerToggle": "Ajouter une offre d'emploi (facultatif)",
+      "offerLabel": "Collez l'offre pour vérifier ses mots-clés",
+      "offerPlaceholder": "Collez ici le texte de l'annonce…",
+      "check": "Vérifier mon CV",
+      "checking": "Vérification en cours…"
+    },
+    "result": {
+      "score": "Score ATS",
+      "verdict": {
+        "good": "Très bon CV pour les ATS",
+        "ok": "Correct, quelques points à améliorer",
+        "bad": "À corriger avant d'envoyer"
+      },
+      "summary": "{pass, plural, one {# point validé} other {# points validés}}, {warn} à améliorer, {fail, plural, one {# bloquant} other {# bloquants}}.",
+      "disclaimer": "Estimation interne fondée sur les règles courantes des logiciels de recrutement, pas le résultat d'un ATS précis.",
+      "categories": {
+        "readability": "Lisibilité par les robots",
+        "content": "Contenu",
+        "file": "Fichier",
+        "offer": "Offre d'emploi"
+      },
+      "robotTitle": "Ce que lit un logiciel de recrutement",
+      "robotHint": "Voici le texte brut extrait de votre CV, dans l'ordre où un robot le lit. Si quelque chose manque ou est mélangé, c'est un problème.",
+      "robotEmpty": "Aucun texte lisible.",
+      "keywordsFound": "Mots-clés présents",
+      "keywordsMissing": "Mots-clés absents de votre CV",
+      "keywordsHint": "Ajoutez seulement ceux qui correspondent vraiment à votre expérience.",
+      "ctaTitle": "Adaptez votre CV à cette offre en 1 minute",
+      "ctaText": "CV Woo reformule vos expériences avec les mots-clés de l'offre, sans rien inventer, et garde le design de votre CV.",
+      "ctaButton": "Adapter mon CV",
+      "again": "Vérifier un autre CV"
+    },
+    "issues": {
+      "columns": "plusieurs colonnes",
+      "tables": "des tableaux",
+      "textboxes": "des zones de texte"
+    },
+    "sectionNames": {
+      "experience": "Expérience",
+      "education": "Formation",
+      "skills": "Compétences"
+    },
+    "checks": {
+      "readable": {
+        "title": "Texte lisible par les robots",
+        "pass": "Le texte de votre CV est lisible.",
+        "fail": "Aucun texte n'a pu être lu : votre CV est probablement une image ou un scan. Un ATS le verra vide. Exportez-le en PDF depuis Word, Google Docs ou Canva (en « PDF standard »)."
+      },
+      "layout": {
+        "title": "Mise en page simple",
+        "pass": "Une seule colonne, sans tableau ni zone de texte : idéal.",
+        "warn": "Votre CV utilise {issues}. Beaucoup d'ATS lisent ces éléments dans le désordre ou les ignorent. Regardez plus bas ce que lit un robot."
+      },
+      "icons": {
+        "title": "Caractères spéciaux",
+        "pass": "Aucune icône ni emoji gênant.",
+        "warn": "{count} icônes ou emojis détectés : un ATS les lit comme des caractères incompréhensibles. Remplacez-les par du texte, par exemple « Tél. : »."
+      },
+      "images": {
+        "title": "Images et graphiques",
+        "pass": "Pas d'images gênantes.",
+        "warn": "{count} images détectées. Les jauges de compétences, logos ou icônes en image sont invisibles pour un ATS. Une photo seule ne pose pas de problème."
+      },
+      "email": {
+        "title": "Adresse e-mail",
+        "pass": "Adresse e-mail trouvée.",
+        "fail": "Aucune adresse e-mail trouvée dans le texte : le recruteur ne pourra pas vous contacter."
+      },
+      "contact_header": {
+        "title": "Coordonnées lisibles",
+        "fail": "Vos coordonnées sont dans l'en-tête ou le pied de page du document Word : beaucoup d'ATS ne les lisent pas. Déplacez-les dans le corps du CV."
+      },
+      "phone": {
+        "title": "Numéro de téléphone",
+        "pass": "Numéro de téléphone trouvé.",
+        "warn": "Aucun numéro de téléphone trouvé."
+      },
+      "sections": {
+        "title": "Titres de rubrique standards",
+        "pass": "Expérience, Formation et Compétences sont bien identifiables.",
+        "warn": "Rubrique non reconnue : {missing}. Utilisez des titres classiques comme « Expérience professionnelle », « Formation », « Compétences ».",
+        "fail": "Rubriques non reconnues : {missing}. Utilisez des titres classiques comme « Expérience professionnelle », « Formation », « Compétences »."
+      },
+      "length": {
+        "title": "Longueur du CV",
+        "ok": "{words} mots : bonne longueur.",
+        "short": "Seulement {words} mots : votre CV est très court, il manque sans doute des détails sur vos missions.",
+        "long": "{words} mots : votre CV est long. Visez 1 à 2 pages."
+      },
+      "quantified": {
+        "title": "Résultats chiffrés",
+        "pass": "{count} lignes contiennent des résultats chiffrés : excellent.",
+        "warn": "Peu de résultats chiffrés ({count}). Si c'est vrai, ajoutez des chiffres : nombre de clients, budget géré, % de hausse…"
+      },
+      "dates": {
+        "title": "Format des dates",
+        "ok": "Format de date homogène ({formats}).",
+        "mixed": "Plusieurs formats de date mélangés ({formats}). Choisissez-en un seul, par exemple « 09/2022 – 06/2024 ».",
+        "none": "Aucune date reconnue. Les ATS s'en servent pour calculer vos années d'expérience."
+      },
+      "pages": {
+        "title": "Nombre de pages",
+        "pass": "{pages, plural, one {# page} other {# pages}} : parfait.",
+        "warn": "3 pages : c'est long, visez 1 à 2 pages.",
+        "fail": "{pages} pages : beaucoup trop long, visez 1 à 2 pages."
+      },
+      "size": {
+        "title": "Poids du fichier",
+        "pass": "{size} Ko : fichier léger.",
+        "warn": "{size} Ko : fichier lourd. Certains sites refusent les fichiers de plus de 2 Mo."
+      },
+      "file_name": {
+        "title": "Nom du fichier",
+        "pass": "« {name} » : nom clair.",
+        "warn": "« {name} » : nommez plutôt votre fichier « Prénom-Nom-CV.pdf », c'est plus professionnel."
+      },
+      "keywords": {
+        "title": "Mots-clés de l'offre",
+        "pass": "{found} mots-clés sur {total} trouvés, dont {percent} % des indispensables.",
+        "warn": "{found} mots-clés sur {total} trouvés, dont {percent} % des indispensables.",
+        "fail": "{found} mots-clés sur {total} trouvés, dont {percent} % des indispensables."
+      }
+    }
+  },
+  "auth": {
+    "gateTitle": "Créez votre compte gratuit pour continuer",
+    "gateText": "Votre adaptation offerte est utilisée. Avec un compte gratuit, adaptez votre CV à 5 offres par mois. Votre CV et votre offre restent à l'écran.",
+    "signupTab": "Créer un compte",
+    "loginTab": "Se connecter",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "passwordHint": "8 caractères minimum",
+    "show": "Afficher",
+    "hide": "Masquer",
+    "signup": "Créer mon compte",
+    "login": "Se connecter",
+    "loading": "Un instant…",
+    "consent": "En créant un compte, vous acceptez que votre e-mail soit utilisé pour gérer votre compte CV Woo. Pas de publicité, pas de revente.",
+    "checkEmailTitle": "Confirmez votre adresse e-mail",
+    "checkEmailText": "Nous avons envoyé un lien à {email}. Cliquez dessus (pensez aux spams), puis revenez sur cette page : elle se mettra à jour toute seule.",
+    "resend": "Je l'ai confirmé",
+    "close": "Fermer",
+    "loginTitle": "Connexion à CV Woo",
+    "loginSubtitle": "Accédez à vos adaptations de CV.",
+    "signupTitle": "Créer un compte CV Woo",
+    "signupSubtitle": "Gratuit pendant la bêta : 5 adaptations par mois.",
+    "navLogin": "Se connecter",
+    "logout": "Se déconnecter",
+    "trialNotice": "C'était votre adaptation offerte. Créez un compte gratuit pour adapter votre CV à d'autres offres (5 par mois).",
+    "trialCta": "Créer mon compte",
+    "remaining": "{count, plural, =0 {Plus aucune adaptation ce mois-ci} one {Encore # adaptation ce mois-ci} other {Encore # adaptations ce mois-ci}}",
+    "errors": {
+      "invalid_email": "Cette adresse e-mail n'est pas valide.",
+      "weak_password": "Mot de passe trop faible : 8 caractères minimum.",
+      "user_already_exists": "Un compte existe déjà avec cet e-mail. Connectez-vous.",
+      "invalid_credentials": "E-mail ou mot de passe incorrect.",
+      "email_not_confirmed": "Confirmez d'abord votre e-mail grâce au lien reçu.",
+      "rate_limit": "Trop de tentatives. Patientez quelques minutes.",
+      "signup_disabled": "Les inscriptions sont fermées pour le moment.",
+      "unknown": "Une erreur est survenue. Réessayez."
     }
   }
 }

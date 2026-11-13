@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { ArrowRight, FileText, Gauge, Lightbulb, Upload } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 import { Card } from "@/components/ui/card";
 import { StepIndicator } from "@/components/app/step-indicator";
 
@@ -23,11 +24,10 @@ export default function DashboardPage({ params }: { params: Promise<{ locale: st
         <div className="mt-6 overflow-x-auto pb-1">
           <StepIndicator current={0} />
         </div>
-        {/* Le parcours (import du CV) arrive à l'étape 6 */}
-        <button type="button" disabled className={buttonClass("primary", "lg", "mt-6 w-full sm:w-auto")}>
+        <Link href="/adapt" className={buttonClass("primary", "lg", "mt-6 w-full sm:w-auto")}>
           {t("cta")}
           <ArrowRight className="size-4" strokeWidth={1.75} aria-hidden />
-        </button>
+        </Link>
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
@@ -41,10 +41,10 @@ export default function DashboardPage({ params }: { params: Promise<{ locale: st
               </span>
               <p className="mt-4 font-medium">{t("resumes.emptyTitle")}</p>
               <p className="mt-1 max-w-xs text-sm text-muted-foreground">{t("resumes.emptyText")}</p>
-              <button type="button" disabled className={buttonClass("outline", "md", "mt-5")}>
+              <Link href="/adapt" className={buttonClass("outline", "md", "mt-5")}>
                 <Upload className="size-4" strokeWidth={1.5} aria-hidden />
                 {t("resumes.import")}
-              </button>
+              </Link>
             </Card>
           </section>
 

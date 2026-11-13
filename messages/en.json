@@ -10,7 +10,8 @@
     "pricing": "Pricing",
     "cta": "Try it free",
     "openMenu": "Open menu",
-    "language": "Français"
+    "language": "Français",
+    "ats": "ATS checker"
   },
   "hero": {
     "badge": "Free beta",
@@ -33,16 +34,37 @@
   "how": {
     "title": "How it works",
     "subtitle": "Three steps, a few minutes.",
-    "step1": { "title": "Upload your resume", "text": "PDF or Word. You review and fix the extracted details." },
-    "step2": { "title": "Paste the job posting", "text": "CV Woo pulls out the required skills, nice-to-haves and keywords." },
-    "step3": { "title": "Get your tailored resume", "text": "Every change is explained. You approve, then export to PDF or DOCX." }
+    "step1": {
+      "title": "Upload your resume",
+      "text": "PDF or Word. You review and fix the extracted details."
+    },
+    "step2": {
+      "title": "Paste the job posting",
+      "text": "CV Woo pulls out the required skills, nice-to-haves and keywords."
+    },
+    "step3": {
+      "title": "Get your tailored resume",
+      "text": "Every change is explained. You approve, then export to PDF or DOCX."
+    }
   },
   "features": {
     "title": "Why CV Woo",
-    "noInvent": { "title": "Nothing invented", "text": "Every rewritten line is linked to a line of your original resume. A new number or degree is blocked until you approve it." },
-    "ats": { "title": "ATS-readable", "text": "One column, standard headings, selectable text: recruiting software reads all of it." },
-    "score": { "title": "A score you can explain", "text": "The score is calculated from evidence found in your resume, not guessed. You see what counts." },
-    "privacy": { "title": "Your data protected", "text": "Hosted in Europe, private files, automatic deletion after 90 days (adjustable)." }
+    "noInvent": {
+      "title": "Nothing invented",
+      "text": "Every rewritten line is linked to a line of your original resume. A new number or degree is blocked until you approve it."
+    },
+    "ats": {
+      "title": "ATS-readable",
+      "text": "One column, standard headings, selectable text: recruiting software reads all of it."
+    },
+    "score": {
+      "title": "A score you can explain",
+      "text": "The score is calculated from evidence found in your resume, not guessed. You see what counts."
+    },
+    "privacy": {
+      "title": "Your data protected",
+      "text": "Hosted in Europe, private files, automatic deletion after 90 days (adjustable)."
+    }
   },
   "honesty": {
     "title": "What's missing stays visible, never added",
@@ -92,7 +114,8 @@
       "resumes": "My resumes",
       "history": "History",
       "profile": "Profile",
-      "soon": "Soon"
+      "soon": "Soon",
+      "adapt": "Tailor a resume"
     },
     "betaBanner": "Demo version: sign-in and saving arrive in the next steps."
   },
@@ -127,6 +150,319 @@
     "tip": {
       "title": "Tip",
       "text": "Paste the full posting, including the “who we're looking for” section: that's where most required skills are."
+    }
+  },
+  "adapt": {
+    "title": "Tailor my resume to a job",
+    "steps": {
+      "resume": "Resume",
+      "offer": "Job",
+      "analysis": "Analysis",
+      "preview": "Preview"
+    },
+    "resume": {
+      "title": "Upload your resume",
+      "subtitle": "PDF or Word, 5 MB max. Your file is not kept.",
+      "drop": "Drop your resume here",
+      "or": "or",
+      "browse": "Choose a file",
+      "formats": "PDF or DOCX · 5 MB max",
+      "reading": "Reading your resume…",
+      "readingHint": "We're finding your sections and your resume's style.",
+      "detected": "What we understood",
+      "name": "Name",
+      "sections": "Sections",
+      "lines": "{count, plural, one {# line} other {# lines}}",
+      "style": "Detected style",
+      "font": {
+        "sans": "Sans-serif font",
+        "serif": "Serif font"
+      },
+      "layout": {
+        "single": "One column",
+        "sidebar-left": "Left column",
+        "sidebar-right": "Right column"
+      },
+      "docxNote": "Word file: we'll edit your file directly, so its design stays identical.",
+      "pdfNote": "PDF file: we'll rebuild your resume with the same colors, font and layout.",
+      "change": "Change file",
+      "next": "Continue"
+    },
+    "offer": {
+      "title": "Add the job posting",
+      "subtitle": "Paste the posting's link or its full text.",
+      "tabUrl": "Job link",
+      "tabText": "Job text",
+      "urlLabel": "Posting address",
+      "urlPlaceholder": "https://…",
+      "fetch": "Fetch",
+      "fetching": "Fetching…",
+      "fetched": "Text fetched. Check it and complete it if needed.",
+      "textLabel": "Job description",
+      "textPlaceholder": "Paste the full posting here: duties, requirements, skills…",
+      "chars": "{count} characters",
+      "minChars": "At least 200 characters",
+      "back": "Back",
+      "analyze": "Run the analysis"
+    },
+    "analyzing": {
+      "title": "Analyzing…",
+      "s1": "Reading the job posting",
+      "s2": "Looking for the skills in your resume",
+      "s3": "Rewording your experience",
+      "s4": "Checking: nothing made up",
+      "hint": "This usually takes 20 to 60 seconds."
+    },
+    "analysis": {
+      "for": "For the role",
+      "disclaimer": "Internal match estimate, not an official ATS score.",
+      "skills": "Skills in the posting",
+      "present": "Present",
+      "weak": "Not demonstrated",
+      "missing": "Missing",
+      "required": "required",
+      "evidence": "Evidence:",
+      "changes": "Suggested changes",
+      "changesHint": "Untick any you don't want to keep.",
+      "noChanges": "Your resume already fits well: no useful rewording was found.",
+      "before": "Before",
+      "after": "After",
+      "keywords": "Keywords:",
+      "flagTitle": "Check before accepting",
+      "flag": {
+        "number": "The number “{value}” isn't in your resume.",
+        "term": "“{value}” isn't in your resume.",
+        "keyword": "The keyword “{value}” isn't backed by your resume."
+      },
+      "flagHelp": "To be safe, this change is unticked. Accept it only if it's true.",
+      "accepted": "{count} of {total} accepted",
+      "missingTitle": "Skills missing from your resume",
+      "missingHint": "They are not added to your resume. If you really have them, add them yourself.",
+      "back": "Edit the job",
+      "next": "See the preview",
+      "score": "Match",
+      "edit": "Edit",
+      "done": "Done",
+      "edited": "Edited by you"
+    },
+    "preview": {
+      "title": "Preview of your new resume",
+      "tabPdf": "PDF",
+      "tabDocx": "Word",
+      "loading": "Preparing the preview…",
+      "downloadPdf": "Download PDF",
+      "downloadDocx": "Download Word",
+      "docxSame": "The Word file is your original file with only the text changed: its design is identical.",
+      "pdfFromDocx": "The PDF is rebuilt with your resume's style (colors, font, columns). For an exact copy of the original, open the Word file and export it to PDF from Word.",
+      "fromPdf": "Your resume is rebuilt with its colors, font and layout. The text stays readable by recruiting software.",
+      "back": "Review the changes",
+      "restart": "Tailor to another job",
+      "printHint": "Use the “Download” buttons. Don’t print the page to PDF: the file would become an image that recruiting software can’t read.",
+      "templates": {
+        "title": "Template",
+        "original": "Your design",
+        "classique": "Classic",
+        "moderne": "Modern",
+        "minimaliste": "Minimal"
+      },
+      "templateHint": "One-column template, the safest for recruiting software.",
+      "font": "Font used: {font}"
+    },
+    "errors": {
+      "file_too_large": "The file is larger than 5 MB.",
+      "unsupported_file": "Unrecognized format. Upload a PDF or a Word file (.docx).",
+      "scanned_pdf": "This PDF has no readable text: it is an image (scan, photo or “printed” PDF). Upload the Word version, or a PDF exported with “Save as / Export to PDF” from Word, Google Docs or Canva.",
+      "too_many_pages": "This PDF has too many pages for a resume (6 max).",
+      "empty_resume": "No text was found in this file.",
+      "invalid_url": "This link isn't valid.",
+      "offer_unreachable": "We couldn't open this link. Copy the job text instead.",
+      "offer_blocked": "This site doesn't let us read the posting automatically (common on LinkedIn or Indeed). Copy the job text into the “Job text” tab.",
+      "offer_too_short": "The posting is too short: paste at least 200 characters.",
+      "ai_not_configured": "The AI isn't set up yet (missing API key).",
+      "ai_busy": "The AI is in high demand right now. Try again in a minute.",
+      "ai_budget": "This month's AI budget has been reached. Come back next month.",
+      "ai_refused": "The AI couldn't process this content. Check the resume and the posting.",
+      "ai_failed": "The analysis failed. Try again.",
+      "rate_limited": "You've reached today's usage limit. Try again tomorrow.",
+      "invalid_request": "Invalid request. Reload the page and start again.",
+      "server_error": "Something went wrong. Try again.",
+      "network": "Can't connect. Check your internet access.",
+      "auth_required": "Create a free account to continue.",
+      "quota_reached": "You've used your 5 tailorings this month. They reset on the 1st of next month."
+    }
+  },
+  "ats": {
+    "meta": {
+      "title": "Free ATS resume checker — CV Woo",
+      "description": "Check for free whether your resume gets through applicant tracking systems (ATS): readability, layout, sections, job keywords. No sign-up, no file kept."
+    },
+    "hero": {
+      "badge": "Free · no sign-up",
+      "title": "Does your resume get past recruiting robots?",
+      "subtitle": "Most companies screen applications with software (an ATS). Check in seconds whether it can read your resume, and what to fix.",
+      "privacy": "Your file is analyzed then forgotten: nothing is kept."
+    },
+    "form": {
+      "offerToggle": "Add a job posting (optional)",
+      "offerLabel": "Paste the posting to check its keywords",
+      "offerPlaceholder": "Paste the job posting text here…",
+      "check": "Check my resume",
+      "checking": "Checking…"
+    },
+    "result": {
+      "score": "ATS score",
+      "verdict": {
+        "good": "Great resume for ATS",
+        "ok": "Fair, a few things to improve",
+        "bad": "Fix before sending"
+      },
+      "summary": "{pass, plural, one {# check passed} other {# checks passed}}, {warn} to improve, {fail} blocking.",
+      "disclaimer": "Internal estimate based on common applicant tracking system rules, not the result of a specific ATS.",
+      "categories": {
+        "readability": "Readability by robots",
+        "content": "Content",
+        "file": "File",
+        "offer": "Job posting"
+      },
+      "robotTitle": "What recruiting software reads",
+      "robotHint": "This is the raw text extracted from your resume, in the order a robot reads it. If something is missing or jumbled, that's a problem.",
+      "robotEmpty": "No readable text.",
+      "keywordsFound": "Keywords present",
+      "keywordsMissing": "Keywords missing from your resume",
+      "keywordsHint": "Only add the ones that truly match your experience.",
+      "ctaTitle": "Tailor your resume to this job in 1 minute",
+      "ctaText": "CV Woo rewords your experience with the job's keywords, without making anything up, and keeps your resume's design.",
+      "ctaButton": "Tailor my resume",
+      "again": "Check another resume"
+    },
+    "issues": {
+      "columns": "several columns",
+      "tables": "tables",
+      "textboxes": "text boxes"
+    },
+    "sectionNames": {
+      "experience": "Experience",
+      "education": "Education",
+      "skills": "Skills"
+    },
+    "checks": {
+      "readable": {
+        "title": "Text readable by robots",
+        "pass": "Your resume's text is readable.",
+        "fail": "No text could be read: your resume is probably an image or a scan. An ATS will see it as empty. Export it to PDF from Word, Google Docs or Canva (as a “standard PDF”)."
+      },
+      "layout": {
+        "title": "Simple layout",
+        "pass": "One column, no tables or text boxes: ideal.",
+        "warn": "Your resume uses {issues}. Many ATS read these out of order or skip them. See below what a robot reads."
+      },
+      "icons": {
+        "title": "Special characters",
+        "pass": "No problematic icons or emojis.",
+        "warn": "{count} icons or emojis found: an ATS reads them as gibberish. Replace them with text, such as “Phone:”."
+      },
+      "images": {
+        "title": "Images and graphics",
+        "pass": "No problematic images.",
+        "warn": "{count} images found. Skill bars, logos or icons as images are invisible to an ATS. A single photo is fine."
+      },
+      "email": {
+        "title": "Email address",
+        "pass": "Email address found.",
+        "fail": "No email address found in the text: the recruiter won't be able to contact you."
+      },
+      "contact_header": {
+        "title": "Readable contact details",
+        "fail": "Your contact details are in the Word header or footer: many ATS don't read them. Move them into the body of the resume."
+      },
+      "phone": {
+        "title": "Phone number",
+        "pass": "Phone number found.",
+        "warn": "No phone number found."
+      },
+      "sections": {
+        "title": "Standard section headings",
+        "pass": "Experience, Education and Skills are easy to identify.",
+        "warn": "Section not recognized: {missing}. Use standard headings such as “Experience”, “Education”, “Skills”.",
+        "fail": "Sections not recognized: {missing}. Use standard headings such as “Experience”, “Education”, “Skills”."
+      },
+      "length": {
+        "title": "Resume length",
+        "ok": "{words} words: good length.",
+        "short": "Only {words} words: your resume is very short and probably lacks details about your work.",
+        "long": "{words} words: your resume is long. Aim for 1 to 2 pages."
+      },
+      "quantified": {
+        "title": "Measurable results",
+        "pass": "{count} lines include measurable results: excellent.",
+        "warn": "Few measurable results ({count}). If true, add numbers: clients, budget managed, % growth…"
+      },
+      "dates": {
+        "title": "Date format",
+        "ok": "Consistent date format ({formats}).",
+        "mixed": "Several date formats mixed ({formats}). Pick one, such as “09/2022 – 06/2024”.",
+        "none": "No dates recognized. ATS use them to calculate your years of experience."
+      },
+      "pages": {
+        "title": "Number of pages",
+        "pass": "{pages, plural, one {# page} other {# pages}}: perfect.",
+        "warn": "3 pages: that's long, aim for 1 to 2 pages.",
+        "fail": "{pages} pages: far too long, aim for 1 to 2 pages."
+      },
+      "size": {
+        "title": "File size",
+        "pass": "{size} KB: light file.",
+        "warn": "{size} KB: heavy file. Some sites reject files over 2 MB."
+      },
+      "file_name": {
+        "title": "File name",
+        "pass": "“{name}”: clear name.",
+        "warn": "“{name}”: name your file “First-Last-Resume.pdf” instead, it looks more professional."
+      },
+      "keywords": {
+        "title": "Job keywords",
+        "pass": "{found} of {total} keywords found, including {percent}% of the must-haves.",
+        "warn": "{found} of {total} keywords found, including {percent}% of the must-haves.",
+        "fail": "{found} of {total} keywords found, including {percent}% of the must-haves."
+      }
+    }
+  },
+  "auth": {
+    "gateTitle": "Create your free account to continue",
+    "gateText": "You've used your free tailoring. With a free account, tailor your resume to 5 jobs a month. Your resume and job posting stay on screen.",
+    "signupTab": "Create account",
+    "loginTab": "Sign in",
+    "email": "Email address",
+    "password": "Password",
+    "passwordHint": "At least 8 characters",
+    "show": "Show",
+    "hide": "Hide",
+    "signup": "Create my account",
+    "login": "Sign in",
+    "loading": "One moment…",
+    "consent": "By creating an account, you agree that your email is used to manage your CV Woo account. No ads, no reselling.",
+    "checkEmailTitle": "Confirm your email address",
+    "checkEmailText": "We sent a link to {email}. Click it (check your spam folder), then come back to this page: it will update on its own.",
+    "resend": "I've confirmed it",
+    "close": "Close",
+    "loginTitle": "Sign in to CV Woo",
+    "loginSubtitle": "Access your resume tailoring.",
+    "signupTitle": "Create a CV Woo account",
+    "signupSubtitle": "Free during the beta: 5 tailorings a month.",
+    "navLogin": "Sign in",
+    "logout": "Sign out",
+    "trialNotice": "That was your free tailoring. Create a free account to tailor your resume to more jobs (5 a month).",
+    "trialCta": "Create my account",
+    "remaining": "{count, plural, =0 {No tailoring left this month} one {# tailoring left this month} other {# tailorings left this month}}",
+    "errors": {
+      "invalid_email": "This email address isn't valid.",
+      "weak_password": "Password too weak: at least 8 characters.",
+      "user_already_exists": "An account already exists with this email. Sign in instead.",
+      "invalid_credentials": "Wrong email or password.",
+      "email_not_confirmed": "First confirm your email with the link we sent.",
+      "rate_limit": "Too many attempts. Wait a few minutes.",
+      "signup_disabled": "Sign-ups are closed for now.",
+      "unknown": "Something went wrong. Try again."
     }
   }
 }

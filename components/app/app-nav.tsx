@@ -1,14 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Files, History, LayoutDashboard, User, type LucideIcon } from "lucide-react";
+import { Files, History, LayoutDashboard, Sparkles, User, type LucideIcon } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 
-type Item = { href: string; key: "dashboard" | "resumes" | "history" | "profile"; icon: LucideIcon; ready: boolean };
+type Item = { href: string; key: "dashboard" | "adapt" | "resumes" | "history" | "profile"; icon: LucideIcon; ready: boolean };
 
-// Les pages marquées ready: false arrivent aux étapes 6 à 10.
+// Les pages marquées ready: false arrivent avec les comptes utilisateurs (étape 10).
 const ITEMS: Item[] = [
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, ready: true },
+  { href: "/adapt", key: "adapt", icon: Sparkles, ready: true },
   { href: "/resumes", key: "resumes", icon: Files, ready: false },
   { href: "/history", key: "history", icon: History, ready: false },
   { href: "/profile", key: "profile", icon: User, ready: false },
@@ -55,7 +56,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
       {ITEMS.map(({ href, key, icon: Icon, ready }) => {
         const active = pathname.startsWith(href);
         const cls = `flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] ${
