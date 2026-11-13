@@ -14,8 +14,11 @@ const TRIAL_COOKIE = "cvw_trial";
 const anonymousIps = new Set<string>();
 
 function signature(): string {
-  const secret = process.env.APP_SECRET;
-  if (!secret) throw new Error("APP_SECRET manquant");
+  // Secret de signature : APP_SECRET s'il existe, sinon dérivé de la clé Anthropic (jamais exposée),
+  // pour n'avoir qu'un seul secret à saisir dans Vercel.
+  const base = process.env.APP_SECRET || process.env.ANTHROPIC_API_KEY;
+  if (!base) throw new Error("Aucun secret serveur configuré");
+  const secret = process.env.APP_SECRET ? base : createHmac("sha256", "cv-woo-trial").update(base).digest("hex");
   return createHmac("sha256", secret).update("trial-used").digest("base64url");
 }
 
