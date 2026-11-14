@@ -17,15 +17,15 @@
   "hero": {
     "badge": "Free beta",
     "title": "Your resume, tailored to every job. Nothing made up.",
-    "subtitle": "Upload your resume, paste a job posting: CV Woo spots what the recruiter wants, highlights your real experience and produces a resume ready for applicant tracking systems.",
+    "subtitle": "Upload your resume and paste the job posting: CV Woo tailors it with AI by highlighting your real experience, checks its compatibility with applicant tracking systems (ATS) and helps you stand out to recruiters.",
     "cta": "Tailor my resume for free",
     "secondary": "See how it works",
     "note": "1 free tailoring without an account, then 5 a month with a free account. No credit card."
   },
   "preview": {
-    "title": "Front-end developer — Lyon",
+    "title": "Job: front-end developer in Lyon",
     "score": "Match",
-    "disclaimer": "Internal estimate, not an official ATS score.",
+    "disclaimer": "Based on evidence found in the resume.",
     "present": "In the resume",
     "weak": "Not demonstrated",
     "missing": "Missing",
@@ -84,7 +84,7 @@
     "q3": "What happens to my resume and my data?",
     "a3": "Your file is never saved on our servers: it’s read in memory, analyzed, then forgotten. To perform the analysis, its text is sent to our artificial intelligence provider (Anthropic). If you create an account, we only keep your email and your number of tailorings this month.",
     "q4": "Does the score guarantee an interview?",
-    "a4": "No. It's an internal estimate of how well you match the job, not an official ATS score."
+    "a4": "No, no tool can guarantee an interview. The score measures how well your resume matches the job, based on evidence found in your resume, and shows you what to strengthen."
   },
   "finalCta": {
     "title": "Ready to send a resume that really fits?",
@@ -222,7 +222,7 @@
     },
     "analysis": {
       "for": "For the role",
-      "disclaimer": "Internal match estimate, not an official ATS score.",
+      "disclaimer": "Score based on evidence found in your resume.",
       "skills": "Skills in the posting",
       "present": "Present",
       "weak": "Not demonstrated",
