@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Download, LoaderCircle } from "lucide-react";
+import { Check, Download, LoaderCircle } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { ParsedResume } from "@/lib/cv/types";
 import { ApiError, exportResume } from "./api";
-import { TEMPLATES, type TemplateId } from "@/lib/export/templates";
+import { applyTemplate, TEMPLATES, type TemplateId } from "@/lib/export/templates";
+import { TemplateThumbnail } from "./template-thumbnail";
 
 type Files = { pdf: Blob | null; docx: Blob | null };
 
@@ -104,21 +105,40 @@ export function PreviewStep({
         </div>
 
         <p className="mt-5 text-sm font-medium">{t("templates.title")}</p>
-        <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label={t("templates.title")}>
-          {TEMPLATES.map((id) => (
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={template === id}
-              onClick={() => setTemplate(id)}
-              className={`min-h-10 rounded-full border px-4 text-sm ${
-                template === id ? "border-primary bg-accent font-medium text-accent-foreground" : "border-border hover:bg-muted"
-              }`}
-            >
-              {t(`templates.${id}`)}
-            </button>
-          ))}
+        {/* Miniatures des modèles : « Votre design » utilise les couleurs et la disposition du CV importé */}
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4" role="radiogroup" aria-label={t("templates.title")}>
+          {TEMPLATES.map((id) => {
+            const selected = template === id;
+            const style = applyTemplate(resume.style, id);
+            return (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => setTemplate(id)}
+                className={`group relative flex flex-col rounded-lg border p-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-ring ${
+                  selected ? "border-primary bg-accent/50 ring-2 ring-primary/30" : "border-border hover:border-primary/40 hover:bg-muted/50"
+                }`}
+              >
+                {selected && (
+                  <span className="absolute top-3 right-3 z-10 grid size-6 place-items-center rounded-full bg-primary text-primary-foreground shadow-card">
+                    <Check className="size-3.5" strokeWidth={2.5} aria-hidden />
+                  </span>
+                )}
+                <div className="mx-auto w-full max-w-[150px]">
+                  <TemplateThumbnail style={style} />
+                </div>
+                <span className="mt-2 text-sm font-medium">{t(`templates.${id}`)}</span>
+                <span className="text-xs leading-snug text-muted-foreground">{t(`templateDesc.${id}`)}</span>
+                {style.layout === "single" && (
+                  <span className="mt-1.5 inline-flex w-fit rounded-full bg-accent px-2 py-0.5 text-[11px] font-medium text-accent-foreground">
+                    {t("atsSafe")}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
         {template === "original" && resume.style.bodyFont && (
           <p className="mt-2 text-xs text-muted-foreground">{t("font", { font: resume.style.bodyFont })}</p>

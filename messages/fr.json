@@ -270,7 +270,14 @@
         "minimaliste": "Minimaliste"
       },
       "templateHint": "Modèle une colonne, le plus sûr pour les logiciels de recrutement.",
-      "font": "Police reprise : {font}"
+      "font": "Police reprise : {font}",
+      "templateDesc": {
+        "original": "Vos couleurs, votre police et votre disposition",
+        "classique": "Sobre, police avec empattement, titres soulignés",
+        "moderne": "Épuré, avec la couleur de votre CV",
+        "minimaliste": "Noir et blanc, sans fioritures"
+      },
+      "atsSafe": "Une colonne · idéal ATS"
     },
     "errors": {
       "file_too_large": "Le fichier dépasse 5 Mo.",

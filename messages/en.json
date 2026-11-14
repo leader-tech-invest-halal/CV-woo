@@ -270,7 +270,14 @@
         "minimaliste": "Minimal"
       },
       "templateHint": "One-column template, the safest for recruiting software.",
-      "font": "Font used: {font}"
+      "font": "Font used: {font}",
+      "templateDesc": {
+        "original": "Your colors, font and layout",
+        "classique": "Sober, serif font, underlined headings",
+        "moderne": "Clean, with your resume's color",
+        "minimaliste": "Black and white, no frills"
+      },
+      "atsSafe": "One column · ATS-friendly"
     },
     "errors": {
       "file_too_large": "The file is larger than 5 MB.",
