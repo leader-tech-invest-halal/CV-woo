@@ -1,10 +1,12 @@
 import "server-only";
 import React from "react";
 import { Document, Font, Page, StyleSheet, Text, View, renderToBuffer } from "@react-pdf/renderer";
+import { PDFDocument } from "pdf-lib";
 import path from "node:path";
 import type { Block, ResumeStructure, ResumeStyle } from "@/lib/cv/types";
 import { FONTS, matchFont, type FontKey } from "@/lib/fonts";
 import { pdfSafe, stripBullet, textResolver } from "@/lib/cv/compose";
+import { DENSITIES, type Density, type LayoutMode } from "@/lib/export/layout";
 
 // Génère le PDF du CV optimisé en reprenant le style du CV d'origine :
 // couleurs, police (avec ou sans empattement), disposition en une ou deux colonnes,
@@ -35,8 +37,12 @@ function fontFamily(name: string | null, fallback: "sans" | "serif"): string {
 }
 
 type Props = { blocks: Block[]; structure: ResumeStructure; style: ResumeStyle; accepted: Record<string, string> };
+type Section = ResumeStructure["sections"][number];
+type Entry = Section["entries"][number];
 
-function CvDocument({ blocks, structure, style, accepted }: Props) {
+const SIDE_WIDTH = "32%";
+
+function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Density }) {
   const t = (id: string | null | undefined) => pdfSafe(textResolver(blocks, accepted)(id));
   const regular = fontFamily(style.bodyFont, style.font);
   const bold = fontFamily(style.headingFont ?? style.bodyFont, style.font);
@@ -45,95 +51,120 @@ function CvDocument({ blocks, structure, style, accepted }: Props) {
   const sideText = sidebarDark ? "#ffffff" : style.textColor;
 
   const s = StyleSheet.create({
-    page: { fontFamily: regular, fontSize: 10, color: style.textColor, lineHeight: 1.4, flexDirection: "row" },
-    main: { flex: 1, paddingVertical: 36, paddingHorizontal: 36 },
-    side: {
-      width: "32%",
-      paddingVertical: 36,
-      paddingHorizontal: 20,
-      backgroundColor: style.sidebarColor ?? undefined,
-      color: sideText,
+    // Marges haute et basse sur la page : elles se répètent donc sur chaque page
+    page: {
+      fontFamily: regular,
+      fontSize: d.body,
+      color: style.textColor,
+      lineHeight: d.lineHeight,
+      flexDirection: "row",
+      paddingTop: d.margin,
+      paddingBottom: d.margin,
     },
-    name: { fontFamily: bold, fontWeight: 700, fontSize: 22, lineHeight: 1.2, color: style.headingColor, textAlign: style.headerAlign },
-    headline: { fontSize: 12, lineHeight: 1.3, color: style.accentColor, marginTop: 4, textAlign: style.headerAlign },
-    contacts: { fontSize: 9, marginTop: 6, textAlign: style.headerAlign },
+    main: { flex: 1, paddingHorizontal: d.margin },
+    side: { width: SIDE_WIDTH, paddingHorizontal: Math.max(16, d.margin * 0.6), color: sideText },
+    // Fond de la colonne latérale, répété sur toutes les pages et jusqu'aux bords
+    sideBackground: {
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      width: SIDE_WIDTH,
+      backgroundColor: style.sidebarColor ?? undefined,
+      ...(style.layout === "sidebar-right" ? { right: 0 } : { left: 0 }),
+    },
+    name: { fontFamily: bold, fontWeight: 700, fontSize: d.name, lineHeight: 1.15, color: style.headingColor, textAlign: style.headerAlign },
+    headline: { fontSize: d.headline, lineHeight: 1.25, color: style.accentColor, marginTop: 3, textAlign: style.headerAlign },
+    contacts: { fontSize: d.small, marginTop: 4, textAlign: style.headerAlign },
     heading: {
-      fontFamily: bold, fontWeight: 700,
-      fontSize: 11.5,
-      marginTop: 14,
-      marginBottom: 6,
-      paddingBottom: 2,
+      fontFamily: bold,
+      fontWeight: 700,
+      fontSize: d.heading,
+      lineHeight: 1.2,
+      marginTop: d.headingBefore,
+      marginBottom: d.headingAfter,
+      paddingBottom: style.headingRule ? 2 : 0,
       textTransform: style.headingCase === "upper" ? "uppercase" : "none",
       letterSpacing: style.headingCase === "upper" ? 0.6 : 0,
       borderBottomWidth: style.headingRule ? 1 : 0,
       borderBottomColor: style.accentColor,
     },
-    entry: { marginBottom: 6 },
     entryTitle: { fontFamily: regular, fontWeight: 700 },
-    entryMeta: { fontSize: 9, opacity: 0.8 },
-    bullet: { flexDirection: "row", marginTop: 1.5 },
+    entryMeta: { fontSize: d.small, opacity: 0.8 },
+    bullet: { flexDirection: "row", marginTop: d.bulletGap },
     dot: { width: 10 },
     bulletText: { flex: 1 },
   });
 
-  const Section = ({ section, onSide }: { section: ResumeStructure["sections"][number]; onSide: boolean }) => {
+  const SectionView = ({ section, onSide }: { section: Section; onSide: boolean }) => {
     const compact = onSide || section.kind === "skills" || section.kind === "languages";
-    const entry = (e: ResumeStructure["sections"][number]["entries"][number], i: number) => (
-      <View key={i} style={s.entry} wrap={false}>
-        {e.headerBlockIds.map((id, j) => (
-          <Text key={id} style={j === 0 && !compact ? s.entryTitle : j === 0 ? {} : s.entryMeta}>
-            {t(id)}
-          </Text>
-        ))}
-        {e.bulletBlockIds.map((id) => {
-          const text = t(id);
-          return compact || e.headerBlockIds.length === 0 ? (
-            <Text key={id} style={{ marginTop: 1.5 }}>
-              {stripBullet(text)}
-            </Text>
-          ) : (
-            <View key={id} style={s.bullet}>
-              <Text style={s.dot}>•</Text>
-              <Text style={s.bulletText}>{stripBullet(text)}</Text>
-            </View>
-          );
-        })}
-      </View>
-    );
-    const [first, ...rest] = section.entries;
-    return (
-      <View wrap>
-        {/* Le titre reste toujours sur la même page que le premier élément de la rubrique */}
-        <View wrap={false}>
-          <Text
-            style={[
-              s.heading,
-              { color: onSide && sidebarDark ? "#ffffff" : style.headingColor },
-              onSide && sidebarDark ? { borderBottomColor: "#ffffff" } : {},
-            ]}
-          >
-            {section.headingBlockId ? t(section.headingBlockId) : pdfSafe(section.heading)}
-          </Text>
-          {first && entry(first, 0)}
+
+    const header = (e: Entry) =>
+      e.headerBlockIds.map((id, j) => (
+        <Text key={id} style={j === 0 && !compact ? s.entryTitle : j === 0 ? {} : s.entryMeta}>
+          {t(id)}
+        </Text>
+      ));
+
+    // Un point n'est jamais coupé entre deux pages
+    const line = (e: Entry, id: string) => {
+      const text = stripBullet(t(id));
+      return compact || e.headerBlockIds.length === 0 ? (
+        <Text key={id} style={{ marginTop: d.bulletGap }} wrap={false}>
+          {text}
+        </Text>
+      ) : (
+        <View key={id} style={s.bullet} wrap={false}>
+          <Text style={s.dot}>•</Text>
+          <Text style={s.bulletText}>{text}</Text>
         </View>
-        {rest.map((e, i) => entry(e, i + 1))}
-      </View>
+      );
+    };
+
+    // Une expérience peut se poursuivre sur la page suivante entre deux points,
+    // mais son intitulé reste toujours avec son premier point.
+    const entry = (e: Entry, i: number, withHeading: boolean) => {
+      const [firstLine, ...otherLines] = e.bulletBlockIds;
+      return (
+        <View key={i} style={{ marginTop: i === 0 ? 0 : d.entryGap }}>
+          <View wrap={false}>
+            {withHeading && headingText}
+            {header(e)}
+            {firstLine && line(e, firstLine)}
+          </View>
+          {otherLines.map((id) => line(e, id))}
+        </View>
+      );
+    };
+
+    const headingText = (
+      <Text
+        style={[
+          s.heading,
+          { color: onSide && sidebarDark ? "#ffffff" : style.headingColor },
+          onSide && sidebarDark ? { borderBottomColor: "#ffffff" } : {},
+        ]}
+      >
+        {section.headingBlockId ? t(section.headingBlockId) : pdfSafe(section.heading)}
+      </Text>
     );
+
+    if (section.entries.length === 0) return <View wrap={false}>{headingText}</View>;
+    // Le titre de la rubrique reste toujours sur la même page que le début du premier élément
+    return <View>{section.entries.map((e, i) => entry(e, i, i === 0))}</View>;
   };
 
   const mainSections = structure.sections.filter((x) => !sidebar || x.placement === "main");
   const sideSections = structure.sections.filter((x) => sidebar && x.placement === "sidebar");
   const contacts = structure.contactBlockIds.map(t).filter(Boolean);
+  const fullName = [structure.nameBlockId, ...(structure.nameExtraBlockIds ?? [])].map(t).join(" ");
 
   const header = (
     <View>
-      {structure.nameBlockId && (
-        <Text style={s.name}>{[structure.nameBlockId, ...(structure.nameExtraBlockIds ?? [])].map(t).join(" ")}</Text>
-      )}
+      {structure.nameBlockId && <Text style={s.name}>{fullName}</Text>}
       {structure.headlineBlockId && <Text style={s.headline}>{t(structure.headlineBlockId)}</Text>}
       {!sidebar && contacts.length > 0 && <Text style={s.contacts}>{contacts.join("  ·  ")}</Text>}
       {structure.summaryBlockIds.map((id) => (
-        <Text key={id} style={{ marginTop: 8 }}>
+        <Text key={id} style={{ marginTop: d.summaryGap }}>
           {t(id)}
         </Text>
       ))}
@@ -141,31 +172,38 @@ function CvDocument({ blocks, structure, style, accepted }: Props) {
   );
 
   const side = sidebar ? (
-    <View style={s.side} fixed={false}>
+    <View style={s.side}>
       {structure.contactHeadingBlockId && contacts.length > 0 && (
-        <Text style={[s.heading, { color: sidebarDark ? "#ffffff" : style.headingColor, marginTop: 0 }, sidebarDark ? { borderBottomColor: "#ffffff" } : {}]}>
+        <Text
+          style={[
+            s.heading,
+            { color: sidebarDark ? "#ffffff" : style.headingColor, marginTop: 0 },
+            sidebarDark ? { borderBottomColor: "#ffffff" } : {},
+          ]}
+        >
           {t(structure.contactHeadingBlockId)}
         </Text>
       )}
       {contacts.map((c, i) => (
-        <Text key={i} style={{ fontSize: 9, marginBottom: 3 }}>
+        <Text key={i} style={{ fontSize: d.small, marginBottom: 2 }}>
           {c}
         </Text>
       ))}
       {sideSections.map((x, i) => (
-        <Section key={i} section={x} onSide />
+        <SectionView key={i} section={x} onSide />
       ))}
     </View>
   ) : null;
 
   return (
-    <Document title={[structure.nameBlockId, ...(structure.nameExtraBlockIds ?? [])].map(t).join(" ") || "CV"} creator="CV Woo" producer="CV Woo">
+    <Document title={fullName || "CV"} creator="CV Woo" producer="CV Woo">
       <Page size="A4" style={s.page}>
+        {sidebar && style.sidebarColor && <View fixed style={s.sideBackground} />}
         {style.layout === "sidebar-left" && side}
         <View style={s.main}>
           {header}
           {mainSections.map((x, i) => (
-            <Section key={i} section={x} onSide={false} />
+            <SectionView key={i} section={x} onSide={false} />
           ))}
         </View>
         {style.layout === "sidebar-right" && side}
@@ -180,6 +218,26 @@ function luminance(hex: string): number {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 }
 
-export async function renderResumePdf(props: Props): Promise<Uint8Array> {
-  return new Uint8Array(await renderToBuffer(<CvDocument {...props} />));
+export type RenderedPdf = { bytes: Uint8Array; pages: number; level: number };
+
+async function renderAt(props: Props, level: number): Promise<RenderedPdf> {
+  const bytes = new Uint8Array(await renderToBuffer(<CvDocument {...props} d={DENSITIES[level]} />));
+  const pages = (await PDFDocument.load(bytes)).getPageCount();
+  return { bytes, pages, level };
+}
+
+/**
+ * Mode « detailed » : mise en page aérée, sur autant de pages que nécessaire.
+ * Mode « compact » : on resserre la mise en page, étape par étape, jusqu'à tenir sur une page.
+ * Si le CV ne tient pas sur une page même au réglage le plus serré, on garde la version aérée :
+ * mieux vaut deux pages lisibles qu'une page illisible.
+ */
+export async function renderResumePdf(props: Props, mode: LayoutMode = "compact"): Promise<RenderedPdf> {
+  const airy = await renderAt(props, 0);
+  if (mode === "detailed" || airy.pages <= 1) return airy;
+  for (let level = 1; level < DENSITIES.length; level++) {
+    const attempt = await renderAt(props, level);
+    if (attempt.pages <= 1) return attempt;
+  }
+  return airy;
 }

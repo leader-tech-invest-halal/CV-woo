@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Download, LoaderCircle } from "lucide-react";
+import { Check, Download, FileText, LoaderCircle } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { ParsedResume } from "@/lib/cv/types";
 import { ApiError, exportResume } from "./api";
 import { applyTemplate, TEMPLATES, type TemplateId } from "@/lib/export/templates";
+import { LAYOUT_MODES, type LayoutMode } from "@/lib/export/layout";
 import { TemplateThumbnail } from "./template-thumbnail";
 
 type Files = { pdf: Blob | null; docx: Blob | null };
@@ -30,6 +31,8 @@ export function PreviewStep({
   const t = useTranslations("adapt.preview");
   const [tab, setTab] = useState<"pdf" | "docx">(resume.format === "docx" ? "docx" : "pdf");
   const [template, setTemplate] = useState<TemplateId>("original");
+  const [layout, setLayout] = useState<LayoutMode>("compact");
+  const [pages, setPages] = useState<number | null>(null);
   const [files, setFiles] = useState<Files>({ pdf: null, docx: null });
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const docxRef = useRef<HTMLDivElement>(null);
@@ -39,21 +42,23 @@ export function PreviewStep({
     let cancelled = false;
     onError(null);
     setFiles({ pdf: null, docx: null });
+    setPages(null);
     Promise.all([
-      exportResume("pdf", file, resume, accepted, template),
-      exportResume("docx", file, resume, accepted, template),
+      exportResume("pdf", file, resume, accepted, template, layout),
+      exportResume("docx", file, resume, accepted, template, layout),
     ])
       .then(([pdf, docx]) => {
         if (cancelled) return;
-        setFiles({ pdf, docx });
-        setPdfUrl(URL.createObjectURL(pdf));
+        setFiles({ pdf: pdf.blob, docx: docx.blob });
+        setPages(pdf.pages);
+        setPdfUrl(URL.createObjectURL(pdf.blob));
       })
       .catch((e) => !cancelled && onError(e instanceof ApiError ? e.code : "server_error"));
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file, resume, accepted, template]);
+  }, [file, resume, accepted, template, layout]);
 
   useEffect(() => () => void (pdfUrl && URL.revokeObjectURL(pdfUrl)), [pdfUrl]);
 
@@ -143,6 +148,50 @@ export function PreviewStep({
         {template === "original" && resume.style.bodyFont && (
           <p className="mt-2 text-xs text-muted-foreground">{t("font", { font: resume.style.bodyFont })}</p>
         )}
+
+        {/* Mise en page : une page si possible, ou version aérée sur deux pages */}
+        <p className="mt-5 text-sm font-medium">{t("layout.title")}</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label={t("layout.title")}>
+          {LAYOUT_MODES.map((id) => {
+            const selected = layout === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => setLayout(id)}
+                className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-ring ${
+                  selected ? "border-primary bg-accent/50 ring-2 ring-primary/30" : "border-border hover:border-primary/40 hover:bg-muted/50"
+                }`}
+              >
+                <span
+                  className={`mt-0.5 grid size-4 shrink-0 place-items-center rounded-full border ${
+                    selected ? "border-primary bg-primary" : "border-muted-foreground/50"
+                  }`}
+                  aria-hidden
+                >
+                  {selected && <span className="size-1.5 rounded-full bg-primary-foreground" />}
+                </span>
+                <span>
+                  <span className="block text-sm font-medium">{t(`layout.${id}`)}</span>
+                  <span className="block text-xs leading-snug text-muted-foreground">{t(`layout.${id}Desc`)}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-3 flex items-start gap-2 text-sm" aria-live="polite">
+          <FileText className="mt-0.5 size-4 shrink-0 text-primary" strokeWidth={1.75} aria-hidden />
+          <span>
+            {pages === null
+              ? t("layout.counting")
+              : t("layout.pages", { count: pages })}
+            {pages !== null && pages > 1 && layout === "compact" && (
+              <span className="block text-xs text-muted-foreground">{t("layout.tooLong")}</span>
+            )}
+          </span>
+        </p>
 
         <div role="tablist" className="mt-5 inline-flex gap-1 rounded-lg bg-muted p-1">
           {(["pdf", "docx"] as const).map((v) => (

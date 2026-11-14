@@ -306,7 +306,17 @@
         "moderne": "Clean, with your resume's color",
         "minimaliste": "Black and white, no frills"
       },
-      "atsSafe": "One column · ATS-friendly"
+      "atsSafe": "One column · ATS-friendly",
+      "layout": {
+        "title": "Layout",
+        "compact": "Compact",
+        "compactDesc": "One page when the content allows it, by tightening the spacing.",
+        "detailed": "Detailed",
+        "detailedDesc": "More spacious, on two pages if your background needs it.",
+        "counting": "Counting pages…",
+        "pages": "Your resume is {count, plural, one {# page} other {# pages}} long (PDF).",
+        "tooLong": "Your background doesn't fit legibly on one page: it stays on several pages, with nothing removed."
+      }
     },
     "errors": {
       "file_too_large": "The file is larger than 5 MB.",

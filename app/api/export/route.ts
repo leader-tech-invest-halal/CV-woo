@@ -6,6 +6,7 @@ import { detectFormat, UserFacingError } from "@/lib/cv/validate-file";
 import { errorResponse, rateLimit } from "@/lib/http";
 import type { ParsedResume } from "@/lib/cv/types";
 import { applyTemplate, TEMPLATES } from "@/lib/export/templates";
+import { LAYOUT_MODES } from "@/lib/export/layout";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -13,6 +14,7 @@ export const maxDuration = 60;
 const Payload = z.object({
   format: z.enum(["pdf", "docx"]),
   template: z.enum(TEMPLATES).default("original"),
+  layout: z.enum(LAYOUT_MODES).default("compact"),
   resume: z.object({
     format: z.enum(["pdf", "docx"]),
     fileName: z.string().max(300),
@@ -34,7 +36,7 @@ export async function POST(request: Request) {
     const form = await request.formData();
     const parsed = Payload.safeParse(JSON.parse(String(form.get("payload") ?? "null")));
     if (!parsed.success) throw new UserFacingError("invalid_request");
-    const { format, accepted, template } = parsed.data;
+    const { format, accepted, template, layout } = parsed.data;
     const original = parsed.data.resume as ParsedResume;
     const resume = { ...original, style: applyTemplate(original.style, template) };
 
@@ -45,6 +47,7 @@ export async function POST(request: Request) {
     const base = resume.fileName.replace(/\.(pdf|docx)$/i, "") || "cv";
     let body: Uint8Array;
     let type: string;
+    let pages: number | null = null;
 
     // Word d'origine + design d'origine : on modifie le fichier lui-même (mise en page identique)
     if (format === "docx" && resume.format === "docx" && template === "original") {
@@ -54,12 +57,17 @@ export async function POST(request: Request) {
       if (detectFormat(bytes) !== "docx") throw new UserFacingError("unsupported_file");
       body = await rewriteDocx(bytes, safeAccepted);
       type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    } else if (format === "docx") {
-      body = await renderResumeDocx({ ...resume, accepted: safeAccepted });
-      type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     } else {
-      body = await renderResumePdf({ ...resume, accepted: safeAccepted });
-      type = "application/pdf";
+      // Le PDF décide du réglage de mise en page ; le Word reprend exactement le même
+      const pdf = await renderResumePdf({ ...resume, accepted: safeAccepted }, layout);
+      pages = pdf.pages;
+      if (format === "docx") {
+        body = await renderResumeDocx({ ...resume, accepted: safeAccepted }, pdf.level);
+        type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      } else {
+        body = pdf.bytes;
+        type = "application/pdf";
+      }
     }
 
     const filename = `${base}-cv-woo.${format}`;
@@ -68,6 +76,7 @@ export async function POST(request: Request) {
         "content-type": type,
         "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
         "cache-control": "no-store",
+        ...(pages ? { "x-cv-pages": String(pages) } : {}),
       },
     });
   } catch (error) {

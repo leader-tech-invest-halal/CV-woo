@@ -306,7 +306,17 @@
         "moderne": "Épuré, avec la couleur de votre CV",
         "minimaliste": "Noir et blanc, sans fioritures"
       },
-      "atsSafe": "Une colonne · idéal ATS"
+      "atsSafe": "Une colonne · idéal ATS",
+      "layout": {
+        "title": "Mise en page",
+        "compact": "Compact",
+        "compactDesc": "Sur une page quand le contenu le permet, en resserrant les espaces.",
+        "detailed": "Détaillé",
+        "detailedDesc": "Plus aéré, sur deux pages si votre parcours le nécessite.",
+        "counting": "Calcul du nombre de pages…",
+        "pages": "Votre CV fait {count, plural, one {# page} other {# pages}} (PDF).",
+        "tooLong": "Votre parcours ne tient pas lisiblement sur une page : il reste sur plusieurs pages, sans rien supprimer."
+      }
     },
     "errors": {
       "file_too_large": "Le fichier dépasse 5 Mo.",

@@ -58,9 +58,12 @@ export async function exportResume(
   resume: ParsedResume,
   accepted: Record<string, string>,
   template = "original",
-): Promise<Blob> {
+  layout: "compact" | "detailed" = "compact",
+): Promise<{ blob: Blob; pages: number | null }> {
   const form = new FormData();
-  form.append("payload", JSON.stringify({ format, template, resume, accepted }));
+  form.append("payload", JSON.stringify({ format, template, layout, resume, accepted }));
   if (resume.format === "docx") form.append("file", file);
-  return (await request("/api/export", { method: "POST", body: form })).blob();
+  const res = await request("/api/export", { method: "POST", body: form });
+  const pages = Number(res.headers.get("x-cv-pages")) || null;
+  return { blob: await res.blob(), pages };
 }
