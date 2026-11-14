@@ -4,6 +4,7 @@ import { Logo } from "@/components/logo";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { buttonClass } from "@/components/ui/button";
 import { UserMenu } from "@/components/auth/user-menu";
+import { MobileMenu } from "./mobile-menu";
 
 export function SiteHeader() {
   const t = useTranslations("nav");
@@ -24,20 +25,21 @@ export function SiteHeader() {
             <Link
               key={l.href}
               href={l.href}
-              className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="inline-flex min-h-11 items-center rounded-md px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               {l.label}
             </Link>
           ))}
         </nav>
         <div className="flex items-center gap-1">
-          <div className="hidden sm:flex sm:items-center">
+          <div className="hidden lg:flex lg:items-center">
             <UserMenu compact />
             <LocaleSwitcher />
           </div>
-          <Link href="/adapt" className={buttonClass("outline", "md")}>
+          <Link href="/adapt" className={buttonClass("outline", "md", "px-3 sm:px-4")}>
             {t("cta")}
           </Link>
+          <MobileMenu links={links} />
         </div>
       </div>
     </header>

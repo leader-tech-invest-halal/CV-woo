@@ -11,7 +11,8 @@
     "cta": "Try it free",
     "openMenu": "Open menu",
     "language": "Français",
-    "ats": "ATS checker"
+    "ats": "ATS checker",
+    "closeMenu": "Close menu"
   },
   "hero": {
     "badge": "Free beta",
@@ -64,7 +65,7 @@
     },
     "privacy": {
       "title": "Your resume isn't kept",
-      "text": "Your file is read, analyzed then forgotten: it is never saved. The site and database are hosted in Paris. The analysis is done by the Claude AI (Anthropic)."
+      "text": "Your file is read, analyzed then forgotten: it is never saved. The site and database are hosted in Paris."
     }
   },
   "honesty": {
@@ -81,7 +82,7 @@
     "q2": "Can CV Woo invent experience?",
     "a2": "No. The model is forbidden from adding information, and an automatic check flags any number, date, degree or employer that isn't in your original resume.",
     "q3": "What happens to my resume and my data?",
-    "a3": "Your file is never saved on our servers: it's read in memory, analyzed, then forgotten. For the analysis, its text is sent to Anthropic, the provider of the Claude AI. If you create an account, we only keep your email and your number of tailorings this month.",
+    "a3": "Your file is never saved on our servers: it’s read in memory, analyzed, then forgotten. To perform the analysis, its text is sent to our artificial intelligence provider (Anthropic). If you create an account, we only keep your email and your number of tailorings this month.",
     "q4": "Does the score guarantee an interview?",
     "a4": "No. It's an internal estimate of how well you match the job, not an official ATS score."
   },
@@ -166,7 +167,7 @@
     },
     "resume": {
       "title": "Upload your resume",
-      "subtitle": "PDF or Word, 5 MB max. Your file isn't kept; its text is analyzed by the Claude AI (Anthropic).",
+      "subtitle": "PDF or Word, 5 MB max. Your file isn’t kept.",
       "drop": "Drop your resume here",
       "or": "or",
       "browse": "Choose a file",

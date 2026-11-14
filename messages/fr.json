@@ -11,7 +11,8 @@
     "cta": "Essayer gratuitement",
     "openMenu": "Ouvrir le menu",
     "language": "English",
-    "ats": "Vérificateur ATS"
+    "ats": "Vérificateur ATS",
+    "closeMenu": "Fermer le menu"
   },
   "hero": {
     "badge": "Bêta gratuite",
@@ -64,7 +65,7 @@
     },
     "privacy": {
       "title": "Votre CV n'est pas conservé",
-      "text": "Votre fichier est lu, analysé puis oublié : il n'est jamais enregistré. Le site et la base de données sont hébergés à Paris. L'analyse est faite par l'IA Claude (Anthropic)."
+      "text": "Votre fichier est lu, analysé puis oublié : il n’est jamais enregistré. Le site et la base de données sont hébergés à Paris."
     }
   },
   "honesty": {
@@ -81,7 +82,7 @@
     "q2": "CV Woo peut-il inventer des expériences ?",
     "a2": "Non. Le modèle a l'interdiction d'ajouter des informations, et une vérification automatique signale tout chiffre, date, diplôme ou employeur absent de votre CV d'origine.",
     "q3": "Que devient mon CV et mes données ?",
-    "a3": "Votre fichier n'est jamais enregistré sur nos serveurs : il est lu en mémoire, analysé, puis oublié. Pour l'analyse, son texte est transmis à Anthropic, le fournisseur de l'IA Claude. Si vous créez un compte, nous conservons uniquement votre e-mail et le nombre d'adaptations du mois.",
+    "a3": "Votre fichier n’est jamais enregistré sur nos serveurs : il est lu en mémoire, analysé, puis oublié. Pour réaliser l’analyse, son texte est transmis à notre prestataire d’intelligence artificielle (Anthropic). Si vous créez un compte, nous conservons uniquement votre e-mail et le nombre d’adaptations du mois.",
     "q4": "Le score garantit-il un entretien ?",
     "a4": "Non. C'est une estimation interne de compatibilité avec l'offre, pas un score ATS officiel."
   },
@@ -166,7 +167,7 @@
     },
     "resume": {
       "title": "Importez votre CV",
-      "subtitle": "PDF ou Word, 5 Mo maximum. Votre fichier n'est pas conservé ; son texte est analysé par l'IA Claude (Anthropic).",
+      "subtitle": "PDF ou Word, 5 Mo maximum. Votre fichier n’est pas conservé.",
       "drop": "Glissez votre CV ici",
       "or": "ou",
       "browse": "Choisir un fichier",

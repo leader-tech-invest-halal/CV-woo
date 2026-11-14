@@ -163,7 +163,7 @@ export function AuthForm({ initialMode = "signup", onSuccess }: { initialMode?: 
         <label className="text-sm font-medium" htmlFor="auth-password">
           {t("password")}
         </label>
-        <button type="button" className="text-xs text-muted-foreground underline" onClick={() => setShowPassword((s) => !s)}>
+        <button type="button" className="-my-3 -mr-2 min-h-11 px-2 text-xs text-muted-foreground underline" onClick={() => setShowPassword((s) => !s)}>
           {showPassword ? t("hide") : t("show")}
         </button>
       </div>
