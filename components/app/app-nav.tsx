@@ -12,7 +12,7 @@ const ITEMS: Item[] = [
   { href: "/adapt", key: "adapt", icon: Sparkles, ready: true },
   { href: "/resumes", key: "resumes", icon: Files, ready: false },
   { href: "/history", key: "history", icon: History, ready: false },
-  { href: "/profile", key: "profile", icon: User, ready: false },
+  { href: "/profile", key: "profile", icon: User, ready: true },
 ];
 
 /** Barre latérale (≥ 768 px). */

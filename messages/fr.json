@@ -92,7 +92,9 @@
   },
   "footer": {
     "tagline": "Adaptez votre CV à chaque offre, sans rien inventer.",
-    "rights": "Tous droits réservés."
+    "rights": "Tous droits réservés.",
+    "legal": "Mentions légales",
+    "privacy": "Confidentialité"
   },
   "pricing": {
     "title": "Tarifs",
@@ -509,7 +511,7 @@
     "signup": "Créer mon compte",
     "login": "Se connecter",
     "loading": "Un instant…",
-    "consent": "En créant un compte, vous acceptez que votre e-mail soit utilisé pour gérer votre compte CV Woo. Pas de publicité, pas de revente.",
+    "consent": "En créant un compte, vous acceptez que votre e-mail soit utilisé pour gérer votre compte CV Woo, conformément à notre <privacy>politique de confidentialité</privacy>. Pas de publicité, pas de revente.",
     "checkEmailTitle": "Confirmez votre adresse e-mail",
     "checkEmailText": "Nous avons envoyé un lien à {email}. Cliquez dessus (pensez aux spams), puis revenez sur cette page : elle se mettra à jour toute seule.",
     "resend": "Je l'ai confirmé",
@@ -532,6 +534,72 @@
       "rate_limit": "Trop de tentatives. Patientez quelques minutes.",
       "signup_disabled": "Les inscriptions sont fermées pour le moment.",
       "unknown": "Une erreur est survenue. Réessayez."
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "guest": "Connectez-vous pour voir votre compte et gérer vos données.",
+    "login": "Se connecter",
+    "account": "Mon compte",
+    "email": "Adresse e-mail",
+    "usage": "Adaptations ce mois-ci",
+    "usageValue": "{used} sur {total}",
+    "data": "Mes données",
+    "dataText": "Vos CV ne sont jamais conservés : ils sont analysés puis oubliés. Nous gardons seulement votre e-mail, votre mot de passe chiffré, votre langue et le nombre d’adaptations réalisées.",
+    "privacyLink": "Lire la politique de confidentialité",
+    "delete": {
+      "title": "Supprimer mon compte",
+      "text": "Votre compte, votre e-mail et votre historique d’utilisation seront effacés définitivement. Cette action est irréversible.",
+      "button": "Supprimer mon compte",
+      "confirmWord": "SUPPRIMER",
+      "confirmLabel": "Pour confirmer, tapez {word} ci-dessous :",
+      "confirm": "Supprimer définitivement",
+      "cancel": "Annuler",
+      "error": "La suppression a échoué. Réessayez dans un instant.",
+      "done": "Votre compte a été supprimé. Toutes vos données ont été effacées.",
+      "home": "Retour à l’accueil"
+    }
+  },
+  "legal": {
+    "updated": "Dernière mise à jour : {date}",
+    "toComplete": "à compléter",
+    "notice": {
+      "title": "Mentions légales",
+      "publisherTitle": "Éditeur du site",
+      "publisher": "CV Woo est un projet édité à titre personnel par {name}, dans le cadre de ses études à l’Université Paris 8. Contact : {email}.",
+      "directorTitle": "Directeur de la publication",
+      "director": "{name}.",
+      "hostTitle": "Hébergement",
+      "host": "Le site est hébergé par Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis (vercel.com). Les traitements sont exécutés dans la région de Paris (France).",
+      "dbTitle": "Base de données des comptes",
+      "db": "Les comptes sont gérés par Supabase Inc. (supabase.com), avec des données stockées dans la région de Paris (France).",
+      "ipTitle": "Propriété intellectuelle",
+      "ip": "Les textes, le logo et l’interface de CV Woo sont protégés. Vous restez seul propriétaire de votre CV et des contenus que vous importez.",
+      "betaTitle": "Service en bêta",
+      "beta": "CV Woo est en bêta gratuite. Les suggestions sont générées automatiquement : relisez toujours votre CV avant de l’envoyer. L’éditeur ne garantit pas l’obtention d’un entretien ou d’un emploi."
+    },
+    "privacy": {
+      "title": "Politique de confidentialité",
+      "intro": "Cette page explique simplement quelles données CV Woo utilise, pourquoi, et comment exercer vos droits (RGPD).",
+      "controllerTitle": "Responsable du traitement",
+      "controller": "{name} — contact : {email}.",
+      "cvTitle": "Votre CV et l’offre d’emploi",
+      "cv1": "Votre fichier est lu en mémoire sur nos serveurs (région de Paris), le temps de l’analyse, puis oublié : il n’est enregistré ni sur nos serveurs ni dans notre base de données.",
+      "cv2": "Pour réaliser l’analyse, le texte du CV et de l’offre est transmis à notre prestataire d’intelligence artificielle, Anthropic PBC (États-Unis). Selon ses conditions commerciales, Anthropic n’utilise pas ces données pour entraîner ses modèles et ne les conserve que temporairement, selon sa propre politique de conservation.",
+      "cv3": "L’aperçu et l’export PDF/Word sont produits à la volée et ne sont pas conservés.",
+      "accountTitle": "Votre compte",
+      "account": "Si vous créez un compte, nous conservons : votre adresse e-mail, votre mot de passe (chiffré, jamais lisible), votre langue et la date de chaque adaptation (pour appliquer la limite mensuelle). Base légale : l’exécution du service que vous demandez. Durée : jusqu’à la suppression de votre compte.",
+      "trialTitle": "Sans compte",
+      "trial": "Pour l’essai gratuit sans compte, un cookie signé retient que l’essai a été utilisé, et l’adresse IP est gardée brièvement en mémoire pour limiter les abus. Base légale : notre intérêt légitime à éviter les abus.",
+      "cookiesTitle": "Cookies",
+      "cookies": "Nous n’utilisons que des cookies strictement nécessaires, sans publicité ni mesure d’audience : la session de connexion (Supabase), le cookie d’essai « cvw_trial » (1 an) et le cookie de langue « NEXT_LOCALE ». Ils ne nécessitent pas de consentement.",
+      "processorsTitle": "Prestataires",
+      "processors": "Vercel (hébergement), Supabase (comptes), Anthropic (analyse par intelligence artificielle). Aucune donnée n’est vendue ni utilisée à des fins publicitaires.",
+      "transfersTitle": "Transferts hors de l’Union européenne",
+      "transfers": "Vercel, Supabase et Anthropic sont des sociétés américaines. Les transferts éventuels de données vers les États-Unis sont encadrés par les garanties prévues par ces prestataires dans leurs conditions (par exemple des clauses contractuelles types de la Commission européenne).",
+      "rightsTitle": "Vos droits",
+      "rights": "Vous pouvez accéder à vos données, les corriger, les effacer, vous opposer à leur traitement ou demander leur portabilité. Vous pouvez supprimer votre compte vous-même depuis la page Profil, ou nous écrire à {email}. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (cnil.fr).",
+      "deleteLink": "Supprimer mon compte"
     }
   }
 }

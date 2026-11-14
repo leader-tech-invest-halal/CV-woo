@@ -92,7 +92,9 @@
   },
   "footer": {
     "tagline": "Tailor your resume to every job, without making anything up.",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "legal": "Legal notice",
+    "privacy": "Privacy"
   },
   "pricing": {
     "title": "Pricing",
@@ -509,7 +511,7 @@
     "signup": "Create my account",
     "login": "Sign in",
     "loading": "One moment…",
-    "consent": "By creating an account, you agree that your email is used to manage your CV Woo account. No ads, no reselling.",
+    "consent": "By creating an account, you agree that your email is used to manage your CV Woo account, as described in our <privacy>privacy policy</privacy>. No ads, no reselling.",
     "checkEmailTitle": "Confirm your email address",
     "checkEmailText": "We sent a link to {email}. Click it (check your spam folder), then come back to this page: it will update on its own.",
     "resend": "I've confirmed it",
@@ -532,6 +534,72 @@
       "rate_limit": "Too many attempts. Wait a few minutes.",
       "signup_disabled": "Sign-ups are closed for now.",
       "unknown": "Something went wrong. Try again."
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "guest": "Log in to see your account and manage your data.",
+    "login": "Log in",
+    "account": "My account",
+    "email": "Email address",
+    "usage": "Adaptations this month",
+    "usageValue": "{used} of {total}",
+    "data": "My data",
+    "dataText": "Your resumes are never stored: they are analyzed then forgotten. We only keep your email, your encrypted password, your language and the number of adaptations you made.",
+    "privacyLink": "Read the privacy policy",
+    "delete": {
+      "title": "Delete my account",
+      "text": "Your account, email and usage history will be permanently erased. This cannot be undone.",
+      "button": "Delete my account",
+      "confirmWord": "DELETE",
+      "confirmLabel": "To confirm, type {word} below:",
+      "confirm": "Delete permanently",
+      "cancel": "Cancel",
+      "error": "Deletion failed. Please try again in a moment.",
+      "done": "Your account has been deleted. All your data has been erased.",
+      "home": "Back to home"
+    }
+  },
+  "legal": {
+    "updated": "Last updated: {date}",
+    "toComplete": "to be completed",
+    "notice": {
+      "title": "Legal notice",
+      "publisherTitle": "Publisher",
+      "publisher": "CV Woo is a personal project published by {name}, a student at Université Paris 8. Contact: {email}.",
+      "directorTitle": "Publication director",
+      "director": "{name}.",
+      "hostTitle": "Hosting",
+      "host": "The site is hosted by Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA (vercel.com). Processing runs in the Paris region (France).",
+      "dbTitle": "Account database",
+      "db": "Accounts are managed by Supabase Inc. (supabase.com), with data stored in the Paris region (France).",
+      "ipTitle": "Intellectual property",
+      "ip": "CV Woo's texts, logo and interface are protected. You remain the sole owner of your resume and of the content you upload.",
+      "betaTitle": "Beta service",
+      "beta": "CV Woo is in free beta. Suggestions are generated automatically: always proofread your resume before sending it. The publisher does not guarantee any interview or job."
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "intro": "This page explains simply which data CV Woo uses, why, and how to exercise your rights (GDPR).",
+      "controllerTitle": "Data controller",
+      "controller": "{name} — contact: {email}.",
+      "cvTitle": "Your resume and the job offer",
+      "cv1": "Your file is read in memory on our servers (Paris region) for the time of the analysis, then forgotten: it is stored neither on our servers nor in our database.",
+      "cv2": "To perform the analysis, the text of the resume and of the offer is sent to our artificial intelligence provider, Anthropic PBC (USA). Under its commercial terms, Anthropic does not use this data to train its models and only keeps it temporarily, according to its own retention policy.",
+      "cv3": "The preview and the PDF/Word export are generated on the fly and are not stored.",
+      "accountTitle": "Your account",
+      "account": "If you create an account, we keep: your email address, your password (encrypted, never readable), your language and the date of each adaptation (to apply the monthly limit). Legal basis: performing the service you request. Duration: until you delete your account.",
+      "trialTitle": "Without an account",
+      "trial": "For the free trial without an account, a signed cookie remembers that the trial was used, and the IP address is briefly kept in memory to limit abuse. Legal basis: our legitimate interest in preventing abuse.",
+      "cookiesTitle": "Cookies",
+      "cookies": "We only use strictly necessary cookies, with no advertising or audience measurement: the login session (Supabase), the trial cookie “cvw_trial” (1 year) and the language cookie “NEXT_LOCALE”. They do not require consent.",
+      "processorsTitle": "Providers",
+      "processors": "Vercel (hosting), Supabase (accounts), Anthropic (artificial intelligence analysis). No data is sold or used for advertising.",
+      "transfersTitle": "Transfers outside the European Union",
+      "transfers": "Vercel, Supabase and Anthropic are US companies. Any transfers of data to the United States are covered by the safeguards these providers set out in their terms (for example the European Commission's standard contractual clauses).",
+      "rightsTitle": "Your rights",
+      "rights": "You can access, correct or erase your data, object to its processing or request its portability. You can delete your account yourself from the Profile page, or write to us at {email}. If you believe your rights are not respected, you can contact the CNIL (cnil.fr).",
+      "deleteLink": "Delete my account"
     }
   }
 }

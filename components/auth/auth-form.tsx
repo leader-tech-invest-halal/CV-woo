@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { LoaderCircle, MailCheck } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { Link } from "@/i18n/navigation";
 
 type Mode = "signup" | "login";
 
@@ -189,7 +190,17 @@ export function AuthForm({ initialMode = "signup", onSuccess }: { initialMode?: 
         {busy && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
         {busy ? t("loading") : mode === "signup" ? t("signup") : t("login")}
       </button>
-      {mode === "signup" && <p className="mt-3 text-xs text-muted-foreground">{t("consent")}</p>}
+      {mode === "signup" && (
+        <p className="mt-3 text-xs text-muted-foreground">
+          {t.rich("consent", {
+            privacy: (chunks) => (
+              <Link href="/legal/privacy" target="_blank" className="underline underline-offset-2 hover:text-foreground">
+                {chunks}
+              </Link>
+            ),
+          })}
+        </p>
+      )}
     </form>
   );
 }

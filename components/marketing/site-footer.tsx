@@ -15,6 +15,8 @@ export function SiteFooter() {
           <nav className="flex flex-wrap gap-x-4 gap-y-1 pt-2 text-sm">
             <Link href="/ats-checker" className="text-muted-foreground hover:text-foreground">{nav("ats")}</Link>
             <Link href="/pricing" className="text-muted-foreground hover:text-foreground">{nav("pricing")}</Link>
+            <Link href="/legal/notice" className="text-muted-foreground hover:text-foreground">{t("legal")}</Link>
+            <Link href="/legal/privacy" className="text-muted-foreground hover:text-foreground">{t("privacy")}</Link>
           </nav>
         </div>
         <div className="flex flex-col items-start gap-2 sm:items-end">
