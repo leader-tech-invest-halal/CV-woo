@@ -16,56 +16,82 @@
   },
   "hero": {
     "badge": "Bêta gratuite",
-    "title": "Votre CV, adapté à chaque offre. Sans rien inventer.",
-    "subtitle": "Importez votre CV et collez l'offre d'emploi : CV Woo l'adapte avec l'IA en mettant en avant vos vraies expériences, vérifie sa compatibilité avec les logiciels de recrutement (ATS) et vous aide à vous démarquer auprès des recruteurs.",
-    "cta": "Adapter mon CV gratuitement",
+    "title": "Avant de postuler, vérifiez que votre CV correspond à l'offre.",
+    "subtitle": "Importez votre CV et ajoutez une offre d'emploi. CV Woo analyse leur compatibilité, repère les compétences et les mots-clés recherchés, puis vous propose des améliorations fondées sur votre expérience réelle.",
+    "tagline": "Un CV plus pertinent pour chaque candidature, sans inventer votre parcours.",
+    "cta": "Analyser mon CV gratuitement",
     "secondary": "Voir comment ça marche",
-    "note": "1 adaptation offerte sans compte, puis 5 par mois avec un compte gratuit. Aucune carte bancaire."
+    "note": "1 analyse offerte sans compte, puis 5 par mois avec un compte gratuit. Aucune carte bancaire.",
+    "trust1": "Votre fichier n'est jamais enregistré",
+    "trust2": "Vous validez chaque modification",
+    "trust3": "Export PDF et Word"
   },
   "preview": {
+    "badge": "Exemple fictif",
     "title": "Offre : développeur front-end à Lyon",
     "score": "Compatibilité",
     "disclaimer": "Calculée à partir des preuves trouvées dans le CV.",
-    "present": "Présente dans le CV",
-    "weak": "Non démontrée",
-    "missing": "Absente",
-    "change": "Reformulé : « Développement de l'interface du site » → « Développement de l'interface web du site en React »",
-    "source": "Rattaché à l'expérience « Atelier Nova » du CV d'exemple",
-    "badge": "Exemple fictif"
+    "present": "Compétences repérées",
+    "weak": "Points à préciser",
+    "missing": "Mots-clés non repérés",
+    "changeLabel": "Reformulation proposée",
+    "before": "Développement de l'interface du site",
+    "after": "Développement de l'interface web du site en React",
+    "source": "Liée à l'expérience « Atelier Nova » du CV d'exemple"
   },
   "how": {
-    "title": "Comment ça marche",
-    "subtitle": "Trois étapes, quelques minutes.",
+    "title": "Comment ça marche ?",
+    "subtitle": "Quatre étapes, quelques minutes.",
     "step1": {
       "title": "Importez votre CV",
       "text": "PDF ou Word. Vous relisez et corrigez les informations extraites."
     },
     "step2": {
-      "title": "Collez l'offre d'emploi",
-      "text": "CV Woo en tire les compétences obligatoires, souhaitées et les mots-clés."
+      "title": "Ajoutez l'offre d'emploi",
+      "text": "Collez le lien ou le texte de l'annonce. CV Woo en tire les compétences et les mots-clés."
     },
     "step3": {
-      "title": "Récupérez votre CV adapté",
-      "text": "Chaque modification est expliquée. Vous validez, puis exportez en PDF ou DOCX."
+      "title": "Découvrez votre compatibilité",
+      "text": "Un score expliqué : ce qui est prouvé dans votre CV, ce qui est à préciser, ce qui manque."
+    },
+    "step4": {
+      "title": "Améliorez et téléchargez votre CV",
+      "text": "Gardez les reformulations qui vous conviennent, puis exportez en PDF ou Word."
+    },
+    "visual": {
+      "file": "mon-cv.pdf",
+      "ready": "Prêt",
+      "offer": "Offre d'emploi",
+      "accept": "Garder",
+      "download": "Télécharger"
     }
   },
   "features": {
-    "title": "Pourquoi CV Woo",
-    "noInvent": {
-      "title": "Zéro invention",
-      "text": "Chaque phrase réécrite est reliée à une ligne de votre CV d'origine. Un chiffre ou un diplôme nouveau est bloqué jusqu'à votre validation."
+    "title": "Pourquoi choisir CV Woo ?",
+    "subtitle": "Un outil pensé pour mieux présenter votre parcours, pas pour le réécrire à votre place.",
+    "analysis": {
+      "title": "Analyse personnalisée par offre",
+      "text": "Chaque offre est différente : CV Woo compare votre CV à l'annonce précise que vous visez."
     },
-    "ats": {
-      "title": "Lisible par les ATS",
-      "text": "Une colonne, titres standards, texte sélectionnable : les logiciels de recrutement lisent tout."
+    "keywords": {
+      "title": "Identification des mots-clés",
+      "text": "Les compétences et mots-clés de l'offre sont repérés, et vous voyez lesquels apparaissent déjà dans votre CV."
     },
-    "score": {
-      "title": "Un score explicable",
-      "text": "Le score est calculé à partir de preuves trouvées dans votre CV, pas deviné. Vous voyez ce qui compte."
+    "rewrite": {
+      "title": "Suggestions de reformulation",
+      "text": "Vos expériences sont reformulées pour mieux correspondre à l'offre, avec le avant / après sous les yeux."
     },
-    "privacy": {
-      "title": "Votre CV n'est pas conservé",
-      "text": "Votre fichier est lu, analysé puis oublié : il n’est jamais enregistré. Le site et la base de données sont hébergés à Paris."
+    "truth": {
+      "title": "Respect de votre parcours réel",
+      "text": "Aucune expérience, aucun diplôme, aucun chiffre ajouté. Un ajout suspect est signalé automatiquement."
+    },
+    "control": {
+      "title": "Vous validez chaque modification",
+      "text": "Avant l'export, vous relisez chaque suggestion et décochez celles que vous ne voulez pas garder."
+    },
+    "export": {
+      "title": "Export du CV amélioré",
+      "text": "Téléchargez votre CV en PDF ou Word, et vérifiez sa lisibilité avec notre vérificateur ATS gratuit."
     }
   },
   "honesty": {

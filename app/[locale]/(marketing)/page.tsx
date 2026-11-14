@@ -4,32 +4,40 @@ import { setRequestLocale } from "next-intl/server";
 import {
   ArrowRight,
   Check,
-  ClipboardPaste,
-  FileText,
-  Gauge,
+  Download,
+  FileSearch,
   Lock,
-  ScanText,
+  PenLine,
   ShieldCheck,
-  Upload,
+  Tags,
+  UserCheck,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { buttonClass } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { HeroPreview } from "@/components/marketing/hero-preview";
+import { StepVisual } from "@/components/marketing/step-visuals";
 
-const STEPS = [
-  { icon: Upload, key: "step1" },
-  { icon: ClipboardPaste, key: "step2" },
-  { icon: FileText, key: "step3" },
-] as const;
+const STEPS = [1, 2, 3, 4] as const;
 
 const FEATURES = [
-  { icon: ShieldCheck, key: "noInvent" },
-  { icon: ScanText, key: "ats" },
-  { icon: Gauge, key: "score" },
-  { icon: Lock, key: "privacy" },
+  { icon: FileSearch, key: "analysis" },
+  { icon: Tags, key: "keywords" },
+  { icon: PenLine, key: "rewrite" },
+  { icon: ShieldCheck, key: "truth" },
+  { icon: UserCheck, key: "control" },
+  { icon: Download, key: "export" },
 ] as const;
+
+const TRUST = [
+  { icon: Lock, key: "trust1" },
+  { icon: UserCheck, key: "trust2" },
+  { icon: Download, key: "trust3" },
+] as const;
+
+// Apparition légère, désactivée si l'utilisateur préfère réduire les animations.
+const reveal = "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-700";
 
 export default function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = use(params);
@@ -40,25 +48,34 @@ export default function HomePage({ params }: { params: Promise<{ locale: string 
     <>
       {/* Hero */}
       <section className="bg-gradient-to-b from-surface to-background">
-        <div className="mx-auto grid max-w-[1120px] items-center gap-12 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-[1.1fr_1fr]">
-          <div>
+        <div className="mx-auto grid max-w-[1120px] items-center gap-12 px-4 py-14 sm:px-6 md:py-20 lg:grid-cols-[1.15fr_1fr] lg:gap-14">
+          <div className={reveal}>
             <Badge>{t("hero.badge")}</Badge>
-            <h1 className="mt-5 text-4xl leading-[1.1] font-bold tracking-tight text-balance sm:text-5xl">
+            <h1 className="mt-5 text-4xl leading-[1.08] font-bold tracking-tight text-balance sm:text-5xl">
               {t("hero.title")}
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">{t("hero.subtitle")}</p>
+            <p className="mt-3 max-w-xl text-lg leading-relaxed font-medium">{t("hero.tagline")}</p>
             <div className="mt-8 flex flex-col flex-wrap gap-3 sm:flex-row">
-              <Link href="/adapt" className={buttonClass("primary", "lg")}>
+              <Link href="/adapt" className={buttonClass("primary", "lg", "shadow-md shadow-primary/20")}>
                 {t("hero.cta")}
                 <ArrowRight className="size-4" strokeWidth={1.75} aria-hidden />
               </Link>
-              <Link href="/#how" className={buttonClass("ghost", "lg")}>
+              <Link href="/#how" className={buttonClass("outline", "lg")}>
                 {t("hero.secondary")}
               </Link>
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">{t("hero.note")}</p>
+            <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+              {TRUST.map(({ icon: Icon, key }) => (
+                <li key={key} className="inline-flex items-center gap-1.5">
+                  <Icon className="size-4 text-primary" strokeWidth={1.75} aria-hidden />
+                  {t(`hero.${key}`)}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-sm text-muted-foreground">{t("hero.note")}</p>
           </div>
-          <div className="flex justify-center lg:justify-end">
+          <div className={`flex justify-center lg:justify-end ${reveal} motion-safe:delay-150 motion-safe:fill-mode-both`}>
             <HeroPreview />
           </div>
         </div>
@@ -67,33 +84,46 @@ export default function HomePage({ params }: { params: Promise<{ locale: string 
       {/* Comment ça marche */}
       <section id="how" className="scroll-mt-20">
         <div className="mx-auto max-w-[1120px] px-4 py-16 sm:px-6 md:py-20">
-          <h2 className="text-3xl font-semibold tracking-tight">{t("how.title")}</h2>
-          <p className="mt-2 text-muted-foreground">{t("how.subtitle")}</p>
-          <ol className="mt-10 grid gap-8 md:grid-cols-3">
-            {STEPS.map(({ icon: Icon, key }, i) => (
-              <li key={key}>
-                <div className="flex items-center gap-3">
-                  <span className="grid size-10 place-items-center rounded-md bg-accent text-accent-foreground">
-                    <Icon className="size-5" strokeWidth={1.5} aria-hidden />
+          <div className="max-w-2xl">
+            <h2 className="text-3xl font-semibold tracking-tight">{t("how.title")}</h2>
+            <p className="mt-2 text-muted-foreground">{t("how.subtitle")}</p>
+          </div>
+          <ol className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map((n) => (
+              <li key={n}>
+                <Card className="flex h-full flex-col p-4 transition-shadow hover:shadow-md">
+                  <StepVisual step={n} />
+                  <span className="mt-5 inline-flex size-7 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground tabular-nums">
+                    {n}
                   </span>
-                  <span className="text-sm font-medium text-muted-foreground tabular-nums">0{i + 1}</span>
-                </div>
-                <h3 className="mt-4 text-lg font-semibold">{t(`how.${key}.title`)}</h3>
-                <p className="mt-1.5 text-muted-foreground">{t(`how.${key}.text`)}</p>
+                  <h3 className="mt-3 font-semibold">{t(`how.step${n}.title`)}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{t(`how.step${n}.text`)}</p>
+                </Card>
               </li>
             ))}
           </ol>
+          <div className="mt-10">
+            <Link href="/adapt" className={buttonClass("primary", "lg")}>
+              {t("hero.cta")}
+              <ArrowRight className="size-4" strokeWidth={1.75} aria-hidden />
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Avantages */}
       <section id="features" className="scroll-mt-20 bg-surface">
         <div className="mx-auto max-w-[1120px] px-4 py-16 sm:px-6 md:py-20">
-          <h2 className="text-3xl font-semibold tracking-tight">{t("features.title")}</h2>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <div className="max-w-2xl">
+            <h2 className="text-3xl font-semibold tracking-tight">{t("features.title")}</h2>
+            <p className="mt-2 text-muted-foreground">{t("features.subtitle")}</p>
+          </div>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map(({ icon: Icon, key }) => (
-              <Card key={key} className="p-6">
-                <Icon className="size-5 text-primary" strokeWidth={1.5} aria-hidden />
+              <Card key={key} className="p-6 transition-shadow hover:shadow-md">
+                <span className="grid size-10 place-items-center rounded-md bg-accent text-accent-foreground">
+                  <Icon className="size-5" strokeWidth={1.5} aria-hidden />
+                </span>
                 <h3 className="mt-4 font-semibold">{t(`features.${key}.title`)}</h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{t(`features.${key}.text`)}</p>
               </Card>

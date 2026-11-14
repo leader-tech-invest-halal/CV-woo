@@ -16,56 +16,82 @@
   },
   "hero": {
     "badge": "Free beta",
-    "title": "Your resume, tailored to every job. Nothing made up.",
-    "subtitle": "Upload your resume and paste the job posting: CV Woo tailors it with AI by highlighting your real experience, checks its compatibility with applicant tracking systems (ATS) and helps you stand out to recruiters.",
-    "cta": "Tailor my resume for free",
+    "title": "Before you apply, check that your resume matches the job.",
+    "subtitle": "Upload your resume and add a job posting. CV Woo analyzes how well they match, spots the skills and keywords the employer wants, then suggests improvements based on your real experience.",
+    "tagline": "A more relevant resume for every application, without inventing your background.",
+    "cta": "Analyze my resume for free",
     "secondary": "See how it works",
-    "note": "1 free tailoring without an account, then 5 a month with a free account. No credit card."
+    "note": "1 free analysis without an account, then 5 a month with a free account. No credit card.",
+    "trust1": "Your file is never saved",
+    "trust2": "You approve every change",
+    "trust3": "PDF and Word export"
   },
   "preview": {
+    "badge": "Fictional example",
     "title": "Job: front-end developer in Lyon",
     "score": "Match",
     "disclaimer": "Based on evidence found in the resume.",
-    "present": "In the resume",
-    "weak": "Not demonstrated",
-    "missing": "Missing",
-    "change": "Rewritten: “Built the site interface” → “Built the site's web interface in React”",
-    "source": "Linked to the “Atelier Nova” experience in the sample resume",
-    "badge": "Fictional example"
+    "present": "Skills found",
+    "weak": "Points to clarify",
+    "missing": "Keywords not found",
+    "changeLabel": "Suggested rewrite",
+    "before": "Built the site interface",
+    "after": "Built the site's web interface in React",
+    "source": "Linked to the “Atelier Nova” experience in the sample resume"
   },
   "how": {
-    "title": "How it works",
-    "subtitle": "Three steps, a few minutes.",
+    "title": "How does it work?",
+    "subtitle": "Four steps, a few minutes.",
     "step1": {
       "title": "Upload your resume",
       "text": "PDF or Word. You review and fix the extracted details."
     },
     "step2": {
-      "title": "Paste the job posting",
-      "text": "CV Woo pulls out the required skills, nice-to-haves and keywords."
+      "title": "Add the job posting",
+      "text": "Paste the link or the text of the ad. CV Woo pulls out the skills and keywords."
     },
     "step3": {
-      "title": "Get your tailored resume",
-      "text": "Every change is explained. You approve, then export to PDF or DOCX."
+      "title": "See how well you match",
+      "text": "An explained score: what your resume proves, what needs clarifying, what's missing."
+    },
+    "step4": {
+      "title": "Improve and download your resume",
+      "text": "Keep the rewrites you like, then export to PDF or Word."
+    },
+    "visual": {
+      "file": "my-resume.pdf",
+      "ready": "Ready",
+      "offer": "Job posting",
+      "accept": "Keep",
+      "download": "Download"
     }
   },
   "features": {
-    "title": "Why CV Woo",
-    "noInvent": {
-      "title": "Nothing invented",
-      "text": "Every rewritten line is linked to a line of your original resume. A new number or degree is blocked until you approve it."
+    "title": "Why choose CV Woo?",
+    "subtitle": "A tool built to present your background better, not to rewrite it for you.",
+    "analysis": {
+      "title": "Analysis tailored to each job",
+      "text": "Every job is different: CV Woo compares your resume with the exact posting you're targeting."
     },
-    "ats": {
-      "title": "ATS-readable",
-      "text": "One column, standard headings, selectable text: recruiting software reads all of it."
+    "keywords": {
+      "title": "Keyword identification",
+      "text": "The job's skills and keywords are spotted, and you see which ones already appear in your resume."
     },
-    "score": {
-      "title": "A score you can explain",
-      "text": "The score is calculated from evidence found in your resume, not guessed. You see what counts."
+    "rewrite": {
+      "title": "Rewrite suggestions",
+      "text": "Your experience is reworded to better match the job, with before / after side by side."
     },
-    "privacy": {
-      "title": "Your resume isn't kept",
-      "text": "Your file is read, analyzed then forgotten: it is never saved. The site and database are hosted in Paris."
+    "truth": {
+      "title": "Your real background, respected",
+      "text": "No experience, degree or number is added. Anything suspicious is flagged automatically."
+    },
+    "control": {
+      "title": "You approve every change",
+      "text": "Before exporting, you review every suggestion and untick the ones you don't want to keep."
+    },
+    "export": {
+      "title": "Export your improved resume",
+      "text": "Download your resume as PDF or Word, and check how readable it is with our free ATS checker."
     }
   },
   "honesty": {
