@@ -1,48 +1,90 @@
 import "server-only";
-import { lookup } from "node:dns/promises";
-import { isIP } from "node:net";
+import { lookup } from "node:dns";
+import http from "node:http";
+import https from "node:https";
+import type { LookupFunction } from "node:net";
+import zlib from "node:zlib";
 import { UserFacingError } from "@/lib/cv/validate-file";
+import { isBlockedIp, parsePublicUrl } from "./safe-url";
 
 // Récupère le texte d'une offre d'emploi à partir de son lien.
-// Protections : http(s) uniquement, pas d'adresse interne ou privée (y compris après redirection),
-// délai et taille limités. Beaucoup de sites (LinkedIn, Indeed...) bloquent les robots :
-// dans ce cas l'utilisateur est invité à coller le texte.
+// Protections (SSRF) : http(s) uniquement, ports web standards, aucune adresse interne, privée ou
+// réservée — vérifiée au moment même de la connexion (pas de « DNS rebinding »), et à chaque
+// redirection. Délai, taille téléchargée et taille décompressée limités.
+// Beaucoup de sites (LinkedIn, Indeed...) bloquent les robots : l'utilisateur colle alors le texte.
 
 const MAX_BYTES = 3 * 1024 * 1024;
 const MAX_REDIRECTS = 3;
+const TIMEOUT_MS = 10_000;
 
-function isPrivateIp(ip: string): boolean {
-  if (isIP(ip) === 4) {
-    const [a, b] = ip.split(".").map(Number);
-    return (
-      a === 10 || a === 127 || a === 0 ||
-      (a === 169 && b === 254) ||
-      (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 && b === 168) ||
-      (a === 100 && b >= 64 && b <= 127) ||
-      a >= 224
+/** Résolution DNS qui refuse toute adresse interne : c'est l'adresse vérifiée qui est utilisée. */
+export const safeLookup: LookupFunction = (hostname, options, callback) => {
+  lookup(hostname, { ...options, all: true }, (error, addresses) => {
+    if (error) return callback(error, "", 4);
+    const list = addresses as { address: string; family: number }[];
+    if (list.length === 0 || list.some((a) => isBlockedIp(a.address))) {
+      return callback(Object.assign(new Error("Adresse interdite"), { code: "EBLOCKED" }), "", 4);
+    }
+    if (options.all) return (callback as unknown as (e: null, a: typeof list) => void)(null, list);
+    callback(null, list[0].address, list[0].family);
+  });
+};
+
+type Fetched = { status: number; location: string | null; type: string; body: Buffer };
+
+function get(url: URL, deadline: number): Promise<Fetched> {
+  return new Promise((resolve, reject) => {
+    const client = url.protocol === "https:" ? https : http;
+    const req = client.request(
+      url,
+      {
+        method: "GET",
+        lookup: safeLookup,
+        agent: false,
+        timeout: Math.max(1000, deadline - Date.now()),
+        headers: {
+          "user-agent": "Mozilla/5.0 (compatible; CVWooBot/1.0)",
+          accept: "text/html,application/xhtml+xml",
+          "accept-language": "fr,en;q=0.8",
+          "accept-encoding": "gzip, deflate, br",
+        },
+      },
+      (res) => {
+        const status = res.statusCode ?? 0;
+        const location = res.headers.location ?? null;
+        const type = String(res.headers["content-type"] ?? "");
+        if (status >= 300 && status < 400) {
+          res.resume();
+          return resolve({ status, location, type, body: Buffer.alloc(0) });
+        }
+        // Décompression plafonnée : une page compressée ne peut pas dépasser MAX_BYTES une fois ouverte
+        const encoding = String(res.headers["content-encoding"] ?? "").toLowerCase();
+        const stream =
+          encoding === "gzip"
+            ? res.pipe(zlib.createGunzip())
+            : encoding === "deflate"
+              ? res.pipe(zlib.createInflate())
+              : encoding === "br"
+                ? res.pipe(zlib.createBrotliDecompress())
+                : res;
+        const chunks: Buffer[] = [];
+        let size = 0;
+        stream.on("data", (chunk: Buffer) => {
+          size += chunk.length;
+          if (size > MAX_BYTES) {
+            req.destroy();
+            return resolve({ status, location, type, body: Buffer.concat(chunks) });
+          }
+          chunks.push(chunk);
+        });
+        stream.on("end", () => resolve({ status, location, type, body: Buffer.concat(chunks) }));
+        stream.on("error", reject);
+      },
     );
-  }
-  const v6 = ip.toLowerCase();
-  if (v6.startsWith("::ffff:")) return isPrivateIp(v6.slice(7));
-  return v6 === "::1" || v6 === "::" || v6.startsWith("fc") || v6.startsWith("fd") || v6.startsWith("fe80");
-}
-
-async function assertPublicUrl(raw: string): Promise<URL> {
-  let url: URL;
-  try {
-    url = new URL(raw);
-  } catch {
-    throw new UserFacingError("invalid_url");
-  }
-  if (url.protocol !== "https:" && url.protocol !== "http:") throw new UserFacingError("invalid_url");
-  if (url.username || url.password) throw new UserFacingError("invalid_url");
-  const host = url.hostname.replace(/^\[|\]$/g, "");
-  const addresses = isIP(host) ? [{ address: host }] : await lookup(host, { all: true }).catch(() => []);
-  if (addresses.length === 0 || addresses.some((a) => isPrivateIp(a.address))) {
-    throw new UserFacingError("invalid_url");
-  }
-  return url;
+    req.on("timeout", () => req.destroy(new Error("timeout")));
+    req.on("error", reject);
+    req.end();
+  });
 }
 
 function decodeEntities(s: string): string {
@@ -96,46 +138,34 @@ function fromJsonLd(html: string): string | null {
 }
 
 export async function fetchOfferText(raw: string): Promise<{ text: string; url: string }> {
-  let url = await assertPublicUrl(raw);
-  let response: Response | null = null;
+  let url = parsePublicUrl(raw);
+  if (!url) throw new UserFacingError("invalid_url");
+  const deadline = Date.now() + TIMEOUT_MS;
+  let response: Fetched | null = null;
 
   for (let i = 0; i <= MAX_REDIRECTS; i++) {
-    response = await fetch(url, {
-      redirect: "manual",
-      signal: AbortSignal.timeout(10_000),
-      headers: {
-        "user-agent": "Mozilla/5.0 (compatible; CVWooBot/1.0)",
-        accept: "text/html,application/xhtml+xml",
-        "accept-language": "fr,en;q=0.8",
-      },
-    }).catch(() => null);
-    if (!response) throw new UserFacingError("offer_unreachable");
-    if (response.status >= 300 && response.status < 400 && response.headers.get("location")) {
-      url = await assertPublicUrl(new URL(response.headers.get("location")!, url).toString());
+    try {
+      response = await get(url, deadline);
+    } catch (error) {
+      // Adresse interne détectée à la connexion : lien refusé, sans dire pourquoi
+      if ((error as { code?: string }).code === "EBLOCKED") throw new UserFacingError("invalid_url");
+      throw new UserFacingError("offer_unreachable");
+    }
+    if (response.status >= 300 && response.status < 400 && response.location) {
+      if (i === MAX_REDIRECTS) throw new UserFacingError("offer_unreachable");
+      // Chaque redirection est revérifiée comme un nouveau lien
+      const next = parsePublicUrl(new URL(response.location, url).toString());
+      if (!next) throw new UserFacingError("invalid_url");
+      url = next;
       continue;
     }
     break;
   }
 
-  if (!response || !response.ok) throw new UserFacingError("offer_unreachable");
-  const type = response.headers.get("content-type") ?? "";
-  if (!/text\/html|application\/xhtml|text\/plain/.test(type)) throw new UserFacingError("offer_unreachable");
+  if (!response || response.status < 200 || response.status >= 300) throw new UserFacingError("offer_unreachable");
+  if (!/text\/html|application\/xhtml|text\/plain/.test(response.type)) throw new UserFacingError("offer_unreachable");
 
-  // Lecture plafonnée
-  const reader = response.body!.getReader();
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.length;
-    if (size > MAX_BYTES) {
-      await reader.cancel();
-      break;
-    }
-    chunks.push(value);
-  }
-  const html = new TextDecoder().decode(Buffer.concat(chunks));
+  const html = new TextDecoder().decode(response.body);
 
   const main = html.match(/<main[\s\S]*?<\/main>/i)?.[0] ?? html.match(/<body[\s\S]*<\/body>/i)?.[0] ?? html;
   const text = (fromJsonLd(html) ?? htmlToText(main)).slice(0, 20_000);

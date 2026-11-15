@@ -4,6 +4,7 @@ import { inspectResume } from "@/lib/ats/inspect";
 import { runChecks, unreadableReport } from "@/lib/ats/checks";
 import { extractOfferKeywords } from "@/lib/ai/keywords";
 import { errorResponse, rateLimit } from "@/lib/http";
+import { durableLimit } from "@/lib/limits";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
     if (offer.length >= 100) {
       // L'option avec offre utilise l'IA : limite plus stricte
       rateLimit(request, "ats-ai", 15, 24 * 60 * 60 * 1000);
+      await durableLimit(request, "ats-ai", { anon: 5, user: 20 });
       keywords = await extractOfferKeywords(offer);
     }
 

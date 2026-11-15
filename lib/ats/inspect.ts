@@ -1,7 +1,7 @@
 import "server-only";
-import JSZip from "jszip";
 import { extractTextItems, getDocumentProxy } from "unpdf";
 import { extractDocx } from "@/lib/cv/docx";
+import { openZip, readPart } from "@/lib/cv/zip-guard";
 import { extractPdf } from "@/lib/cv/pdf";
 import type { Block, SourceFormat } from "@/lib/cv/types";
 
@@ -27,16 +27,18 @@ export type Inspection = {
 
 async function inspectDocx(bytes: Uint8Array) {
   const { blocks } = await extractDocx(bytes);
-  const zip = await JSZip.loadAsync(bytes);
-  const xml = (await zip.file("word/document.xml")?.async("string")) ?? "";
+  const zip = await openZip(bytes);
+  const main = zip.file("word/document.xml");
+  const xml = main ? await readPart(main) : "";
   const count = (re: RegExp) => (xml.match(re) ?? []).length;
 
   let headerFooterText = "";
   for (const name of Object.keys(zip.files).filter((n) => /^word\/(header|footer)\d*\.xml$/.test(n))) {
-    const part = await zip.file(name)!.async("string");
+    const part = await readPart(zip.file(name)!, 2 * 1024 * 1024);
     headerFooterText += " " + [...part.matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/g)].map((m) => m[1]).join(" ");
   }
-  const appXml = (await zip.file("docProps/app.xml")?.async("string")) ?? "";
+  const app = zip.file("docProps/app.xml");
+  const appXml = app ? await readPart(app, 1024 * 1024) : "";
   const pages = Number(appXml.match(/<Pages>(\d+)<\/Pages>/)?.[1]) || null;
 
   return {

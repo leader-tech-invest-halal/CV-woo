@@ -3,6 +3,7 @@ import JSZip from "jszip";
 import { DOMParser, XMLSerializer, type Element as XElement, type Node as XNode } from "@xmldom/xmldom";
 import type { Block } from "./types";
 import { UserFacingError } from "./validate-file";
+import { openZip, readPart } from "./zip-guard";
 
 // Lecture et réécriture « sur place » d'un fichier Word.
 // Les blocs sont les paragraphes (w:p) de word/document.xml, dans l'ordre du document,
@@ -64,15 +65,11 @@ function paragraphs(doc: ReturnType<DOMParser["parseFromString"]>): Para[] {
 }
 
 async function load(bytes: Uint8Array) {
-  let zip: JSZip;
-  try {
-    zip = await JSZip.loadAsync(bytes);
-  } catch {
-    throw new UserFacingError("unsupported_file");
-  }
+  // Archive contrôlée (pas de « zip bomb ») ; le XML est lu comme du texte, jamais exécuté
+  const zip: JSZip = await openZip(bytes);
   const file = zip.file("word/document.xml");
   if (!file) throw new UserFacingError("unsupported_file");
-  const xml = await file.async("string");
+  const xml = await readPart(file);
   const doc = new DOMParser().parseFromString(xml, "text/xml");
   return { zip, doc };
 }
@@ -121,7 +118,8 @@ export async function extractDocx(bytes: Uint8Array): Promise<DocxExtraction> {
   if (blocks.length === 0) throw new UserFacingError("empty_resume");
 
   // Polices par défaut du document et du thème
-  const theme = await zip.file("word/theme/theme1.xml")?.async("string");
+  const themeFile = zip.file("word/theme/theme1.xml");
+  const theme = themeFile ? await readPart(themeFile, 2 * 1024 * 1024) : undefined;
   const themeFont = theme?.match(/<a:minorFont>\s*<a:latin typeface="([^"]+)"/)?.[1];
   const tables = doc.getElementsByTagNameNS(W, "tbl").length;
   const textBoxes = doc.getElementsByTagNameNS(W, "txbxContent").length;

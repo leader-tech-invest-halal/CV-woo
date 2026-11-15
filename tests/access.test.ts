@@ -11,11 +11,37 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-type FakeState = { user: { id: string } | null; used: number; quota: number | null; inserts: unknown[] };
-const state: FakeState = { user: null, used: 0, quota: 5, inserts: [] };
+type FakeState = {
+  user: { id: string } | null;
+  used: number;
+  quota: number | null;
+  inserts: unknown[];
+  hits: Map<string, number>;
+  rpcDown: boolean;
+};
+const state: FakeState = { user: null, used: 0, quota: 5, inserts: [], hits: new Map(), rpcDown: false };
 
 function fakeSupabase() {
   return {
+    // Fonctions Supabase simulées : rate_hit (limites durables) et claim_analysis (quota atomique)
+    async rpc(name: string, args: Record<string, unknown> = {}) {
+      if (state.rpcDown) return { data: null, error: { code: "PGRST202" } };
+      if (name === "rate_hit") {
+        const key = `${args.p_bucket}:${args.p_key}`;
+        const n = state.hits.get(key) ?? 0;
+        if (n >= (args.p_max as number)) return { data: false, error: null };
+        state.hits.set(key, n + 1);
+        return { data: true, error: null };
+      }
+      if (name === "claim_analysis") {
+        const quota = state.quota ?? 5;
+        if (state.used >= quota) return { data: -1, error: null };
+        state.used++;
+        state.inserts.push({ user_id: state.user!.id, kind: "analysis" });
+        return { data: quota - state.used, error: null };
+      }
+      return { data: null, error: { code: "unknown" } };
+    },
     from(table: string) {
       if (table === "plans") {
         const q = {
@@ -51,7 +77,7 @@ const codeOf = (p: Promise<unknown>) => p.then(() => null, (e: { code?: string }
 
 beforeEach(() => {
   jar.clear();
-  Object.assign(state, { user: null, used: 0, quota: 5, inserts: [] });
+  Object.assign(state, { user: null, used: 0, quota: 5, inserts: [], hits: new Map(), rpcDown: false });
   process.env.APP_SECRET = "secret-de-test";
 });
 
@@ -78,6 +104,20 @@ describe("sans compte", () => {
     process.env.APP_SECRET = "autre-secret";
     expect(await codeOf(checkAnalyzeAccess(req()))).toBeNull();
   });
+
+  it("garde l'essai utilisé même si la personne efface ses cookies", async () => {
+    const ctx = await checkAnalyzeAccess(req());
+    await recordAnalyze(req(), ctx);
+    jar.clear();
+    expect(await codeOf(checkAnalyzeAccess(req()))).toBe("auth_required");
+    // Une autre adresse IP a droit à son propre essai
+    expect(await codeOf(checkAnalyzeAccess(req("198.51.100.20")))).toBeNull();
+  });
+
+  it("laisse passer si la base est momentanément injoignable", async () => {
+    state.rpcDown = true;
+    expect(await codeOf(checkAnalyzeAccess(req()))).toBeNull();
+  });
 });
 
 describe("avec un compte", () => {
@@ -97,16 +137,32 @@ describe("avec un compte", () => {
   });
 
   it("n'est pas bloqué par l'essai gratuit déjà utilisé sans compte", async () => {
-    await recordAnalyze(req(), { supabase: fakeSupabase(), user: null, remaining: null } as never);
+    await recordAnalyze(req(), { supabase: fakeSupabase(), user: null, remaining: null, claimed: false } as never);
     state.user = { id: "utilisateur-fictif" };
     expect(await codeOf(checkAnalyzeAccess(req()))).toBeNull();
   });
 
-  it("enregistre chaque adaptation réussie dans le compteur", async () => {
+  it("compte chaque adaptation une seule fois", async () => {
     const ctx = await checkAnalyzeAccess(req());
     await recordAnalyze(req(), ctx);
     expect(state.inserts).toEqual([{ user_id: "utilisateur-fictif", kind: "analysis" }]);
     expect(jar.has("cvw_trial")).toBe(false);
+  });
+
+  it("ne laisse pas passer 10 adaptations lancées en même temps au-delà du quota", async () => {
+    state.used = 3;
+    const results = await Promise.all(Array.from({ length: 10 }, () => codeOf(checkAnalyzeAccess(req()))));
+    expect(results.filter((r) => r === null)).toHaveLength(2);
+    expect(results.filter((r) => r === "quota_reached")).toHaveLength(8);
+  });
+
+  it("revient à l'ancienne vérification si la réservation est indisponible", async () => {
+    state.rpcDown = true;
+    state.used = 1;
+    const ctx = await checkAnalyzeAccess(req());
+    expect(ctx.remaining).toBe(4);
+    await recordAnalyze(req(), ctx);
+    expect(state.inserts).toHaveLength(1);
   });
 
   it("utilise 5 par défaut si la formule est introuvable", async () => {

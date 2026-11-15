@@ -3,6 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { Card } from "@/components/ui/card";
 import { buttonClass } from "@/components/ui/button";
 import { DeleteAccount } from "@/components/auth/delete-account";
+import { NewPasswordForm } from "@/components/auth/new-password-form";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { monthlyUsage } from "@/lib/access";
 
@@ -44,6 +45,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
             <dd className="mt-0.5 font-medium tabular-nums">{t("usageValue", { used: usage.used, total: usage.quota })}</dd>
           </div>
         </dl>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="font-semibold">{t("password")}</h2>
+        <div className="mt-4">
+          <NewPasswordForm compact />
+        </div>
       </Card>
 
       <Card className="p-6">

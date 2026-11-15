@@ -4,6 +4,7 @@ import { extractDocx } from "@/lib/cv/docx";
 import { extractPdf } from "@/lib/cv/pdf";
 import { structureResume } from "@/lib/ai/structure";
 import { errorResponse, rateLimit } from "@/lib/http";
+import { durableLimit } from "@/lib/limits";
 import type { ParsedResume } from "@/lib/cv/types";
 import { completeStructure } from "@/lib/cv/compose";
 import { safeAtsReadiness } from "@/lib/ats/readiness";
@@ -22,6 +23,8 @@ export async function POST(request: Request) {
 
     const bytes = new Uint8Array(await file.arrayBuffer());
     const format = detectFormat(bytes);
+    // La lecture du CV appelle l'IA : limite durable par jour (compte, ou adresse IP sans compte)
+    await durableLimit(request, "parse", { anon: 6, user: 30 });
 
     const extraction = format === "pdf" ? await extractPdf(bytes) : await extractDocx(bytes);
     // Lisibilité ATS du CV d'origine (sans IA), calculée en même temps que la lecture par l'IA
