@@ -224,6 +224,7 @@ export function ChangesStep({
   onSetAll,
   edits,
   onEdit,
+  unplaced = [],
   onBack,
   onNext,
 }: {
@@ -235,6 +236,8 @@ export function ChangesStep({
   onSetAll: (accept: boolean) => void;
   edits: Record<string, string>;
   onEdit: (blockId: string, text: string) => void;
+  /** Compétences confirmées que l'IA n'a pu placer dans aucun bloc. */
+  unplaced?: string[];
   onBack: () => void;
   onNext: () => void;
 }) {
@@ -246,6 +249,9 @@ export function ChangesStep({
 
   return (
     <StepShell title={t("title")} hint={t("hint")} onBack={onBack} onNext={onNext} nextLabel={t("next")}>
+      {unplaced.length > 0 && (
+        <p className="rounded-lg border border-border bg-muted/50 p-4 text-sm">{t("unplaced", { skills: unplaced.join(", ") })}</p>
+      )}
       <Card className="p-6">
         {result.rewrites.length === 0 ? (
           <p className="text-sm text-muted-foreground">{ta("noChanges")}</p>
@@ -305,9 +311,18 @@ function RewriteCard({
       <div className="flex gap-3">
         <input type="checkbox" checked={on} aria-label={r.after} onChange={onToggle} className="mt-1 size-4 shrink-0 accent-[var(--primary)]" />
         <div className="min-w-0 flex-1 space-y-3 text-sm">
-          {origin && (
-            <p className="text-xs text-muted-foreground">
-              <span className="font-medium">{tc("origin")}</span> {origin}
+          {(origin || r.source === "profile") && (
+            <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              {r.source === "profile" && (
+                <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-medium text-primary-foreground">
+                  {tc("fromProfile")}
+                </span>
+              )}
+              {origin && (
+                <span>
+                  <span className="font-medium">{tc("origin")}</span> {origin}
+                </span>
+              )}
             </p>
           )}
           {/* Avant / après : côte à côte sur ordinateur, l'un sous l'autre sur mobile */}
@@ -346,7 +361,7 @@ function FlagList({ flags }: { flags: string[] }) {
         {flags.map((f) => {
           const [kind, ...rest] = f.split(":");
           const value = rest.join(":");
-          return <li key={f}>{kind === "number" || kind === "term" || kind === "keyword" ? t(`flag.${kind}`, { value }) : f}</li>;
+          return <li key={f}>{kind === "number" || kind === "term" || kind === "keyword" || kind === "similar" ? t(`flag.${kind}`, { value }) : f}</li>;
         })}
       </ul>
       <p className="mt-1">{t("flagHelp")}</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import type { AnalysisResult, ParsedResume } from "@/lib/cv/types";
+import type { AnalysisResult, EnrichResult, ParsedResume, ProfileAnswer } from "@/lib/cv/types";
 import type { AtsReadiness } from "@/lib/ats/checks";
 
 export class ApiError extends Error {
@@ -47,6 +47,28 @@ export async function analyzeResume(locale: string, resume: ParsedResume, offerT
       body: JSON.stringify({
         locale,
         offerText,
+        resume: { blocks: resume.blocks, structure: resume.structure },
+      }),
+    })
+  ).json();
+}
+
+export async function enrichProfile(
+  locale: string,
+  resume: ParsedResume,
+  offerTitle: string,
+  current: Record<string, string>,
+  answers: ProfileAnswer[],
+): Promise<EnrichResult> {
+  return (
+    await request("/api/profile/enrich", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        locale,
+        offerTitle,
+        current,
+        answers,
         resume: { blocks: resume.blocks, structure: resume.structure },
       }),
     })

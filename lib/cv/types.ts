@@ -86,7 +86,27 @@ export type Rewrite = {
   keywords: string[];
   /** Problèmes détectés par la vérification automatique (vide = sûr). */
   flags: string[];
+  /** « profile » : proposition issue des réponses de la personne (étape Enrichir mon profil). */
+  source?: "analysis" | "profile";
+  /** Compétences confirmées par la personne que cette proposition intègre. */
+  skills?: string[];
 };
+
+/** Réponse de la personne à « Possédez-vous cette compétence ? ». Jamais déduite par l'IA. */
+export type ProfileAnswer = {
+  skill: string;
+  answer: "yes" | "similar";
+  /** Id du premier bloc d'en-tête de l'expérience ou de la formation concernée ; null = ailleurs. */
+  entryId: string | null;
+  /** Si « ailleurs » : où (projet personnel, bénévolat, formation…). */
+  context?: string;
+  duration?: string;
+  example?: string;
+  /** Si « expérience similaire » : laquelle. */
+  similar?: string;
+};
+
+export type EnrichResult = { rewrites: Rewrite[]; unplaced: string[] };
 
 export type AnalysisResult = {
   offer: { title: string; company: string | null };

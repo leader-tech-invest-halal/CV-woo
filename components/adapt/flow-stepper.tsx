@@ -3,11 +3,11 @@
 import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
 
-export const FLOW = ["resume", "offer", "requirements", "compare", "changes", "review", "preview"] as const;
+export const FLOW = ["resume", "offer", "requirements", "compare", "enrich", "changes", "review", "preview"] as const;
 export type FlowStep = (typeof FLOW)[number];
 
 /**
- * Progression du parcours en 7 étapes.
+ * Progression du parcours en 8 étapes.
  * Ordinateur : toutes les étapes avec leur nom. Mobile : « Étape 3 sur 7 » + barre de progression.
  * Les étapes déjà atteintes sont cliquables pour revenir en arrière.
  */

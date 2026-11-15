@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CircleAlert, CircleCheck, RotateCcw } from "lucide-react";
-import type { AnalysisResult, ParsedResume } from "@/lib/cv/types";
-import { ApiError, analyzeResume, parseResume } from "./api";
+import type { AnalysisResult, ParsedResume, Rewrite } from "@/lib/cv/types";
+import { ApiError, analyzeResume, enrichProfile, parseResume } from "./api";
+import { EnrichStep, toAnswers, type Draft } from "./enrich-step";
 import { MAX_FILE_BYTES, ResumeStep } from "./resume-step";
 import { OfferStep } from "./offer-step";
 import { Analyzing, ChangesStep, CompareStep, RequirementsStep, ReviewStep } from "./analysis-step";
@@ -15,8 +16,8 @@ import { buttonClass } from "@/components/ui/button";
 
 type Result = AnalysisResult & { remaining?: number | null; signedIn?: boolean };
 
-// Parcours guidé en 7 étapes :
-// CV → offre → exigences → comparaison → propositions → validation → aperçu et téléchargement.
+// Parcours guidé en 8 étapes :
+// CV → offre → exigences → comparaison → enrichir mon profil → propositions → validation → téléchargement.
 // Tout reste dans le navigateur ; le serveur ne garde rien.
 export function AdaptWizard() {
   const t = useTranslations("adapt");
@@ -33,6 +34,11 @@ export function AdaptWizard() {
   const [accepted, setAccepted] = useState<Record<string, boolean>>({});
   // Textes modifiés à la main par la personne (prioritaires sur la proposition de l'IA)
   const [edits, setEdits] = useState<Record<string, string>>({});
+  // « Enrichir mon profil » : réponses de la personne, et propositions de l'analyse avant enrichissement
+  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  const [baseRewrites, setBaseRewrites] = useState<Rewrite[] | null>(null);
+  const [unplaced, setUnplaced] = useState<string[]>([]);
+  const [enriching, setEnriching] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ code: string; retry?: () => void } | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -89,6 +95,9 @@ export function AdaptWizard() {
     try {
       const r = await analyzeResume(locale, resume, offerText);
       setResult(r);
+      setDrafts({});
+      setBaseRewrites(null);
+      setUnplaced([]);
       // Les modifications signalées par la vérification ne sont pas cochées par défaut
       setEdits({});
       setAccepted(Object.fromEntries(r.rewrites.map((w) => [w.blockId, w.flags.length === 0])));
@@ -113,11 +122,67 @@ export function AdaptWizard() {
     [result, accepted, edits],
   );
 
+  // Intègre les compétences confirmées, en partant des propositions de l'analyse (sans jamais les empiler)
+  const onEnrich = async () => {
+    if (!result || !resume) return;
+    const answers = toAnswers(drafts);
+    if (!answers.length) return;
+    const base = baseRewrites ?? result.rewrites;
+    const current = Object.fromEntries(
+      base.filter((r) => accepted[r.blockId] ?? r.flags.length === 0).map((r) => [r.blockId, edits[r.blockId] ?? r.after]),
+    );
+    setError(null);
+    setSuccess(null);
+    setEnriching(true);
+    try {
+      const e = await enrichProfile(locale, resume, result.offer.title, current, answers);
+      const byBlock = new Map(e.rewrites.map((r) => [r.blockId, r]));
+      const merged = [
+        ...base.map((r) => byBlock.get(r.blockId) ?? r),
+        ...e.rewrites.filter((r) => !base.some((b) => b.blockId === r.blockId)),
+      ];
+      setBaseRewrites(base);
+      setResult({ ...result, rewrites: merged });
+      setUnplaced(e.unplaced);
+      setEdits((old) => Object.fromEntries(Object.entries(old).filter(([id]) => !byBlock.has(id))));
+      setAccepted((a) => ({ ...a, ...Object.fromEntries(e.rewrites.map((r) => [r.blockId, r.flags.length === 0])) }));
+      go("changes");
+      setSuccess(tf("success.enriched", { count: e.rewrites.length }));
+    } catch (err) {
+      setError({ code: codeOf(err), retry: onEnrich });
+    } finally {
+      setEnriching(false);
+    }
+  };
+
+  // Retire tout ce qui vient des réponses : on revient aux propositions de l'analyse
+  const undoEnrich = () => {
+    if (!result || !baseRewrites) return;
+    const ids = new Set(result.rewrites.filter((r) => r.source === "profile").map((r) => r.blockId));
+    setResult({ ...result, rewrites: baseRewrites });
+    setAccepted((a) => ({
+      ...a,
+      ...Object.fromEntries([...ids].map((id) => [id, baseRewrites.some((r) => r.blockId === id && r.flags.length === 0)])),
+    }));
+    setEdits((old) => Object.fromEntries(Object.entries(old).filter(([id]) => !ids.has(id))));
+    setBaseRewrites(null);
+    setUnplaced([]);
+  };
+
+  const confirmedSkills = new Set(
+    toAnswers(drafts)
+      .filter((a) => a.answer === "yes")
+      .map((a) => a.skill),
+  );
+
   const restart = () => {
     setOfferText("");
     setResult(null);
     setAccepted({});
     setEdits({});
+    setDrafts({});
+    setBaseRewrites(null);
+    setUnplaced([]);
     setStep("offer");
     setReached(FLOW.indexOf("offer"));
   };
@@ -197,7 +262,22 @@ export function AdaptWizard() {
       )}
 
       {step === "compare" && result && (
-        <CompareStep result={result} onBack={() => go("requirements")} onNext={() => go("changes")} />
+        <CompareStep result={result} onBack={() => go("requirements")} onNext={() => go("enrich")} />
+      )}
+
+      {step === "enrich" && result && resume && (
+        <EnrichStep
+          result={result}
+          resume={resume}
+          drafts={drafts}
+          onDraft={(skill, d) => setDrafts((all) => ({ ...all, [skill]: d }))}
+          busy={enriching}
+          integrated={baseRewrites ? result.rewrites.filter((r) => r.source === "profile").length : null}
+          onIntegrate={onEnrich}
+          onUndo={undoEnrich}
+          onBack={() => go("compare")}
+          onNext={() => go("changes")}
+        />
       )}
 
       {step === "changes" && result && resume && (
@@ -220,13 +300,17 @@ export function AdaptWizard() {
             // Modifier une phrase vaut acceptation : la personne a choisi son texte
             setAccepted((a) => ({ ...a, [id]: true }));
           }}
-          onBack={() => go("compare")}
+          unplaced={unplaced}
+          onBack={() => go("enrich")}
           onNext={() => go("review")}
         />
       )}
 
       {step === "review" && result && resume && (
-        <ReviewStep result={result} resume={resume} accepted={accepted} edits={edits} onBack={() => go("changes")} onNext={() => go("preview")} />
+        <ReviewStep
+          // Les compétences confirmées par la personne ne sont plus présentées comme absentes
+          result={{ ...result, matches: result.matches.filter((m) => !(m.status === "missing" && confirmedSkills.has(m.skill))) }}
+          resume={resume} accepted={accepted} edits={edits} onBack={() => go("changes")} onNext={() => go("preview")} />
       )}
 
       {step === "preview" && file && resume && (

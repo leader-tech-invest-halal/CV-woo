@@ -265,7 +265,8 @@
       "flag": {
         "number": "Le chiffre « {value} » n'apparaît pas dans votre CV.",
         "term": "« {value} » n'apparaît pas dans votre CV.",
-        "keyword": "Le mot-clé « {value} » n'est pas prouvé par votre CV."
+        "keyword": "Le mot-clé « {value} » n'est pas prouvé par votre CV.",
+        "similar": "« {value} » : vous avez indiqué une expérience similaire, pas cette compétence. Retirez ce mot ou modifiez la phrase."
       },
       "flagHelp": "Par sécurité, cette modification n'est pas cochée. Acceptez-la seulement si c'est vrai.",
       "accepted": "{count} sur {total} acceptées",
@@ -357,6 +358,7 @@
         "offer": "L'offre",
         "requirements": "Exigences",
         "compare": "Comparaison",
+        "enrich": "Enrichir mon profil",
         "changes": "Propositions",
         "review": "Validation",
         "preview": "Téléchargement"
@@ -377,7 +379,7 @@
         "hint": "Chaque compétence est vérifiée avec une phrase de votre CV. Rien n'est inventé.",
         "proof": "Preuve dans votre CV :",
         "advice": "Conseil :",
-        "next": "Voir les propositions"
+        "next": "Enrichir mon profil"
       },
       "changes": {
         "title": "Propositions de reformulation",
@@ -390,7 +392,9 @@
         "acceptAllHint": "« Tout accepter » ne coche pas les propositions à vérifier : validez-les une par une.",
         "origin": "Origine :",
         "headline": "Accroche (titre sous le nom)",
-        "summary": "Profil / résumé"
+        "summary": "Profil / résumé",
+        "fromProfile": "D'après vos réponses",
+        "unplaced": "Ces compétences confirmées n'ont pas trouvé de place dans votre CV : {skills}. Vous pouvez les ajouter vous-même en modifiant une ligne de compétences ci-dessous."
       },
       "review": {
         "title": "Vérifiez avant de générer votre CV",
@@ -404,9 +408,49 @@
       },
       "success": {
         "parsed": "CV lu : {count, plural, one {# rubrique détectée} other {# rubriques détectées}}.",
-        "analyzed": "Analyse terminée."
+        "analyzed": "Analyse terminée.",
+        "enriched": "{count, plural, =0 {Aucune proposition n'a pu être ajoutée d'après vos réponses.} one {# proposition ajoutée d'après vos réponses : relisez-la avant de valider.} other {# propositions ajoutées d'après vos réponses : relisez-les avant de valider.}}"
       },
-      "retry": "Réessayer"
+      "retry": "Réessayer",
+      "enrich": {
+        "title": "Enrichir mon profil",
+        "hint": "Une compétence absente de votre CV n'est pas forcément une compétence que vous n'avez pas. Répondez seulement si c'est vrai.",
+        "question": "Certaines compétences recherchées ne figurent pas dans votre CV. Les possédez-vous ?",
+        "reassure": "Rien n'est coché à votre place et rien n'est ajouté sans votre accord : vous relirez chaque modification à l'étape suivante.",
+        "importance": {
+          "required": "Indispensable",
+          "nice": "Souhaité",
+          "keyword": "Mot-clé de l'offre"
+        },
+        "missing": "Absent de votre CV",
+        "weak": "Cité dans votre CV, mais peu détaillé",
+        "choice": {
+          "yes": "Oui, je l'ai",
+          "similar": "Expérience similaire",
+          "no": "Non"
+        },
+        "similarLabel": "Quelle expérience similaire ?",
+        "similarPlaceholder": "Ex. : tableaux de bord sous Excel",
+        "whereLabel": "Dans quelle expérience ou activité ?",
+        "whereUnset": "Je ne précise pas",
+        "whereOther": "Ailleurs (projet personnel, formation, bénévolat…)",
+        "contextLabel": "Où exactement ?",
+        "contextPlaceholder": "Ex. : projet de fin d'études",
+        "durationLabel": "Depuis combien de temps ?",
+        "durationPlaceholder": "Ex. : 2 ans",
+        "exampleLabel": "Un exemple concret ?",
+        "examplePlaceholder": "Ex. : maquettes de l'application mobile de l'association",
+        "optional": "(facultatif)",
+        "integrate": "{count, plural, =0 {Intégrer à mon CV} other {Intégrer à mon CV (#)}}",
+        "integrating": "Intégration en cours…",
+        "skip": "Passer cette étape",
+        "next": "Voir les propositions",
+        "back": "Retour",
+        "integrated": "{count, plural, =0 {Aucune proposition ajoutée.} one {# proposition ajoutée d'après vos réponses.} other {# propositions ajoutées d'après vos réponses.}}",
+        "undo": "Retirer ces ajouts",
+        "none": "Votre CV couvre déjà toutes les compétences recherchées : rien à ajouter.",
+        "noneHint": "Bonne nouvelle : aucune question à vous poser."
+      }
     }
   },
   "ats": {

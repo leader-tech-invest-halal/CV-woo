@@ -102,7 +102,7 @@ export const AnalyzeInput = z.object({
 
 /** Blocs que l'IA a le droit de réécrire : résumé, accroche, puces et listes de compétences.
  *  Jamais le nom, les coordonnées, les titres de rubrique ni les en-têtes (poste, entreprise, dates). */
-function rewritableIds(structure: z.infer<typeof AnalyzeInput>["resume"]["structure"]): Set<string> {
+export function rewritableIds(structure: z.infer<typeof AnalyzeInput>["resume"]["structure"]): Set<string> {
   const ids = new Set<string>(structure.summaryBlockIds);
   if (structure.headlineBlockId) ids.add(structure.headlineBlockId);
   for (const s of structure.sections) {

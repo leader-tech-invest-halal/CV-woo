@@ -265,7 +265,8 @@
       "flag": {
         "number": "The number “{value}” isn't in your resume.",
         "term": "“{value}” isn't in your resume.",
-        "keyword": "The keyword “{value}” isn't backed by your resume."
+        "keyword": "The keyword “{value}” isn't backed by your resume.",
+        "similar": "“{value}”: you said you have similar experience, not this skill. Remove this word or edit the sentence."
       },
       "flagHelp": "To be safe, this change is unticked. Accept it only if it's true.",
       "accepted": "{count} of {total} accepted",
@@ -357,6 +358,7 @@
         "offer": "The job",
         "requirements": "Requirements",
         "compare": "Comparison",
+        "enrich": "Enrich my profile",
         "changes": "Suggestions",
         "review": "Review",
         "preview": "Download"
@@ -377,7 +379,7 @@
         "hint": "Each skill is checked against a sentence from your resume. Nothing is made up.",
         "proof": "Evidence in your resume:",
         "advice": "Tip:",
-        "next": "See the suggestions"
+        "next": "Enrich my profile"
       },
       "changes": {
         "title": "Rewording suggestions",
@@ -390,7 +392,9 @@
         "acceptAllHint": "“Accept all” doesn't tick suggestions that need checking: confirm those one by one.",
         "origin": "From:",
         "headline": "Headline (under your name)",
-        "summary": "Profile / summary"
+        "summary": "Profile / summary",
+        "fromProfile": "From your answers",
+        "unplaced": "These confirmed skills couldn't be placed in your resume: {skills}. You can add them yourself by editing a skills line below."
       },
       "review": {
         "title": "Check before generating your resume",
@@ -404,9 +408,49 @@
       },
       "success": {
         "parsed": "Resume read: {count, plural, one {# section found} other {# sections found}}.",
-        "analyzed": "Analysis complete."
+        "analyzed": "Analysis complete.",
+        "enriched": "{count, plural, =0 {No suggestion could be added from your answers.} one {# suggestion added from your answers: review it before confirming.} other {# suggestions added from your answers: review them before confirming.}}"
       },
-      "retry": "Try again"
+      "retry": "Try again",
+      "enrich": {
+        "title": "Enrich my profile",
+        "hint": "A skill missing from your resume isn't necessarily a skill you don't have. Only answer if it's true.",
+        "question": "Some skills the employer wants aren't in your resume. Do you have them?",
+        "reassure": "Nothing is ticked for you and nothing is added without your approval: you'll review every change in the next step.",
+        "importance": {
+          "required": "Required",
+          "nice": "Nice to have",
+          "keyword": "Job keyword"
+        },
+        "missing": "Not in your resume",
+        "weak": "Mentioned in your resume, but not detailed",
+        "choice": {
+          "yes": "Yes, I have it",
+          "similar": "Similar experience",
+          "no": "No"
+        },
+        "similarLabel": "Which similar experience?",
+        "similarPlaceholder": "E.g. dashboards in Excel",
+        "whereLabel": "In which job or activity?",
+        "whereUnset": "I'd rather not say",
+        "whereOther": "Elsewhere (personal project, course, volunteering…)",
+        "contextLabel": "Where exactly?",
+        "contextPlaceholder": "E.g. final-year project",
+        "durationLabel": "For how long?",
+        "durationPlaceholder": "E.g. 2 years",
+        "exampleLabel": "A concrete example?",
+        "examplePlaceholder": "E.g. mock-ups for the charity's mobile app",
+        "optional": "(optional)",
+        "integrate": "{count, plural, =0 {Add to my resume} other {Add to my resume (#)}}",
+        "integrating": "Adding…",
+        "skip": "Skip this step",
+        "next": "See the suggestions",
+        "back": "Back",
+        "integrated": "{count, plural, =0 {No suggestion added.} one {# suggestion added from your answers.} other {# suggestions added from your answers.}}",
+        "undo": "Remove these additions",
+        "none": "Your resume already covers every skill the employer wants: nothing to add.",
+        "noneHint": "Good news: no questions for you."
+      }
     }
   },
   "ats": {
