@@ -63,7 +63,8 @@ begin
     raise exception 'not_authenticated' using errcode = '42501';
   end if;
   perform pg_advisory_xact_lock(hashtext('analysis:' || uid::text));
-  select coalesce(analyses_quota, 5) into quota from public.plans where tier = 'free';
+  select analyses_quota into quota from public.plans where tier = 'free';
+  quota := coalesce(quota, 5);
   select count(*) into used from public.usage_events
     where user_id = uid and kind = 'analysis' and created_at >= date_trunc('month', now());
   if used >= quota then
