@@ -316,6 +316,17 @@
         "counting": "Calcul du nombre de pages…",
         "pages": "Votre CV fait {count, plural, one {# page} other {# pages}} (PDF).",
         "tooLong": "Votre parcours ne tient pas lisiblement sur une page : il reste sur plusieurs pages, sans rien supprimer."
+      },
+      "ats": {
+        "title": "Lisibilité par les logiciels de recrutement (ATS)",
+        "before": "CV d'origine",
+        "after": "Fichier à télécharger",
+        "score": "Score de lisibilité",
+        "loading": "Vérification de la lisibilité ATS…",
+        "improved": "Points corrigés",
+        "remaining": "Encore à vérifier",
+        "allGood": "Tous les contrôles de lisibilité sont validés.",
+        "note": "Calculé sans IA sur le fichier affiché (onglet PDF ou Word), avec les mêmes règles que notre vérificateur ATS gratuit. Estimation interne, pas le résultat d'un ATS précis."
       }
     },
     "errors": {

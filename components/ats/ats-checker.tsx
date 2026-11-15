@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { ScoreGauge } from "@/components/analysis/score-gauge";
 import { SkillChip } from "@/components/analysis/skill-chip";
 import type { AtsReport, Check, CheckCategory } from "@/lib/ats/checks";
+import { useCheckMessage } from "./check-message";
 
 const MAX = 5 * 1024 * 1024;
 const CATEGORIES: CheckCategory[] = ["offer", "readability", "content", "file"];
@@ -62,17 +63,7 @@ export function AtsChecker() {
     setOffer("");
   };
 
-  const message = (c: Check) => {
-    const p = { ...(c.params ?? {}) };
-    if (c.id === "layout" && typeof p.issues === "string") {
-      p.issues = p.issues.split(",").filter(Boolean).map((i) => t(`issues.${i}`)).join(", ");
-    }
-    if (c.id === "sections" && typeof p.missing === "string") {
-      p.missing = p.missing.split(",").filter(Boolean).map((s) => t(`sectionNames.${s}`)).join(", ");
-    }
-    const key = c.id === "length" || c.id === "dates" ? String(p.issue) : c.status;
-    return t(`checks.${c.id}.${key}`, p);
-  };
+  const message = useCheckMessage();
 
   const errorBox = error && (
     <div role="alert" className="flex gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">

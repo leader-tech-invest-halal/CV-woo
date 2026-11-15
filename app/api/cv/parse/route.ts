@@ -6,6 +6,7 @@ import { structureResume } from "@/lib/ai/structure";
 import { errorResponse, rateLimit } from "@/lib/http";
 import type { ParsedResume } from "@/lib/cv/types";
 import { completeStructure } from "@/lib/cv/compose";
+import { safeAtsReadiness } from "@/lib/ats/readiness";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -23,6 +24,8 @@ export async function POST(request: Request) {
     const format = detectFormat(bytes);
 
     const extraction = format === "pdf" ? await extractPdf(bytes) : await extractDocx(bytes);
+    // Lisibilité ATS du CV d'origine (sans IA), calculée en même temps que la lecture par l'IA
+    const atsPromise = safeAtsReadiness(bytes, format, file.name);
     const { structure, style } = await structureResume({
       format,
       blocks: extraction.blocks,
@@ -36,6 +39,7 @@ export async function POST(request: Request) {
       blocks: extraction.blocks,
       structure: completeStructure(extraction.blocks, structure),
       style,
+      ats: await atsPromise,
     };
     return NextResponse.json(result);
   } catch (error) {

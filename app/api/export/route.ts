@@ -7,6 +7,7 @@ import { errorResponse, rateLimit } from "@/lib/http";
 import type { ParsedResume } from "@/lib/cv/types";
 import { applyTemplate, TEMPLATES } from "@/lib/export/templates";
 import { LAYOUT_MODES } from "@/lib/export/layout";
+import { safeAtsReadiness } from "@/lib/ats/readiness";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -71,12 +72,15 @@ export async function POST(request: Request) {
     }
 
     const filename = `${base}-cv-woo.${format}`;
+    // Lisibilité ATS du fichier exporté, pour la comparer à celle du CV d'origine
+    const ats = await safeAtsReadiness(body, format, filename);
     return new Response(Buffer.from(body), {
       headers: {
         "content-type": type,
         "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
         "cache-control": "no-store",
         ...(pages ? { "x-cv-pages": String(pages) } : {}),
+        ...(ats ? { "x-cv-ats": encodeURIComponent(JSON.stringify(ats)) } : {}),
       },
     });
   } catch (error) {

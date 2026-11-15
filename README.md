@@ -25,12 +25,13 @@ Puis ouvrir http://localhost:3000 (redirige vers `/fr`). Pages disponibles : acc
 npm test
 ```
 
-48 tests, sans réseau ni clé (l'IA et la base de données sont simulées), avec des CV fictifs fabriqués à la volée :
+53 tests, sans réseau ni clé (l'IA et la base de données sont simulées), avec des CV fictifs fabriqués à la volée :
 
 - `tests/guardrails.test.ts` : garde-fous « ne jamais inventer » (chiffres, outils, sigles, compétences manquantes) et preuves des compétences ;
 - `tests/scoring.test.ts` : score de correspondance (poids 60 / 25 / 15) ;
 - `tests/parsing.test.ts` : type de fichier, lecture des PDF (paragraphes recollés, puces séparées, PDF scanné refusé) et des Word (réécriture qui garde la mise en forme) ;
 - `tests/access.test.ts` : essai gratuit sans compte, cookie signé, quota de 5 adaptations par mois ;
 - `tests/export-layout.test.ts` : mise en page de l'export (une page en mode compact quand c'est possible, deux pages lisibles sinon, aucun texte perdu, Word aligné sur le PDF).
+- `tests/ats-readiness.test.ts` : contrôle ATS « avant / après » sur les fichiers exportés (PDF et Word), sans IA.
 
 Ils sont relancés automatiquement par GitHub à chaque envoi (`.github/workflows/tests.yml`).

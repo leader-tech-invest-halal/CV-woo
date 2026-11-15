@@ -10,6 +10,8 @@ import { ApiError, exportResume } from "./api";
 import { applyTemplate, TEMPLATES, type TemplateId } from "@/lib/export/templates";
 import { LAYOUT_MODES, type LayoutMode } from "@/lib/export/layout";
 import { TemplateThumbnail } from "./template-thumbnail";
+import { AtsCompare } from "./ats-compare";
+import type { AtsReadiness } from "@/lib/ats/checks";
 
 type Files = { pdf: Blob | null; docx: Blob | null };
 
@@ -33,6 +35,7 @@ export function PreviewStep({
   const [template, setTemplate] = useState<TemplateId>("original");
   const [layout, setLayout] = useState<LayoutMode>("compact");
   const [pages, setPages] = useState<number | null>(null);
+  const [ats, setAts] = useState<{ pdf: AtsReadiness | null; docx: AtsReadiness | null }>({ pdf: null, docx: null });
   const [files, setFiles] = useState<Files>({ pdf: null, docx: null });
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const docxRef = useRef<HTMLDivElement>(null);
@@ -43,6 +46,7 @@ export function PreviewStep({
     onError(null);
     setFiles({ pdf: null, docx: null });
     setPages(null);
+    setAts({ pdf: null, docx: null });
     Promise.all([
       exportResume("pdf", file, resume, accepted, template, layout),
       exportResume("docx", file, resume, accepted, template, layout),
@@ -51,6 +55,7 @@ export function PreviewStep({
         if (cancelled) return;
         setFiles({ pdf: pdf.blob, docx: docx.blob });
         setPages(pdf.pages);
+        setAts({ pdf: pdf.ats, docx: docx.ats });
         setPdfUrl(URL.createObjectURL(pdf.blob));
       })
       .catch((e) => !cancelled && onError(e instanceof ApiError ? e.code : "server_error"));
@@ -192,6 +197,11 @@ export function PreviewStep({
             )}
           </span>
         </p>
+
+        {/* Contrôle ATS du fichier affiché, comparé au CV d'origine */}
+        <div className="mt-5 border-t border-border pt-5">
+          <AtsCompare before={resume.ats} after={ready ? ats[tab] : null} />
+        </div>
 
         <div role="tablist" className="mt-5 inline-flex gap-1 rounded-lg bg-muted p-1">
           {(["pdf", "docx"] as const).map((v) => (

@@ -24,6 +24,9 @@ export type AtsReport = {
   keywords: { found: string[]; missing: string[] } | null;
 };
 
+/** Lisibilité seule (sans offre), pour comparer le CV d'origine et le CV exporté. */
+export type AtsReadiness = { score: number; checks: Check[] };
+
 const EMAIL = /[\w.+-]+@[\w-]+\.[\w.-]+/;
 const PHONE = /(?:\+\d{1,3}[\s.-]?)?(?:\(?\d{1,4}\)?[\s.-]?){3,6}\d{2}/;
 

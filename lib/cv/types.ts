@@ -1,3 +1,4 @@
+import type { AtsReadiness } from "@/lib/ats/checks";
 // Modèle commun aux CV PDF et DOCX.
 // Un CV est découpé en « blocs » (paragraphes ou lignes) identifiés par un id stable.
 // L'IA ne recopie jamais le texte : elle référence des ids, et ses réécritures portent l'id du bloc d'origine.
@@ -61,6 +62,8 @@ export type ParsedResume = {
   blocks: Block[];
   structure: ResumeStructure;
   style: ResumeStyle;
+  /** Lisibilité ATS du fichier importé (calculée sans IA). */
+  ats?: AtsReadiness | null;
 };
 
 export type SkillStatus = "present" | "weak" | "missing";

@@ -316,6 +316,17 @@
         "counting": "Counting pages…",
         "pages": "Your resume is {count, plural, one {# page} other {# pages}} long (PDF).",
         "tooLong": "Your background doesn't fit legibly on one page: it stays on several pages, with nothing removed."
+      },
+      "ats": {
+        "title": "Readability for applicant tracking systems (ATS)",
+        "before": "Original resume",
+        "after": "File to download",
+        "score": "Readability score",
+        "loading": "Checking ATS readability…",
+        "improved": "Fixed",
+        "remaining": "Still to check",
+        "allGood": "All readability checks passed.",
+        "note": "Computed without AI on the file shown (PDF or Word tab), with the same rules as our free ATS checker. An internal estimate, not the result of a specific ATS."
       }
     },
     "errors": {

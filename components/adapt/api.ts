@@ -1,6 +1,7 @@
 "use client";
 
 import type { AnalysisResult, ParsedResume } from "@/lib/cv/types";
+import type { AtsReadiness } from "@/lib/ats/checks";
 
 export class ApiError extends Error {
   constructor(public code: string) {
@@ -59,11 +60,16 @@ export async function exportResume(
   accepted: Record<string, string>,
   template = "original",
   layout: "compact" | "detailed" = "compact",
-): Promise<{ blob: Blob; pages: number | null }> {
+): Promise<{ blob: Blob; pages: number | null; ats: AtsReadiness | null }> {
   const form = new FormData();
   form.append("payload", JSON.stringify({ format, template, layout, resume, accepted }));
   if (resume.format === "docx") form.append("file", file);
   const res = await request("/api/export", { method: "POST", body: form });
   const pages = Number(res.headers.get("x-cv-pages")) || null;
-  return { blob: await res.blob(), pages };
+  let ats: AtsReadiness | null = null;
+  try {
+    const raw = res.headers.get("x-cv-ats");
+    if (raw) ats = JSON.parse(decodeURIComponent(raw));
+  } catch {}
+  return { blob: await res.blob(), pages, ats };
 }
