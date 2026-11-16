@@ -416,8 +416,8 @@
       "enrich": {
         "title": "Enrich my profile",
         "hint": "A skill missing from your resume isn't necessarily a skill you don't have. Only answer if it's true.",
-        "question": "Some skills the employer wants aren't in your resume. Do you have them?",
-        "reassure": "Nothing is ticked for you and nothing is added without your approval: you'll review every change in the next step.",
+        "question": "Some skills the employer wants aren't in your resume. Tick the ones you have.",
+        "reassure": "Nothing is ticked for you. Ticked skills are added to your resume; you can review the result right after.",
         "importance": {
           "required": "Required",
           "nice": "Nice to have",
@@ -432,7 +432,7 @@
         },
         "similarLabel": "Which similar experience?",
         "similarPlaceholder": "E.g. dashboards in Excel",
-        "whereLabel": "In which job or activity?",
+        "whereLabel": "In which job did you use it?",
         "whereUnset": "I'd rather not say",
         "whereOther": "Elsewhere (personal project, course, volunteering…)",
         "contextLabel": "Where exactly?",
@@ -440,7 +440,7 @@
         "durationLabel": "For how long?",
         "durationPlaceholder": "E.g. 2 years",
         "exampleLabel": "A concrete example?",
-        "examplePlaceholder": "E.g. mock-ups for the charity's mobile app",
+        "examplePlaceholder": "E.g. handling payments at the till and drive-thru",
         "optional": "(optional)",
         "integrate": "{count, plural, =0 {Add to my resume} other {Add to my resume (#)}}",
         "integrating": "Adding…",
