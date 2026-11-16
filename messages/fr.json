@@ -383,7 +383,8 @@
       "auth_required": "Créez un compte gratuit pour continuer.",
       "quota_reached": "Vous avez utilisé vos 5 adaptations du mois. Elles reviennent le 1er du mois prochain.",
       "offer_manual": "Ce site ne permet pas la récupération automatique de ses offres. Copiez le texte de l'annonce dans l'onglet « Texte de l'offre ».",
-      "offer_not_found": "Aucune offre trouvée à cette adresse : elle a peut-être expiré ou été retirée. Vérifiez le lien, ou copiez le texte de l'annonce."
+      "offer_not_found": "Aucune offre trouvée à cette adresse : elle a peut-être expiré ou été retirée. Vérifiez le lien, ou copiez le texte de l'annonce.",
+      "offer_busy": "Le site reçoit trop de demandes pour le moment. Réessayez dans quelques minutes, ou copiez le texte de l'annonce dans l'onglet « Texte de l'offre »."
     },
     "flow": {
       "steps": {

@@ -44,7 +44,7 @@ export function OfferStep({
       const code = e instanceof ApiError ? e.code : "server_error";
       onError(code);
       // Site qui bloque, offre expirée ou introuvable : on propose tout de suite le copier-coller
-      if (["offer_blocked", "offer_unreachable", "offer_manual", "offer_not_found"].includes(code)) setMode("text");
+      if (["offer_blocked", "offer_unreachable", "offer_manual", "offer_not_found", "offer_busy"].includes(code)) setMode("text");
     } finally {
       setFetching(false);
     }

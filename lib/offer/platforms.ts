@@ -28,7 +28,7 @@ export type Platform = {
 
 export const PLATFORMS: Platform[] = [
   // ——— Plateformes généralistes ———
-  { id: "linkedin", name: "LinkedIn", domains: ["linkedin.com"], kind: "board", method: "auto", status: "ok", ignoreRobots: true },
+  { id: "linkedin", name: "LinkedIn", domains: ["linkedin.com", "lnkd.in"], kind: "board", method: "auto", status: "ok", ignoreRobots: true },
   { id: "indeed", name: "Indeed", domains: ["indeed.com", "indeed.fr"], kind: "board", method: "manual", status: "manual", reason: "robots" },
   { id: "hellowork", name: "HelloWork", domains: ["hellowork.com", "regionsjob.com"], kind: "board", method: "auto", status: "ok" },
   // France Travail : description chargée après l'affichage ; lue par l'API officielle si elle est configurée
@@ -67,6 +67,26 @@ export const PLATFORMS: Platform[] = [
 ];
 
 /** Plateforme d'un lien (par nom de domaine), ou null si inconnue. */
+/**
+ * Ramène toutes les formes de liens LinkedIn vers la page de l'offre elle-même :
+ * liste ou recherche (?currentJobId=…), e-mail (/comm/jobs/view/…), lien avec titre
+ * (/jobs/view/titre-…-123), application mobile. Les autres liens sont rendus tels quels.
+ */
+export function normalizeJobUrl(raw: string): string {
+  let url: URL;
+  try {
+    url = new URL(raw.trim());
+  } catch {
+    return raw;
+  }
+  if (!/(^|\.)linkedin\.com$/i.test(url.hostname)) return raw;
+  // Seuls les liens qui ne sont pas déjà la page de l'offre sont convertis : LinkedIn redirige
+  // lui-même /jobs/view/123 vers /jobs/view/titre-123 (le convertir créerait une boucle).
+  const id =
+    url.searchParams.get("currentJobId")?.match(/^\d{6,}$/)?.[0] ?? url.pathname.match(/^\/comm\/jobs\/view\/(\d{6,})/)?.[1];
+  return id ? `https://www.linkedin.com/jobs/view/${id}/` : raw;
+}
+
 export function detectPlatform(raw: string): Platform | null {
   let host: string;
   try {

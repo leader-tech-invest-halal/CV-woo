@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { extractOffer } from "@/lib/offer/extract";
-import { detectPlatform, PLATFORMS } from "@/lib/offer/platforms";
+import { detectPlatform, normalizeJobUrl, PLATFORMS } from "@/lib/offer/platforms";
 import { isAllowed } from "@/lib/offer/robots";
 import { franceTravailId } from "@/lib/offer/france-travail";
 
@@ -82,6 +82,21 @@ describe("registre des plateformes", () => {
     ["https://emploi.sncf.com/nos-offres/858826", "sncf", "auto"],
   ])("reconnaît %s", (url, id, method) => {
     expect(detectPlatform(url)).toMatchObject({ id, method });
+  });
+
+  it.each([
+    "https://www.linkedin.com/jobs/collections/recommended/?currentJobId=4490299134",
+    "https://www.linkedin.com/jobs/search/?currentJobId=4490299134&keywords=communication",
+    "https://www.linkedin.com/comm/jobs/view/4490299134/?trackingId=abc",
+  ])("ramène le lien LinkedIn %s à la page de l'offre", (raw) => {
+    expect(normalizeJobUrl(raw)).toBe("https://www.linkedin.com/jobs/view/4490299134/");
+  });
+
+  it("ne touche pas aux autres liens (dont la page de l'offre, que LinkedIn redirige lui-même)", () => {
+    const slug = "https://fr.linkedin.com/jobs/view/charg%C3%A9-e-de-communication-digitale-stage-at-doyield-4490299134";
+    expect(normalizeJobUrl(slug)).toBe(slug);
+    expect(normalizeJobUrl("https://www.hellowork.com/fr-fr/emplois/1.html?x=1")).toBe("https://www.hellowork.com/fr-fr/emplois/1.html?x=1");
+    expect(normalizeJobUrl("https://www.linkedin.com/company/acme")).toBe("https://www.linkedin.com/company/acme");
   });
 
   it("laisse les sites inconnus à l'extracteur générique", () => {

@@ -7,7 +7,7 @@ import zlib from "node:zlib";
 import { UserFacingError } from "@/lib/cv/validate-file";
 import { isBlockedIp, parsePublicUrl } from "./safe-url";
 import { isAllowed } from "./robots";
-import { detectPlatform } from "./platforms";
+import { detectPlatform, normalizeJobUrl } from "./platforms";
 import { extractOffer, type ExtractedOffer, type OfferFields } from "./extract";
 import { fetchFranceTravail, franceTravailConfigured, franceTravailId } from "./france-travail";
 
@@ -130,7 +130,8 @@ export type OfferResult = {
  * le site (robots.txt) et ne contourne aucune protection : dans ces cas, copier-coller.
  */
 export async function fetchOfferText(raw: string): Promise<OfferResult> {
-  let url = parsePublicUrl(raw);
+  // Les liens de liste, de recherche ou d'e-mail sont ramenés à la page de l'offre (ex. LinkedIn)
+  let url = parsePublicUrl(normalizeJobUrl(raw));
   if (!url) throw new UserFacingError("invalid_url");
   const platform = detectPlatform(url.toString());
   const result = (offer: ExtractedOffer, final: URL): OfferResult => ({
@@ -153,11 +154,18 @@ export async function fetchOfferText(raw: string): Promise<OfferResult> {
   const originalPath = url.pathname;
   let response: Fetched | null = null;
 
+  let retried = false;
   for (let i = 0; i <= MAX_REDIRECTS; i++) {
     // robots.txt respecté, sauf pour les plateformes où le fondateur a choisi de maintenir la lecture
     if (!platform?.ignoreRobots && !(await robotsAllow(url, deadline))) throw new UserFacingError("offer_manual");
     try {
       response = await get(url, deadline);
+      // « Trop de demandes » (429) : un seul nouvel essai, après une courte pause
+      if (response.status === 429 && !retried && deadline - Date.now() > 4000) {
+        retried = true;
+        await new Promise((r) => setTimeout(r, 1500));
+        response = await get(url, deadline);
+      }
     } catch (error) {
       // Adresse interne détectée à la connexion : lien refusé, sans dire pourquoi
       if ((error as { code?: string }).code === "EBLOCKED") throw new UserFacingError("invalid_url");
@@ -166,7 +174,7 @@ export async function fetchOfferText(raw: string): Promise<OfferResult> {
     if (response.status >= 300 && response.status < 400 && response.location) {
       if (i === MAX_REDIRECTS) throw new UserFacingError("offer_unreachable");
       // Chaque redirection est revérifiée comme un nouveau lien
-      const next = parsePublicUrl(new URL(response.location, url).toString());
+      const next = parsePublicUrl(normalizeJobUrl(new URL(response.location, url).toString()));
       if (!next) throw new UserFacingError("invalid_url");
       url = next;
       continue;
@@ -176,7 +184,8 @@ export async function fetchOfferText(raw: string): Promise<OfferResult> {
 
   if (!response) throw new UserFacingError("offer_unreachable");
   // Accès refusé par le site (protection anti-robots) : on ne contourne pas
-  if ([401, 403, 429, 451].includes(response.status)) throw new UserFacingError("offer_blocked");
+  if (response.status === 429) throw new UserFacingError("offer_busy");
+  if ([401, 403, 451].includes(response.status)) throw new UserFacingError("offer_blocked");
   if (response.status === 404 || response.status === 410) throw new UserFacingError("offer_not_found");
   if (response.status < 200 || response.status >= 300) throw new UserFacingError("offer_unreachable");
   if (!/text\/html|application\/xhtml|text\/plain/.test(response.type)) throw new UserFacingError("offer_unreachable");
