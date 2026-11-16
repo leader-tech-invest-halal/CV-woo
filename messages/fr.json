@@ -220,7 +220,8 @@
       "docxNote": "Fichier Word : nous modifierons directement votre fichier, son design restera identique.",
       "pdfNote": "Fichier PDF : nous recréerons votre CV avec les mêmes couleurs, police et disposition.",
       "change": "Changer de fichier",
-      "next": "Continuer"
+      "next": "Continuer",
+      "pickMobile": "Choisissez votre CV (PDF ou Word) sur votre téléphone"
     },
     "offer": {
       "title": "Ajoutez l'offre d'emploi",

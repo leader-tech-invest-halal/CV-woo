@@ -220,7 +220,8 @@
       "docxNote": "Word file: we'll edit your file directly, so its design stays identical.",
       "pdfNote": "PDF file: we'll rebuild your resume with the same colors, font and layout.",
       "change": "Change file",
-      "next": "Continue"
+      "next": "Continue",
+      "pickMobile": "Choose your resume (PDF or Word) from your phone"
     },
     "offer": {
       "title": "Add the job posting",

@@ -97,7 +97,8 @@ export function StepShell({
       </div>
       {children}
       {(onBack || onNext) && (
-        <div className="flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:justify-between">
+        // Sur téléphone : boutons toujours visibles en bas de l'écran, sans devoir tout faire défiler
+        <div className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 -mx-4 flex items-center justify-between gap-3 border-t border-border bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
           {onBack ? (
             <button type="button" className={buttonClass("ghost")} onClick={onBack}>
               {backLabel ?? t("back")}
@@ -106,7 +107,7 @@ export function StepShell({
             <span />
           )}
           {onNext && (
-            <button type="button" className={buttonClass("primary")} onClick={onNext}>
+            <button type="button" className={buttonClass("primary", "md", "flex-1 md:flex-none")} onClick={onNext}>
               {nextLabel}
               <ArrowRight className="size-4" strokeWidth={1.75} aria-hidden />
             </button>
@@ -123,7 +124,7 @@ export function RequirementsStep({ result, onBack, onNext }: { result: AnalysisR
   const groups: SkillImportance[] = ["required", "nice", "keyword"];
   return (
     <StepShell title={t("title")} hint={t("hint")} onBack={onBack} onNext={onNext} nextLabel={t("next")}>
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         <p className="text-sm text-muted-foreground">{result.offer.company ?? ""}</p>
         <h3 className="text-lg font-semibold">{result.offer.title}</h3>
         {result.matches.length === 0 ? (
@@ -253,7 +254,7 @@ export function ChangesStep({
       {unplaced.length > 0 && (
         <p className="rounded-lg border border-border bg-muted/50 p-4 text-sm">{t("unplaced", { skills: unplaced.join(", ") })}</p>
       )}
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         {result.rewrites.length === 0 ? (
           <p className="text-sm text-muted-foreground">{ta("noChanges")}</p>
         ) : (
@@ -308,9 +309,9 @@ function RewriteCard({
   const t = useTranslations("adapt.analysis");
   const tc = useTranslations("adapt.flow.changes");
   return (
-    <li className={`rounded-lg border p-4 transition-colors ${on ? "border-primary/40 bg-accent/30" : "border-border"}`}>
-      <div className="flex gap-3">
-        <input type="checkbox" checked={on} aria-label={r.after} onChange={onToggle} className="mt-1 size-4 shrink-0 accent-[var(--primary)]" />
+    <li className={`rounded-lg border p-3 transition-colors sm:p-4 ${on ? "border-primary/40 bg-accent/30" : "border-border"}`}>
+      <div className="flex gap-2.5 sm:gap-3">
+        <input type="checkbox" checked={on} aria-label={r.after} onChange={onToggle} className="mt-0.5 size-5 shrink-0 accent-[var(--primary)]" />
         <div className="min-w-0 flex-1 space-y-3 text-sm">
           {(origin || r.source === "profile") && (
             <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -395,7 +396,7 @@ export function ReviewStep({
 
   return (
     <StepShell title={t("title")} hint={t("hint")} onBack={onBack} backLabel={t("back")} onNext={onNext} nextLabel={t("next")}>
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         <p className="font-semibold">{t("count", { count: kept.length })}</p>
         {kept.length > 0 && (
           <ol className="mt-4 space-y-3">
@@ -422,7 +423,7 @@ export function ReviewStep({
       </Card>
 
       {missing.length > 0 && (
-        <Card className="p-6">
+        <Card className="p-4 sm:p-6">
           <p className="text-sm font-medium">{t("missing")}</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {missing.map((m) => (
@@ -470,8 +471,8 @@ function EditableText({ value, edited, onChange }: { value: string; edited: bool
   }
 
   return (
-    <div className="flex items-start gap-2">
-      <p className="flex-1 rounded-md bg-accent px-2 py-1 text-accent-foreground">
+    <div className="flex flex-col items-start gap-1 sm:flex-row sm:gap-2">
+      <p className="w-full flex-1 rounded-md bg-accent px-2 py-1 text-accent-foreground">
         {value}
         {edited && <span className="ml-2 text-xs opacity-70">({t("edited")})</span>}
       </p>

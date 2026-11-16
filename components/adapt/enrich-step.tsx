@@ -151,7 +151,7 @@ export function EnrichStep({
 
   return (
     <StepShell title={t("title")} hint={t("hint")}>
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         <h3 className="font-semibold">{t("question")}</h3>
         <p className="mt-1 text-sm text-muted-foreground">{t("reassure")}</p>
 
@@ -250,7 +250,7 @@ export function EnrichStep({
         )}
       </Card>
 
-      <div className="flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:justify-between">
+      <div className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-border bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
         <button
           type="button"
           className={buttonClass("ghost")}
@@ -259,7 +259,7 @@ export function EnrichStep({
         >
           {t("back")}
         </button>
-        <div className="flex flex-col-reverse gap-3 sm:flex-row">
+        <div className="flex flex-1 flex-wrap justify-end gap-2 md:flex-none md:gap-3">
           <button
             type="button"
             className={buttonClass("outline")}

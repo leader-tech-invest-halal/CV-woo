@@ -56,10 +56,13 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
-      {ITEMS.map(({ href, key, icon: Icon, ready }) => {
+    <nav
+      className="fixed inset-x-0 bottom-0 z-40 grid border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      style={{ gridTemplateColumns: `repeat(${ITEMS.filter((i) => i.ready).length}, minmax(0, 1fr))` }}
+    >
+      {ITEMS.filter((i) => i.ready).map(({ href, key, icon: Icon, ready }) => {
         const active = pathname.startsWith(href);
-        const cls = `flex min-h-14 flex-col items-center justify-center gap-0.5 px-0.5 text-center text-[10px] leading-tight ${
+        const cls = `flex min-h-14 flex-col items-center justify-center gap-0.5 px-0.5 text-center text-xs leading-tight ${
           active ? "font-medium text-primary" : "text-muted-foreground"
         }`;
         const content = (

@@ -10,6 +10,7 @@ import { ApiError, exportResume } from "./api";
 import { applyTemplate, TEMPLATES, type TemplateId } from "@/lib/export/templates";
 import { LAYOUT_MODES, type LayoutMode } from "@/lib/export/layout";
 import { TemplateThumbnail } from "./template-thumbnail";
+import { PdfPages, useTouchDevice } from "./pdf-pages";
 import { AtsCompare } from "./ats-compare";
 import type { AtsReadiness } from "@/lib/ats/checks";
 
@@ -39,6 +40,7 @@ export function PreviewStep({
   const [files, setFiles] = useState<Files>({ pdf: null, docx: null });
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const docxRef = useRef<HTMLDivElement>(null);
+  const touch = useTouchDevice();
 
   // Génère les deux fichiers une seule fois : ce sont exactement ceux qui seront téléchargés
   useEffect(() => {
@@ -73,7 +75,17 @@ export function PreviewStep({
     const container = docxRef.current;
     container.innerHTML = "";
     import("docx-preview").then(({ renderAsync }) =>
-      renderAsync(files.docx!, container, undefined, { inWrapper: true, ignoreLastRenderedPageBreak: true }),
+      renderAsync(files.docx!, container, undefined, { inWrapper: true, ignoreLastRenderedPageBreak: true }).then(() => {
+        // Sur petit écran, la page A4 est réduite à la largeur disponible (pas de défilement horizontal)
+        const page = container.querySelector<HTMLElement>(".docx-wrapper > section");
+        const wrapper = container.querySelector<HTMLElement>(".docx-wrapper");
+        if (!page || !wrapper) return;
+        const scale = Math.min(1, (container.clientWidth - 16) / page.offsetWidth);
+        if (scale < 1) {
+          wrapper.style.setProperty("zoom", String(scale));
+          wrapper.style.padding = "8px";
+        }
+      }),
     );
   }, [tab, files.docx]);
 
@@ -230,10 +242,26 @@ export function PreviewStep({
             {t("loading")}
           </div>
         ) : tab === "pdf" ? (
-          <iframe src={pdfUrl ?? undefined} title={t("tabPdf")} className="h-[80dvh] w-full bg-white" />
+          touch && files.pdf ? (
+            <PdfPages blob={files.pdf} label={t("tabPdf")} />
+          ) : (
+            <iframe src={pdfUrl ?? undefined} title={t("tabPdf")} className="h-[80dvh] w-full bg-white" />
+          )
         ) : (
-          <div ref={docxRef} className="docx-preview max-h-[80dvh] overflow-auto" />
+          <div ref={docxRef} className="docx-preview overflow-x-hidden md:max-h-[80dvh] md:overflow-auto" />
         )}
+      </div>
+
+      {/* Sur téléphone : téléchargement aussi sous l'aperçu, sans remonter en haut de la page */}
+      <div className="grid grid-cols-2 gap-2 md:hidden">
+        <button type="button" className={buttonClass("primary")} disabled={!ready} onClick={() => download("pdf")}>
+          <Download className="size-4" strokeWidth={1.75} aria-hidden />
+          PDF
+        </button>
+        <button type="button" className={buttonClass("outline")} disabled={!ready} onClick={() => download("docx")}>
+          <Download className="size-4" strokeWidth={1.75} aria-hidden />
+          Word
+        </button>
       </div>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">

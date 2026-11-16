@@ -128,8 +128,9 @@ export function ResumeStep({
         }`}
       >
         <Upload className="size-8 text-primary" strokeWidth={1.5} aria-hidden />
-        <p className="mt-3 font-medium">{t("drop")}</p>
-        <p className="my-2 text-sm text-muted-foreground">{t("or")}</p>
+        <p className="mt-3 hidden font-medium [@media(pointer:fine)]:block">{t("drop")}</p>
+        <p className="my-2 hidden text-sm text-muted-foreground [@media(pointer:fine)]:block">{t("or")}</p>
+        <p className="mt-3 mb-4 font-medium [@media(pointer:fine)]:hidden">{t("pickMobile")}</p>
         <button type="button" className={buttonClass("primary")} onClick={() => input.current?.click()}>
           {t("browse")}
         </button>
