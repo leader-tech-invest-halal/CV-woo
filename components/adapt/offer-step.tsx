@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link2, LoaderCircle, TextQuote } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ApiError, fetchOffer } from "./api";
+import { detectPlatform } from "@/lib/offer/platforms";
+import type { OfferFields } from "@/lib/offer/extract";
+import { CompatibleSites, FetchedSummary, ManualNotice } from "./offer-sources";
 
 export function OfferStep({
   text,
@@ -24,7 +27,10 @@ export function OfferStep({
   const [mode, setMode] = useState<"url" | "text">("url");
   const [url, setUrl] = useState("");
   const [fetching, setFetching] = useState(false);
-  const [fetched, setFetched] = useState(false);
+  const [fetched, setFetched] = useState<{ fields: OfferFields; platform: string | null } | null>(null);
+  // Plateforme reconnue dès que le lien est collé (sans appel au serveur)
+  const platform = useMemo(() => detectPlatform(url), [url]);
+  const manual = platform?.method === "manual";
   const ready = text.trim().length >= 200;
 
   const fetchUrl = async () => {
@@ -33,11 +39,12 @@ export function OfferStep({
     try {
       const res = await fetchOffer(url);
       onText(res.text);
-      setFetched(true);
+      setFetched({ fields: res.fields, platform: res.platform?.name ?? null });
     } catch (e) {
       const code = e instanceof ApiError ? e.code : "server_error";
       onError(code);
-      if (code === "offer_blocked" || code === "offer_unreachable") setMode("text");
+      // Site qui bloque, offre expirée ou introuvable : on propose tout de suite le copier-coller
+      if (["offer_blocked", "offer_unreachable", "offer_manual", "offer_not_found"].includes(code)) setMode("text");
     } finally {
       setFetching(false);
     }
@@ -79,17 +86,22 @@ export function OfferStep({
               type="url"
               inputMode="url"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && url && fetchUrl()}
+              onChange={(e) => {
+                setUrl(e.target.value);
+                setFetched(null);
+              }}
+              onKeyDown={(e) => e.key === "Enter" && url && !manual && fetchUrl()}
               placeholder={t("urlPlaceholder")}
               className="min-h-11 flex-1 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
-            <button type="button" className={buttonClass("outline")} disabled={!url || fetching} onClick={fetchUrl}>
+            <button type="button" className={buttonClass("outline")} disabled={!url || fetching || manual} onClick={fetchUrl}>
               {fetching && <LoaderCircle className="size-4 animate-spin" aria-hidden />}
               {fetching ? t("fetching") : t("fetch")}
             </button>
           </div>
-          {fetched && <p className="mt-2 text-sm text-accent-foreground">{t("fetched")}</p>}
+          {manual && platform && <ManualNotice platform={platform} onPaste={() => setMode("text")} />}
+          {fetched && <FetchedSummary fields={fetched.fields} platform={fetched.platform} />}
+          {!fetched && !manual && <CompatibleSites />}
         </div>
       )}
 

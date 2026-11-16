@@ -6,6 +6,10 @@ import type { LookupFunction } from "node:net";
 import zlib from "node:zlib";
 import { UserFacingError } from "@/lib/cv/validate-file";
 import { isBlockedIp, parsePublicUrl } from "./safe-url";
+import { isAllowed } from "./robots";
+import { detectPlatform } from "./platforms";
+import { extractOffer, type ExtractedOffer, type OfferFields } from "./extract";
+import { fetchFranceTravail, franceTravailConfigured, franceTravailId } from "./france-travail";
 
 // Récupère le texte d'une offre d'emploi à partir de son lien.
 // Protections (SSRF) : http(s) uniquement, ports web standards, aucune adresse interne, privée ou
@@ -15,7 +19,9 @@ import { isBlockedIp, parsePublicUrl } from "./safe-url";
 
 const MAX_BYTES = 3 * 1024 * 1024;
 const MAX_REDIRECTS = 3;
-const TIMEOUT_MS = 10_000;
+const TIMEOUT_MS = 12_000;
+// Nom du robot, tel qu'annoncé aux sites (respect de leurs règles robots.txt)
+const ROBOT_NAME = "CVWooBot";
 
 /** Résolution DNS qui refuse toute adresse interne : c'est l'adresse vérifiée qui est utilisée. */
 export const safeLookup: LookupFunction = (hostname, options, callback) => {
@@ -43,7 +49,7 @@ function get(url: URL, deadline: number): Promise<Fetched> {
         agent: false,
         timeout: Math.max(1000, deadline - Date.now()),
         headers: {
-          "user-agent": "Mozilla/5.0 (compatible; CVWooBot/1.0)",
+          "user-agent": `Mozilla/5.0 (compatible; ${ROBOT_NAME}/1.0; +https://cv-woo.vercel.app)`,
           accept: "text/html,application/xhtml+xml",
           "accept-language": "fr,en;q=0.8",
           "accept-encoding": "gzip, deflate, br",
@@ -87,63 +93,68 @@ function get(url: URL, deadline: number): Promise<Fetched> {
   });
 }
 
-function decodeEntities(s: string): string {
-  return s
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;|&apos;/g, "'")
-    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)));
-}
+/** Règles robots.txt par site, gardées une heure en mémoire. */
+const robotsCache = new Map<string, { txt: string; at: number }>();
 
-function htmlToText(html: string): string {
-  return decodeEntities(
-    html
-      .replace(/<(script|style|noscript|svg|nav|footer|header)[\s\S]*?<\/\1>/gi, " ")
-      .replace(/<(br|\/p|\/div|\/li|\/h\d|\/tr)[^>]*>/gi, "\n")
-      .replace(/<li[^>]*>/gi, "\n• ")
-      .replace(/<[^>]+>/g, " "),
-  )
-    .replace(/[ \t]+/g, " ")
-    .replace(/\n\s*\n+/g, "\n\n")
-    .trim();
-}
-
-/** Beaucoup de sites d'emploi publient l'offre en données structurées schema.org (JobPosting). */
-function fromJsonLd(html: string): string | null {
-  const scripts = html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi);
-  for (const [, json] of scripts) {
+async function robotsAllow(url: URL, deadline: number): Promise<boolean> {
+  const cached = robotsCache.get(url.origin);
+  let txt = cached && Date.now() - cached.at < 3_600_000 ? cached.txt : null;
+  if (txt === null) {
     try {
-      const data = JSON.parse(json);
-      const nodes = (Array.isArray(data) ? data : data["@graph"] ?? [data]) as Record<string, unknown>[];
-      const job = nodes.find((n) => n && n["@type"] === "JobPosting");
-      if (!job) continue;
-      const org = (job.hiringOrganization as { name?: string } | undefined)?.name;
-      const parts = [
-        job.title && `Poste : ${decodeEntities(String(job.title))}`,
-        org && `Entreprise : ${decodeEntities(org)}`,
-        job.description && htmlToText(decodeEntities(String(job.description))),
-        job.qualifications && `Qualifications : ${htmlToText(String(job.qualifications))}`,
-        job.skills && `Compétences : ${htmlToText(String(job.skills))}`,
-      ].filter(Boolean);
-      if (parts.length) return parts.join("\n\n");
+      const r = await get(new URL("/robots.txt", url), Math.min(deadline, Date.now() + 4000));
+      // Pas de robots.txt (4xx) : tout est autorisé ; 5xx : on reste prudent et on autorise aussi
+      txt = r.status >= 200 && r.status < 300 && /text\/plain/i.test(r.type || "text/plain") ? new TextDecoder().decode(r.body) : "";
     } catch {
-      // JSON invalide : on essaie le bloc suivant
+      txt = "";
     }
+    robotsCache.set(url.origin, { txt, at: Date.now() });
   }
-  return null;
+  return isAllowed(txt, ROBOT_NAME, url.pathname + url.search);
 }
 
-export async function fetchOfferText(raw: string): Promise<{ text: string; url: string }> {
+/** Page d'accueil ou d'une langue (/, /fr, /fr-fr/) : signe d'une offre expirée redirigée. */
+const isHomePath = (path: string) => /^\/(?:[a-z]{2}(?:[-_][a-z]{2})?\/?)?$/i.test(path);
+
+export type OfferResult = {
+  text: string;
+  url: string;
+  platform: { id: string; name: string } | null;
+  fields: OfferFields;
+  missing: (keyof OfferFields)[];
+  source: ExtractedOffer["source"];
+};
+
+/**
+ * Récupère une offre d'emploi à partir de son lien, sur presque tous les sites :
+ * plateforme connue (registre) ou extracteur générique. Ne lit jamais une page interdite par
+ * le site (robots.txt) et ne contourne aucune protection : dans ces cas, copier-coller.
+ */
+export async function fetchOfferText(raw: string): Promise<OfferResult> {
   let url = parsePublicUrl(raw);
   if (!url) throw new UserFacingError("invalid_url");
+  const platform = detectPlatform(url.toString());
+  const result = (offer: ExtractedOffer, final: URL): OfferResult => ({
+    text: offer.text,
+    url: final.toString(),
+    platform: platform ? { id: platform.id, name: platform.name } : null,
+    fields: { title: offer.title, company: offer.company, location: offer.location, contract: offer.contract },
+    missing: offer.missing,
+    source: offer.source,
+  });
+
+  // France Travail : API officielle (la page charge l'offre après coup), si elle est configurée
+  if (platform?.id === "francetravail" && franceTravailConfigured()) {
+    const id = franceTravailId(url.toString());
+    if (id) return result(await fetchFranceTravail(id), url);
+  }
+  if (platform?.method === "manual") throw new UserFacingError("offer_manual");
+
   const deadline = Date.now() + TIMEOUT_MS;
+  const originalPath = url.pathname;
   let response: Fetched | null = null;
 
   for (let i = 0; i <= MAX_REDIRECTS; i++) {
+    if (!(await robotsAllow(url, deadline))) throw new UserFacingError("offer_manual");
     try {
       response = await get(url, deadline);
     } catch (error) {
@@ -162,15 +173,28 @@ export async function fetchOfferText(raw: string): Promise<{ text: string; url: 
     break;
   }
 
-  if (!response || response.status < 200 || response.status >= 300) throw new UserFacingError("offer_unreachable");
+  if (!response) throw new UserFacingError("offer_unreachable");
+  // Accès refusé par le site (protection anti-robots) : on ne contourne pas
+  if ([401, 403, 429, 451].includes(response.status)) throw new UserFacingError("offer_blocked");
+  if (response.status === 404 || response.status === 410) throw new UserFacingError("offer_not_found");
+  if (response.status < 200 || response.status >= 300) throw new UserFacingError("offer_unreachable");
   if (!/text\/html|application\/xhtml|text\/plain/.test(response.type)) throw new UserFacingError("offer_unreachable");
+  // Offre expirée : le site renvoie vers sa page d'accueil
+  if (!isHomePath(originalPath) && isHomePath(url.pathname)) throw new UserFacingError("offer_not_found");
+  // … ou vers une page générale (ex. /gb/en) qui ne reprend plus l'identifiant de l'offre
+  const lastSegment = originalPath.split("/").filter(Boolean).pop() ?? "";
+  if (
+    url.pathname !== originalPath &&
+    url.pathname.split("/").filter(Boolean).length <= 2 &&
+    lastSegment.length >= 4 &&
+    !url.toString().includes(lastSegment)
+  ) {
+    throw new UserFacingError("offer_not_found");
+  }
 
-  const html = new TextDecoder().decode(response.body);
+  const offer = extractOffer(new TextDecoder().decode(response.body), platform?.id);
+  // Page de connexion, anti-robot, offre retirée… : pas d'annonce reconnaissable
+  if (!offer) throw new UserFacingError("offer_blocked");
 
-  const main = html.match(/<main[\s\S]*?<\/main>/i)?.[0] ?? html.match(/<body[\s\S]*<\/body>/i)?.[0] ?? html;
-  const text = (fromJsonLd(html) ?? htmlToText(main)).slice(0, 20_000);
-
-  // Page vide, page de connexion ou anti-robot : trop peu de texte pour être une offre
-  if (text.length < 300) throw new UserFacingError("offer_blocked");
-  return { text, url: url.toString() };
+  return result(offer, url);
 }

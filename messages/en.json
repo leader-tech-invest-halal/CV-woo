@@ -238,7 +238,36 @@
       "chars": "{count} characters",
       "minChars": "At least 200 characters",
       "back": "Back",
-      "analyze": "Run the analysis"
+      "analyze": "Run the analysis",
+      "sources": {
+        "reason": {
+          "robots": "{name} doesn't allow its job ads to be read automatically: we respect that rule.",
+          "blocked": "{name} blocks automatic reading of its job ads.",
+          "dynamic": "{name} displays its job ads in a way we can't read automatically yet."
+        },
+        "step1": "Open the job ad on the site.",
+        "step2": "Select all the text: title, responsibilities, requirements.",
+        "step3": "Copy it, then paste it into “Job ad text”.",
+        "paste": "Paste the job ad text",
+        "fetchedFrom": "Job ad retrieved from {name}",
+        "fetchedGeneric": "Job ad retrieved",
+        "field": {
+          "title": "Job title",
+          "company": "Company",
+          "location": "Location",
+          "contract": "Contract"
+        },
+        "notFound": "Not found on the page",
+        "honest": "Only what appears on the page is kept, nothing is added. Check the text below and complete it if needed.",
+        "listTitle": "Compatible sites",
+        "listHint": "See the list",
+        "status": {
+          "ok": "Full retrieval",
+          "partial": "Partial retrieval (ad text, some fields to check)",
+          "manual": "Copy and paste needed"
+        },
+        "others": "Other sites are read with a generic extractor, if they allow it. If it fails, simply copy and paste the ad."
+      }
     },
     "analyzing": {
       "title": "Analyzing…",
@@ -340,7 +369,7 @@
       "empty_resume": "No text was found in this file.",
       "invalid_url": "This link isn't valid.",
       "offer_unreachable": "We couldn't open this link. Copy the job text instead.",
-      "offer_blocked": "This site doesn't let us read the posting automatically (common on LinkedIn or Indeed). Copy the job text into the “Job text” tab.",
+      "offer_blocked": "This site blocks automatic reading of the ad. Copy its text into the “Job ad text” tab.",
       "offer_too_short": "The posting is too short: paste at least 200 characters.",
       "ai_not_configured": "The AI isn't set up yet (missing API key).",
       "ai_busy": "The AI is in high demand right now. Try again in a minute.",
@@ -352,7 +381,9 @@
       "server_error": "Something went wrong. Try again.",
       "network": "Can't connect. Check your internet access.",
       "auth_required": "Create a free account to continue.",
-      "quota_reached": "You've used your 5 tailorings this month. They reset on the 1st of next month."
+      "quota_reached": "You've used your 5 tailorings this month. They reset on the 1st of next month.",
+      "offer_manual": "This site doesn't allow its job ads to be read automatically. Copy the ad text into the “Job ad text” tab.",
+      "offer_not_found": "No job ad found at this address: it may have expired or been removed. Check the link, or copy the ad text."
     },
     "flow": {
       "steps": {

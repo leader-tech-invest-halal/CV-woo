@@ -2,6 +2,7 @@
 
 import type { AnalysisResult, EnrichResult, ParsedResume, ProfileAnswer } from "@/lib/cv/types";
 import type { AtsReadiness } from "@/lib/ats/checks";
+import type { OfferResult } from "@/lib/offer/fetch";
 
 export class ApiError extends Error {
   constructor(public code: string) {
@@ -29,7 +30,7 @@ export async function parseResume(file: File): Promise<ParsedResume> {
   return (await request("/api/cv/parse", { method: "POST", body: form })).json();
 }
 
-export async function fetchOffer(url: string): Promise<{ text: string }> {
+export async function fetchOffer(url: string): Promise<OfferResult> {
   return (
     await request("/api/offer/fetch", {
       method: "POST",
