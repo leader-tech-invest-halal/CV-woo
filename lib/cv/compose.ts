@@ -1,4 +1,34 @@
-import type { Block, ResumeStructure } from "./types";
+import type { Block, ParsedResume, ResumeStructure } from "./types";
+
+/**
+ * Titre du poste visé, créé sous le nom quand le CV n'en a pas.
+ * Ce n'est pas un fait inventé : c'est l'objectif de la candidature (l'intitulé de l'offre).
+ */
+export const NEW_HEADLINE_ID = "headline-new";
+
+/** Nettoie un intitulé d'offre pour l'afficher sous le nom : sans « H/F », sans retour à la ligne. */
+export function cleanHeadline(title: string): string {
+  return title
+    .replace(/[([]?\s*\b(?:H|F|M)\s*\/\s*(?:H|F|M)(?:\s*\/\s*X)?\b\s*[)\]]?/gi, " ")
+    .replace(/\s+/g, " ")
+    .replace(/^[\s\-–—|,:]+|[\s\-–—|,:]+$/g, "")
+    .slice(0, 90)
+    .trim();
+}
+
+/**
+ * Si la personne a accepté le titre créé et que son CV n'avait pas de ligne sous le nom,
+ * l'ajoute au CV à exporter (PDF et Word recomposés).
+ */
+export function withNewHeadline<T extends Pick<ParsedResume, "blocks" | "structure">>(resume: T, accepted: Record<string, string>): T {
+  const text = accepted[NEW_HEADLINE_ID]?.trim();
+  if (!text || resume.structure.headlineBlockId) return resume;
+  return {
+    ...resume,
+    blocks: [...resume.blocks, { id: NEW_HEADLINE_ID, text: "" }],
+    structure: { ...resume.structure, headlineBlockId: NEW_HEADLINE_ID },
+  };
+}
 
 /**
  * Garantit qu'aucun bloc du CV n'est perdu : tout bloc que l'IA n'a pas rangé est rattaché

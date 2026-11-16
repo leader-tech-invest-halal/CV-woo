@@ -3,6 +3,7 @@ import { z } from "zod";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { getClient, logUsage, MODEL_SMART, toUserError } from "./client";
 import { checkRewrite, normalize, verifyEvidence } from "./guardrails";
+import { cleanHeadline, NEW_HEADLINE_ID } from "@/lib/cv/compose";
 import { computeScore } from "@/lib/scoring";
 import type { AnalysisResult, Block, ParsedResume, Rewrite, SkillMatch } from "@/lib/cv/types";
 import { UserFacingError } from "@/lib/cv/validate-file";
@@ -38,6 +39,13 @@ const AnalysisSchema = z.object({
     }),
   ),
   feedback: z.string().describe("Synthèse en 2 à 4 phrases pour le candidat"),
+  target_headline: z
+    .string()
+    .describe(
+      "Titre à placer sous le nom du candidat : l'intitulé EXACT du poste de l'offre (ex. « Équipier polyvalent »), " +
+        "sans H/F ni nom d'entreprise, suivi du type de contrat recherché seulement s'il figure dans le CV ou l'offre " +
+        "(ex. « Équipier polyvalent – emploi étudiant »). 60 caractères maximum, dans la langue du CV.",
+    ),
 });
 
 const SYSTEM = `Tu es un recruteur expérimenté et un expert des logiciels de tri de CV (ATS).
@@ -50,7 +58,7 @@ aussi pertinent que possible pour CETTE offre, comme le ferait un bon conseiller
    sans être démontré ("weak") ou absent ("missing"). Pour "present" et "weak", cite le bloc qui le prouve
    (evidence_block_id) et copie mot pour mot l'extrait exact (evidence_quote).
 3. Réécris les blocs modifiables, dans cet ordre de priorité :
-   a. L'ACCROCHE (titre sous le nom) : reprends l'intitulé du poste visé quand le parcours le justifie
+   a. L'ACCROCHE (titre sous le nom) : reprends toujours l'intitulé exact du poste visé
       (ex. « Chargé de communication digitale » → « Content & Community Manager – Stage »), en gardant
       le type de contrat recherché (stage, alternance…) s'il figure dans le CV ou l'offre.
    b. LE RÉSUMÉ / PROFIL : réécris-le pour cette offre (poste visé, tâches clés de l'offre que le candidat
@@ -198,6 +206,40 @@ export async function analyze(input: z.infer<typeof AnalyzeInput>): Promise<Anal
         (f) => !(isTargetBlock(r.block_id) && f.startsWith("term:") && offerTitle.includes(normalize(f.slice(5)))),
       ),
     });
+  }
+
+  // Titre du poste sous le nom : toujours présent, pour que le recruteur voie tout de suite le poste visé.
+  // - Le CV n'a pas de ligne sous le nom : on la crée (proposition à accepter, comme les autres).
+  // - Le CV en a une qui ne cite pas le poste, et l'IA ne l'a pas reformulée : on propose le titre.
+  const headline = cleanHeadline(parsed.target_headline || parsed.offer.title);
+  const fr = input.locale === "fr";
+  if (headline) {
+    if (!structure.headlineBlockId) {
+      rewrites.unshift({
+        blockId: NEW_HEADLINE_ID,
+        before: "",
+        after: headline,
+        reason: fr
+          ? "Ajout du titre du poste visé sous votre nom : le recruteur voit tout de suite pour quel poste vous postulez."
+          : "Adds the target job title under your name, so the recruiter instantly sees which role you're applying for.",
+        keywords: [],
+        flags: [],
+      });
+    } else if (!done.has(structure.headlineBlockId) && editable.has(structure.headlineBlockId)) {
+      const current = byId.get(structure.headlineBlockId)?.text ?? "";
+      if (current && !normalize(current).includes(normalize(headline))) {
+        rewrites.unshift({
+          blockId: structure.headlineBlockId,
+          before: current,
+          after: headline,
+          reason: fr
+            ? "Le titre sous votre nom reprend l'intitulé exact de l'offre, comme le recherchent les recruteurs et les logiciels de tri."
+            : "The title under your name now uses the exact job title, as recruiters and screening software expect.",
+          keywords: [],
+          flags: [],
+        });
+      }
+    }
   }
 
   return {

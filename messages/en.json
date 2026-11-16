@@ -394,7 +394,8 @@
         "headline": "Headline (under your name)",
         "summary": "Profile / summary",
         "fromProfile": "From your answers",
-        "unplaced": "These confirmed skills couldn't be placed in your resume: {skills}. You can add them yourself by editing a skills line below."
+        "unplaced": "These confirmed skills couldn't be placed in your resume: {skills}. You can add them yourself by editing a skills line below.",
+        "noHeadline": "No title under your name"
       },
       "review": {
         "title": "Check before generating your resume",

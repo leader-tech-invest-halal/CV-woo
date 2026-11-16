@@ -394,7 +394,8 @@
         "headline": "Accroche (titre sous le nom)",
         "summary": "Profil / résumé",
         "fromProfile": "D'après vos réponses",
-        "unplaced": "Ces compétences confirmées n'ont pas trouvé de place dans votre CV : {skills}. Vous pouvez les ajouter vous-même en modifiant une ligne de compétences ci-dessous."
+        "unplaced": "Ces compétences confirmées n'ont pas trouvé de place dans votre CV : {skills}. Vous pouvez les ajouter vous-même en modifiant une ligne de compétences ci-dessous.",
+        "noHeadline": "Aucun titre sous votre nom"
       },
       "review": {
         "title": "Vérifiez avant de générer votre CV",

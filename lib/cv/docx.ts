@@ -1,6 +1,6 @@
 import "server-only";
 import JSZip from "jszip";
-import { DOMParser, XMLSerializer, type Element as XElement, type Node as XNode } from "@xmldom/xmldom";
+import { DOMParser, XMLSerializer, type Document as XDocument, type Element as XElement, type Node as XNode } from "@xmldom/xmldom";
 import type { Block } from "./types";
 import { UserFacingError } from "./validate-file";
 import { openZip, readPart } from "./zip-guard";
@@ -72,6 +72,46 @@ async function load(bytes: Uint8Array) {
   const xml = await readPart(file);
   const doc = new DOMParser().parseFromString(xml, "text/xml");
   return { zip, doc };
+}
+
+/** Copie le paragraphe du nom, garde sa mise en forme, réduit la taille et y met le titre. */
+function insertHeadline(doc: XDocument, nameParagraph: XElement, text: string) {
+  const p = nameParagraph.cloneNode(true) as XElement;
+  // Pas de puce ni de saut de page hérités
+  for (const tag of ["numPr", "pageBreakBefore"]) {
+    const list = p.getElementsByTagNameNS(W, tag);
+    for (let i = list.length - 1; i >= 0; i--) list.item(i)!.parentNode?.removeChild(list.item(i)!);
+  }
+  const runs = p.getElementsByTagNameNS(W, "r");
+  const first = runs.item(0);
+  if (!first) return;
+  // Un seul morceau de texte, sans images ni sauts de ligne
+  for (let i = runs.length - 1; i >= 1; i--) runs.item(i)!.parentNode?.removeChild(runs.item(i)!);
+  for (const child of Array.from({ length: first.childNodes.length }, (_, i) => first.childNodes.item(i))) {
+    if (child && (child as XElement).localName !== "rPr") first.removeChild(child);
+  }
+  let rPr = first.getElementsByTagNameNS(W, "rPr").item(0);
+  if (!rPr) {
+    rPr = doc.createElementNS(W, "w:rPr") as unknown as XElement;
+    first.insertBefore(rPr, first.firstChild);
+  }
+  // Taille : environ la moitié du nom, entre 11 et 14 points ; pas de majuscules forcées
+  const nameSize = Number(rPr.getElementsByTagNameNS(W, "sz").item(0)?.getAttribute("w:val")) || 40;
+  const size = String(Math.min(28, Math.max(22, Math.round(nameSize * 0.55))));
+  for (const tag of ["sz", "szCs", "caps", "smallCaps"]) {
+    const el = rPr.getElementsByTagNameNS(W, tag).item(0);
+    if (el) rPr.removeChild(el);
+  }
+  for (const tag of ["sz", "szCs"]) {
+    const el = doc.createElementNS(W, `w:${tag}`) as unknown as XElement;
+    el.setAttribute("w:val", size);
+    rPr.appendChild(el);
+  }
+  const t = doc.createElementNS(W, "w:t") as unknown as XElement;
+  t.setAttribute("xml:space", "preserve");
+  t.appendChild(doc.createTextNode(text));
+  first.appendChild(t);
+  nameParagraph.parentNode?.insertBefore(p, nameParagraph.nextSibling);
 }
 
 const clean = (s: string) => s.replace(/[\t\n]+/g, " ").replace(/\s{2,}/g, " ").trim();
@@ -146,9 +186,23 @@ export async function extractDocx(bytes: Uint8Array): Promise<DocxExtraction> {
 }
 
 /** Applique les réécritures acceptées dans le fichier d'origine et renvoie le nouveau .docx. */
-export async function rewriteDocx(bytes: Uint8Array, rewrites: Record<string, string>): Promise<Uint8Array> {
+export async function rewriteDocx(
+  bytes: Uint8Array,
+  rewrites: Record<string, string>,
+  newHeadline?: { afterBlockIds: string[]; text?: string },
+): Promise<Uint8Array> {
   const { zip, doc } = await load(bytes);
   const paras = paragraphs(doc);
+
+  // Titre du poste créé sous le nom : nouveau paragraphe qui reprend la mise en page du nom
+  // (alignement, police, couleur), en plus petit. Inséré avant les réécritures, qui ciblent
+  // les paragraphes par leur position d'origine (déjà calculée ci-dessus).
+  const headlineText = newHeadline?.text?.trim();
+  if (headlineText) {
+    const indexes = newHeadline!.afterBlockIds.filter((id) => id.startsWith("d")).map((id) => Number(id.slice(1)));
+    const last = indexes.length ? paras[Math.max(...indexes)] : undefined;
+    if (last) insertHeadline(doc, last.el, headlineText);
+  }
 
   for (const [id, newText] of Object.entries(rewrites)) {
     const index = Number(id.slice(1));

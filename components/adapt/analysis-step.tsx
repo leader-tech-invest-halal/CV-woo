@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { ScoreGauge } from "@/components/analysis/score-gauge";
 import { SkillChip } from "@/components/analysis/skill-chip";
 import type { AnalysisResult, ParsedResume, Rewrite, SkillImportance, SkillStatus } from "@/lib/cv/types";
+import { NEW_HEADLINE_ID } from "@/lib/cv/compose";
 
 /**
  * Origine d'une phrase dans le CV : rubrique + expérience (ex. « Expérience professionnelle ·
@@ -18,7 +19,7 @@ export function useOrigin(resume: ParsedResume) {
   const text = (id: string | null | undefined) => (id ? resume.blocks.find((b) => b.id === id)?.text ?? "" : "");
   return (blockId: string): string | null => {
     const s = resume.structure;
-    if (blockId === s.headlineBlockId) return t("headline");
+    if (blockId === s.headlineBlockId || blockId === NEW_HEADLINE_ID) return t("headline");
     if (s.summaryBlockIds.includes(blockId)) return t("summary");
     for (const section of s.sections) {
       for (const entry of section.entries) {
@@ -329,7 +330,7 @@ function RewriteCard({
           <div className="grid gap-3 md:grid-cols-2">
             <div>
               <p className="mb-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">{tc("before")}</p>
-              <p className="rounded-md bg-muted/60 px-2 py-1 text-muted-foreground">{r.before}</p>
+              <p className="rounded-md bg-muted/60 px-2 py-1 text-muted-foreground">{r.before || <em>{tc("noHeadline")}</em>}</p>
             </div>
             <div>
               <p className="mb-1 text-[11px] font-semibold tracking-wide text-accent-foreground uppercase">{tc("after")}</p>

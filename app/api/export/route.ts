@@ -8,6 +8,7 @@ import type { ParsedResume } from "@/lib/cv/types";
 import { applyTemplate, TEMPLATES } from "@/lib/export/templates";
 import { LAYOUT_MODES } from "@/lib/export/layout";
 import { safeAtsReadiness } from "@/lib/ats/readiness";
+import { NEW_HEADLINE_ID, withNewHeadline } from "@/lib/cv/compose";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -43,7 +44,14 @@ export async function POST(request: Request) {
 
     // On n'accepte que des réécritures de blocs qui existent
     const known = new Set(resume.blocks.map((b) => b.id));
-    const safeAccepted = Object.fromEntries(Object.entries(accepted).filter(([id]) => known.has(id)));
+    // Le titre créé sous le nom est le seul bloc nouveau autorisé (une ligne courte)
+    if (!resume.structure.headlineBlockId) known.add(NEW_HEADLINE_ID);
+    const safeAccepted = Object.fromEntries(
+      Object.entries(accepted)
+        .filter(([id]) => known.has(id))
+        .map(([id, text]) => [id, id === NEW_HEADLINE_ID ? text.replace(/\s+/g, " ").trim().slice(0, 120) : text]),
+    );
+    const withHeadline = withNewHeadline(resume, safeAccepted);
 
     const base = resume.fileName.replace(/\.(pdf|docx)$/i, "") || "cv";
     let body: Uint8Array;
@@ -56,14 +64,17 @@ export async function POST(request: Request) {
       if (!(file instanceof File)) throw new UserFacingError("invalid_request");
       const bytes = new Uint8Array(await file.arrayBuffer());
       if (detectFormat(bytes) !== "docx") throw new UserFacingError("unsupported_file");
-      body = await rewriteDocx(bytes, safeAccepted);
+      body = await rewriteDocx(bytes, safeAccepted, {
+        afterBlockIds: [resume.structure.nameBlockId, ...(resume.structure.nameExtraBlockIds ?? [])].filter(Boolean) as string[],
+        text: resume.structure.headlineBlockId ? undefined : safeAccepted[NEW_HEADLINE_ID],
+      });
       type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     } else {
       // Le PDF décide du réglage de mise en page ; le Word reprend exactement le même
-      const pdf = await renderResumePdf({ ...resume, accepted: safeAccepted }, layout);
+      const pdf = await renderResumePdf({ ...withHeadline, accepted: safeAccepted }, layout);
       pages = pdf.pages;
       if (format === "docx") {
-        body = await renderResumeDocx({ ...resume, accepted: safeAccepted }, pdf.level);
+        body = await renderResumeDocx({ ...withHeadline, accepted: safeAccepted }, pdf.level);
         type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
       } else {
         body = pdf.bytes;
