@@ -166,7 +166,8 @@
       "reset": "Remise à zéro le 1er de chaque mois.",
       "guestTitle": "Sans compte",
       "guestText": "1 adaptation offerte. Créez un compte gratuit pour en avoir 5 par mois.",
-      "guestCta": "Créer un compte"
+      "guestCta": "Créer un compte",
+      "unlimited": "{used} ce mois-ci · illimité"
     },
     "resumes": {
       "title": "Mes CV",
@@ -690,7 +691,8 @@
       "done": "Votre compte a été supprimé. Toutes vos données ont été effacées.",
       "home": "Retour à l’accueil"
     },
-    "password": "Mot de passe"
+    "password": "Mot de passe",
+    "usageUnlimited": "{used} ce mois-ci · illimité (administrateur)"
   },
   "legal": {
     "updated": "Dernière mise à jour : {date}",

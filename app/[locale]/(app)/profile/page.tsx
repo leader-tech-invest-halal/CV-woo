@@ -42,7 +42,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
           </div>
           <div>
             <dt className="text-muted-foreground">{t("usage")}</dt>
-            <dd className="mt-0.5 font-medium tabular-nums">{t("usageValue", { used: usage.used, total: usage.quota })}</dd>
+            <dd className="mt-0.5 font-medium tabular-nums">{usage.unlimited ? t("usageUnlimited", { used: usage.used }) : t("usageValue", { used: usage.used, total: usage.quota })}</dd>
           </div>
         </dl>
       </Card>

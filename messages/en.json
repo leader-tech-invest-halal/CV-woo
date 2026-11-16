@@ -166,7 +166,8 @@
       "reset": "Resets on the 1st of each month.",
       "guestTitle": "Without an account",
       "guestText": "1 free tailoring. Create a free account to get 5 a month.",
-      "guestCta": "Create an account"
+      "guestCta": "Create an account",
+      "unlimited": "{used} this month · unlimited"
     },
     "resumes": {
       "title": "My resumes",
@@ -690,7 +691,8 @@
       "done": "Your account has been deleted. All your data has been erased.",
       "home": "Back to home"
     },
-    "password": "Password"
+    "password": "Password",
+    "usageUnlimited": "{used} this month · unlimited (admin)"
   },
   "legal": {
     "updated": "Last updated: {date}",

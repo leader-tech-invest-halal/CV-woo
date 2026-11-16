@@ -18,6 +18,7 @@ type FakeState = {
   inserts: unknown[];
   hits: Map<string, number>;
   rpcDown: boolean;
+  admin?: boolean;
 };
 const state: FakeState = { user: null, used: 0, quota: 5, inserts: [], hits: new Map(), rpcDown: false };
 
@@ -34,6 +35,7 @@ function fakeSupabase() {
         return { data: true, error: null };
       }
       if (name === "claim_analysis") {
+        if (state.admin) return { data: 999, error: null };
         const quota = state.quota ?? 5;
         if (state.used >= quota) return { data: -1, error: null };
         state.used++;
@@ -43,6 +45,10 @@ function fakeSupabase() {
       return { data: null, error: { code: "unknown" } };
     },
     from(table: string) {
+      if (table === "profiles") {
+        const q = { select: () => q, eq: () => q, maybeSingle: async () => ({ data: { role: state.admin ? "admin" : "user" } }) };
+        return q;
+      }
       if (table === "plans") {
         const q = {
           select: () => q,
@@ -77,7 +83,7 @@ const codeOf = (p: Promise<unknown>) => p.then(() => null, (e: { code?: string }
 
 beforeEach(() => {
   jar.clear();
-  Object.assign(state, { user: null, used: 0, quota: 5, inserts: [], hits: new Map(), rpcDown: false });
+  Object.assign(state, { user: null, used: 0, quota: 5, inserts: [], hits: new Map(), rpcDown: false, admin: false });
   process.env.APP_SECRET = "secret-de-test";
 });
 
@@ -167,6 +173,15 @@ describe("avec un compte", () => {
 
   it("utilise 5 par défaut si la formule est introuvable", async () => {
     state.quota = null;
-    expect(await monthlyUsage(fakeSupabase() as never, "utilisateur-fictif")).toEqual({ used: 0, quota: 5 });
+    expect(await monthlyUsage(fakeSupabase() as never, "utilisateur-fictif")).toEqual({ used: 0, quota: 5, unlimited: false });
+  });
+
+  it("laisse un administrateur adapter sans limite", async () => {
+    state.admin = true;
+    state.used = 50;
+    const ctx = await checkAnalyzeAccess(req());
+    expect(ctx.remaining).toBeNull();
+    state.rpcDown = true;
+    expect(await codeOf(checkAnalyzeAccess(req()))).toBeNull();
   });
 });

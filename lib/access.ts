@@ -30,8 +30,13 @@ async function trialCookieUsed(): Promise<boolean> {
 
 type Supabase = Awaited<ReturnType<typeof getCurrentUser>>["supabase"];
 
-/** Adaptations utilisées ce mois-ci et quota de la formule (bêta gratuite : 5). */
-export async function monthlyUsage(supabase: Supabase, userId: string): Promise<{ used: number; quota: number }> {
+/** Adaptations utilisées ce mois-ci et quota de la formule (bêta gratuite : 5). Administrateur : illimité. */
+export async function monthlyUsage(
+  supabase: Supabase,
+  userId: string,
+): Promise<{ used: number; quota: number; unlimited: boolean }> {
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
+  const unlimited = profile?.role === "admin";
   const { data: plan } = await supabase.from("plans").select("analyses_quota").eq("tier", "free").maybeSingle();
   const quota = plan?.analyses_quota ?? 5;
   const monthStart = new Date();
@@ -43,7 +48,7 @@ export async function monthlyUsage(supabase: Supabase, userId: string): Promise<
     .eq("user_id", userId)
     .eq("kind", "analysis")
     .gte("created_at", monthStart.toISOString());
-  return { used: count ?? 0, quota };
+  return { used: count ?? 0, quota, unlimited };
 }
 
 export type AccessContext = Awaited<ReturnType<typeof getCurrentUser>> & {
@@ -75,11 +80,13 @@ export async function checkAnalyzeAccess(request: Request): Promise<AccessContex
   const { data, error } = await ctx.supabase.rpc("claim_analysis");
   if (!error && typeof data === "number") {
     if (data < 0) throw new UserFacingError("quota_reached", 429);
-    return { ...ctx, remaining: data + 1, claimed: true };
+    // 999 : compte administrateur, sans limite (aucun compteur affiché)
+    return { ...ctx, remaining: data >= 999 ? null : data + 1, claimed: true };
   }
   // Fonction indisponible : ancienne vérification (compte après réussite)
   if (error) console.error("Quota : réservation indisponible", error.code);
-  const { used, quota } = await monthlyUsage(ctx.supabase, ctx.user.id);
+  const { used, quota, unlimited } = await monthlyUsage(ctx.supabase, ctx.user.id);
+  if (unlimited) return { ...ctx, remaining: null, claimed: false };
   if (used >= quota) throw new UserFacingError("quota_reached", 429);
   return { ...ctx, remaining: quota - used, claimed: false };
 }
