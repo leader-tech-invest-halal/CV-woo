@@ -15,6 +15,7 @@ protection anti-robots. Rien n'est deviné : un champ absent est affiché « non
 | Meteojob | données structurées | complet |
 | Talent.com | texte de page + titre de la page | complet |
 | SNCF (emploi.sncf.com) | données structurées | complet sauf contrat (non publié par le site) |
+| LinkedIn | données structurées (page publique de l'offre) | complet ; lecture maintenue malgré robots.txt, par décision du fondateur |
 | Lever | données structurées | complet |
 | Teamtailor | données structurées | complet |
 
@@ -34,7 +35,7 @@ Ils passent par l'extracteur générique ; marqués « partiel » jusqu'à un te
 
 | Plateforme | Raison |
 |---|---|
-| LinkedIn, Indeed | robots.txt interdit la lecture des offres aux robots |
+| Indeed | robots.txt interdit la lecture des offres aux robots, et accès refusé (403) |
 | Welcome to the Jungle, APEC, Monster, Cadremploi, Jooble, JobTeaser, Glassdoor, leboncoin | accès refusé aux robots (403) |
 | McDonald's, Carrefour, La Poste (sites carrière) | accès refusé ou indisponible pour les robots |
 | France Travail | la description est chargée après l'affichage ; lisible via l'API officielle dès que `FRANCE_TRAVAIL_CLIENT_ID` et `FRANCE_TRAVAIL_CLIENT_SECRET` sont configurés |

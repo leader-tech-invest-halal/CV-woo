@@ -154,7 +154,8 @@ export async function fetchOfferText(raw: string): Promise<OfferResult> {
   let response: Fetched | null = null;
 
   for (let i = 0; i <= MAX_REDIRECTS; i++) {
-    if (!(await robotsAllow(url, deadline))) throw new UserFacingError("offer_manual");
+    // robots.txt respecté, sauf pour les plateformes où le fondateur a choisi de maintenir la lecture
+    if (!platform?.ignoreRobots && !(await robotsAllow(url, deadline))) throw new UserFacingError("offer_manual");
     try {
       response = await get(url, deadline);
     } catch (error) {

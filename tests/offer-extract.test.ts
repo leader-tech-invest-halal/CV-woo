@@ -74,7 +74,7 @@ describe("extraction d'une offre", () => {
 
 describe("registre des plateformes", () => {
   it.each([
-    ["https://fr.linkedin.com/jobs/view/123", "linkedin", "manual"],
+    ["https://fr.linkedin.com/jobs/view/123", "linkedin", "auto"],
     ["https://fr.indeed.com/viewjob?jk=abc", "indeed", "manual"],
     ["https://www.hellowork.com/fr-fr/emplois/1.html", "hellowork", "auto"],
     ["https://candidat.francetravail.fr/offres/recherche/detail/216LZLN", "francetravail", "manual"],

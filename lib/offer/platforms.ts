@@ -19,11 +19,16 @@ export type Platform = {
   status: PlatformStatus;
   /** Raison affichée quand le copier-coller est nécessaire. */
   reason?: "robots" | "blocked" | "dynamic";
+  /**
+   * Lecture maintenue malgré robots.txt, par décision du fondateur (page publique de l'offre,
+   * lue une fois à la demande de l'utilisateur, avec l'identité réelle de CV Woo).
+   */
+  ignoreRobots?: boolean;
 };
 
 export const PLATFORMS: Platform[] = [
   // ——— Plateformes généralistes ———
-  { id: "linkedin", name: "LinkedIn", domains: ["linkedin.com"], kind: "board", method: "manual", status: "manual", reason: "robots" },
+  { id: "linkedin", name: "LinkedIn", domains: ["linkedin.com"], kind: "board", method: "auto", status: "ok", ignoreRobots: true },
   { id: "indeed", name: "Indeed", domains: ["indeed.com", "indeed.fr"], kind: "board", method: "manual", status: "manual", reason: "robots" },
   { id: "hellowork", name: "HelloWork", domains: ["hellowork.com", "regionsjob.com"], kind: "board", method: "auto", status: "ok" },
   // France Travail : description chargée après l'affichage ; lue par l'API officielle si elle est configurée
