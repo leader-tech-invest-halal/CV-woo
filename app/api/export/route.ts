@@ -59,9 +59,9 @@ export async function POST(request: Request) {
     let pages: number | null = null;
 
     // Word d'origine + design d'origine : on modifie le fichier lui-même (mise en page identique)
-    if (format === "docx" && resume.format === "docx" && template === "original") {
-      const file = form.get("file");
-      if (!(file instanceof File)) throw new UserFacingError("invalid_request");
+    // (Depuis l'historique, le fichier d'origine n'est pas conservé : le Word est alors recomposé.)
+    const file = form.get("file");
+    if (format === "docx" && resume.format === "docx" && template === "original" && file instanceof File) {
       const bytes = new Uint8Array(await file.arrayBuffer());
       if (detectFormat(bytes) !== "docx") throw new UserFacingError("unsupported_file");
       body = await rewriteDocx(bytes, safeAccepted, {

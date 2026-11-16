@@ -52,7 +52,7 @@ export default async function DashboardPage({
 
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
         <div className="space-y-6">
-          {/* Mes CV : rien n'est conservé pour l'instant, on le dit clairement */}
+          {/* Mes CV : rien n'est conservé sans l'accord de la personne (historique facultatif) */}
           <section>
             <h2 className="mb-3 font-semibold">{t("resumes.title")}</h2>
             <Card className="flex flex-col items-center px-6 py-10 text-center">
@@ -64,7 +64,7 @@ export default async function DashboardPage({
                 {t("resumes.emptyText")}
               </p>
               <Link
-                href="/adapt"
+                href="/history"
                 className={buttonClass("outline", "md", "mt-5")}
               >
                 <FileText className="size-4" strokeWidth={1.5} aria-hidden />

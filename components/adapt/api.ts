@@ -77,7 +77,7 @@ export async function enrichProfile(
 
 export async function exportResume(
   format: "pdf" | "docx",
-  file: File,
+  file: File | null,
   resume: ParsedResume,
   accepted: Record<string, string>,
   template = "original",
@@ -85,7 +85,7 @@ export async function exportResume(
 ): Promise<{ blob: Blob; pages: number | null; ats: AtsReadiness | null }> {
   const form = new FormData();
   form.append("payload", JSON.stringify({ format, template, layout, resume, accepted }));
-  if (resume.format === "docx") form.append("file", file);
+  if (resume.format === "docx" && file) form.append("file", file);
   const res = await request("/api/export", { method: "POST", body: form });
   const pages = Number(res.headers.get("x-cv-pages")) || null;
   let ats: AtsReadiness | null = null;

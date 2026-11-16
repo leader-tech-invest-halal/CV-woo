@@ -11,6 +11,8 @@ import { applyTemplate, TEMPLATES, type TemplateId } from "@/lib/export/template
 import { LAYOUT_MODES, type LayoutMode } from "@/lib/export/layout";
 import { TemplateThumbnail } from "./template-thumbnail";
 import { PdfPages, useTouchDevice } from "./pdf-pages";
+import { SaveToHistory } from "@/components/history/save-to-history";
+import type { HistoryMeta } from "@/components/history/history-api";
 import { AtsCompare } from "./ats-compare";
 import type { AtsReadiness } from "@/lib/ats/checks";
 
@@ -23,6 +25,7 @@ export function PreviewStep({
   onBack,
   onRestart,
   onError,
+  history,
 }: {
   file: File;
   resume: ParsedResume;
@@ -30,6 +33,8 @@ export function PreviewStep({
   onBack: () => void;
   onRestart: () => void;
   onError: (code: string | null) => void;
+  /** Pour l'historique : titre de l'offre, entreprise, score, et si la personne est connectée. */
+  history?: { meta: HistoryMeta; signedIn: boolean };
 }) {
   const t = useTranslations("adapt.preview");
   const [tab, setTab] = useState<"pdf" | "docx">(resume.format === "docx" ? "docx" : "pdf");
@@ -125,6 +130,20 @@ export function PreviewStep({
             </button>
           </div>
         </div>
+
+        {history && (
+          <div className="mt-4">
+            <SaveToHistory
+              meta={history.meta}
+              signedIn={history.signedIn}
+              resume={resume}
+              accepted={accepted}
+              template={template}
+              layout={layout}
+              disabled={!ready}
+            />
+          </div>
+        )}
 
         <p className="mt-5 text-sm font-medium">{t("templates.title")}</p>
         {/* Miniatures des modèles : « Votre design » utilise les couleurs et la disposition du CV importé */}

@@ -11,7 +11,7 @@ const ITEMS: Item[] = [
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, ready: true },
   { href: "/adapt", key: "adapt", icon: Sparkles, ready: true },
   { href: "/resumes", key: "resumes", icon: Files, ready: false },
-  { href: "/history", key: "history", icon: History, ready: false },
+  { href: "/history", key: "history", icon: History, ready: true },
   { href: "/profile", key: "profile", icon: User, ready: true },
 ];
 

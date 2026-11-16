@@ -108,7 +108,7 @@
     "q2": "Can CV Woo invent experience?",
     "a2": "No. The model is forbidden from adding information, and an automatic check flags any number, date, degree or employer that isn't in your original resume.",
     "q3": "What happens to my resume and my data?",
-    "a3": "Your file is never saved on our servers: it’s read in memory, analyzed, then forgotten. To perform the analysis, its text is sent to our artificial intelligence provider (Anthropic). If you create an account, we only keep your email and your number of tailorings this month.",
+    "a3": "Your file is never saved on our servers: it’s read in memory, analyzed, then forgotten. To perform the analysis, its text is sent to our artificial intelligence provider (Anthropic). If you create an account, we only keep your email and your number of tailorings this month. If you choose to, you can save a tailored resume to your history: its text is then kept for 90 days (or until you delete it), never the original file.",
     "q4": "Does the score guarantee an interview?",
     "a4": "No, no tool can guarantee an interview. The score measures how well your resume matches the job, based on evidence found in your resume, and shows you what to strengthen."
   },
@@ -147,7 +147,7 @@
       "soon": "Soon",
       "adapt": "Tailor a resume"
     },
-    "betaBanner": "Free beta: resume history and cover letters are coming soon."
+    "betaBanner": "Free beta: cover letters are coming soon."
   },
   "dashboard": {
     "greeting": "Hello 👋",
@@ -171,9 +171,9 @@
     },
     "resumes": {
       "title": "My resumes",
-      "emptyTitle": "Your resumes aren't kept",
-      "emptyText": "To protect your data, upload your resume for each tailoring. Optional history is coming soon.",
-      "import": "Tailor a resume"
+      "emptyTitle": "Find your tailored resumes",
+      "emptyText": "Nothing is kept without your consent. After tailoring, you can save the resume to your history for 90 days.",
+      "import": "Open my history"
     },
     "analyses": {
       "title": "Recent analyses",
@@ -678,7 +678,7 @@
     "usage": "Adaptations this month",
     "usageValue": "{used} of {total}",
     "data": "My data",
-    "dataText": "Your resumes are never stored: they are analyzed then forgotten. We only keep your email, your encrypted password, your language and the number of adaptations you made.",
+    "dataText": "Your files are never kept: they're analysed and then forgotten. We keep your email, your encrypted password, your language, the number of adaptations and, only if you save them, your tailored resumes (90 days, deletable anytime in History).",
     "privacyLink": "Read the privacy policy",
     "delete": {
       "title": "Delete my account",
@@ -721,7 +721,7 @@
       "cvTitle": "Your resume and the job offer",
       "cv1": "Your file is read in memory on our servers (Paris region) for the time of the analysis, then forgotten: it is stored neither on our servers nor in our database.",
       "cv2": "To perform the analysis, the text of the resume and of the offer is sent to our artificial intelligence provider, Anthropic PBC (USA). Under its commercial terms, Anthropic does not use this data to train its models and only keeps it temporarily, according to its own retention policy.",
-      "cv3": "The preview and the PDF/Word export are generated on the fly and are not stored.",
+      "cv3": "The preview and the PDF/Word export are generated on the fly and are not kept. Exception, only at your request: if you click “Save to my history”, the text of the tailored resume, the accepted changes and the job title are stored in our database (Supabase, Paris region) for 90 days, then deleted automatically. You can delete them anytime from the History page; they are also erased with your account. The original file is never kept.",
       "accountTitle": "Your account",
       "account": "If you create an account, we keep: your email address, your password (encrypted, never readable), your language and the date of each adaptation (to apply the monthly limit). Legal basis: performing the service you request. Duration: until you delete your account.",
       "trialTitle": "Without an account",
@@ -735,6 +735,40 @@
       "rightsTitle": "Your rights",
       "rights": "You can access, correct or erase your data, object to its processing or request its portability. You can delete your account yourself from the Profile page, or write to us at {email}. If you believe your rights are not respected, you can contact the CNIL (cnil.fr).",
       "deleteLink": "Delete my account"
+    }
+  },
+  "history": {
+    "title": "History",
+    "subtitle": "The tailored resumes you chose to save. Each one is deleted automatically after 90 days.",
+    "loading": "Loading your history…",
+    "error": "We couldn't load or update your history. Please try again in a moment.",
+    "emptyTitle": "No saved resumes yet",
+    "emptyText": "After tailoring a resume, click “Save to my history” in the preview to find it here.",
+    "adapt": "Tailor a resume",
+    "guest": "Log in to find the tailored resumes you saved.",
+    "login": "Log in",
+    "layout": {
+      "compact": "Compact",
+      "detailed": "Detailed"
+    },
+    "score": "{score}% match",
+    "expires": "Deleted automatically on {date}",
+    "delete": "Delete “{title}”",
+    "deleteAll": "Delete my whole history",
+    "deleteAllConfirm": "Permanently delete {count, plural, one {this resume} other {these # resumes}}? This can't be undone.",
+    "deleteAllButton": "Yes, delete everything",
+    "cancel": "Cancel",
+    "save": {
+      "button": "Save to my history",
+      "hint": "Optional: keep this resume for 90 days, delete it anytime.",
+      "done": "Saved to your history.",
+      "open": "Open my history",
+      "guest": "<link>Create a free account</link> to keep your tailored resumes in a history.",
+      "errors": {
+        "history_full": "Your history is full (50 resumes). Delete some to save a new one.",
+        "not_signed_in": "Your session expired: log in again to save this resume.",
+        "unknown": "Saving didn't work. Please try again."
+      }
     }
   }
 }

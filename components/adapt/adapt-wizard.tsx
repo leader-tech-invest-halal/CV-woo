@@ -321,6 +321,14 @@ export function AdaptWizard() {
           onBack={() => go("review")}
           onRestart={restart}
           onError={(code) => setError(code ? { code } : null)}
+          history={
+            result
+              ? {
+                  meta: { offerTitle: result.offer.title, company: result.offer.company, score: result.score },
+                  signedIn: result.signedIn !== false,
+                }
+              : undefined
+          }
         />
       )}
     </div>

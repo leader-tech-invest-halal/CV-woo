@@ -108,7 +108,7 @@
     "q2": "CV Woo peut-il inventer des expériences ?",
     "a2": "Non. Le modèle a l'interdiction d'ajouter des informations, et une vérification automatique signale tout chiffre, date, diplôme ou employeur absent de votre CV d'origine.",
     "q3": "Que devient mon CV et mes données ?",
-    "a3": "Votre fichier n’est jamais enregistré sur nos serveurs : il est lu en mémoire, analysé, puis oublié. Pour réaliser l’analyse, son texte est transmis à notre prestataire d’intelligence artificielle (Anthropic). Si vous créez un compte, nous conservons uniquement votre e-mail et le nombre d’adaptations du mois.",
+    "a3": "Votre fichier n’est jamais enregistré sur nos serveurs : il est lu en mémoire, analysé, puis oublié. Pour réaliser l’analyse, son texte est transmis à notre prestataire d’intelligence artificielle (Anthropic). Si vous créez un compte, nous conservons uniquement votre e-mail et le nombre d’adaptations du mois. Si vous le choisissez, vous pouvez enregistrer un CV adapté dans votre historique : son texte est alors conservé 90 jours (ou jusqu’à ce que vous le supprimiez), jamais le fichier d’origine.",
     "q4": "Le score garantit-il un entretien ?",
     "a4": "Non, aucun outil ne peut garantir un entretien. Le score mesure à quel point votre CV correspond à l'offre, à partir des preuves trouvées dans votre CV, et vous montre ce qu'il faut renforcer."
   },
@@ -147,7 +147,7 @@
       "soon": "Bientôt",
       "adapt": "Adapter un CV"
     },
-    "betaBanner": "Bêta gratuite : l'historique de vos CV et les lettres de motivation arrivent bientôt."
+    "betaBanner": "Bêta gratuite : les lettres de motivation arrivent bientôt."
   },
   "dashboard": {
     "greeting": "Bonjour 👋",
@@ -171,9 +171,9 @@
     },
     "resumes": {
       "title": "Mes CV",
-      "emptyTitle": "Vos CV ne sont pas conservés",
-      "emptyText": "Pour protéger vos données, importez votre CV à chaque adaptation. L'historique (optionnel) arrive bientôt.",
-      "import": "Adapter un CV"
+      "emptyTitle": "Retrouvez vos CV adaptés",
+      "emptyText": "Rien n'est conservé sans votre accord. Après une adaptation, vous pouvez enregistrer le CV dans votre historique pendant 90 jours.",
+      "import": "Voir mon historique"
     },
     "analyses": {
       "title": "Analyses récentes",
@@ -678,7 +678,7 @@
     "usage": "Adaptations ce mois-ci",
     "usageValue": "{used} sur {total}",
     "data": "Mes données",
-    "dataText": "Vos CV ne sont jamais conservés : ils sont analysés puis oubliés. Nous gardons seulement votre e-mail, votre mot de passe chiffré, votre langue et le nombre d’adaptations réalisées.",
+    "dataText": "Vos fichiers ne sont jamais conservés : ils sont analysés puis oubliés. Nous gardons votre e-mail, votre mot de passe chiffré, votre langue, le nombre d’adaptations réalisées et, seulement si vous les enregistrez, vos CV adaptés (90 jours, supprimables à tout moment dans l’Historique).",
     "privacyLink": "Lire la politique de confidentialité",
     "delete": {
       "title": "Supprimer mon compte",
@@ -721,7 +721,7 @@
       "cvTitle": "Votre CV et l’offre d’emploi",
       "cv1": "Votre fichier est lu en mémoire sur nos serveurs (région de Paris), le temps de l’analyse, puis oublié : il n’est enregistré ni sur nos serveurs ni dans notre base de données.",
       "cv2": "Pour réaliser l’analyse, le texte du CV et de l’offre est transmis à notre prestataire d’intelligence artificielle, Anthropic PBC (États-Unis). Selon ses conditions commerciales, Anthropic n’utilise pas ces données pour entraîner ses modèles et ne les conserve que temporairement, selon sa propre politique de conservation.",
-      "cv3": "L’aperçu et l’export PDF/Word sont produits à la volée et ne sont pas conservés.",
+      "cv3": "L’aperçu et l’export PDF/Word sont produits à la volée et ne sont pas conservés. Exception, à votre demande uniquement : si vous cliquez sur « Enregistrer dans mon historique », le texte du CV adapté, les modifications acceptées et le titre de l’offre sont conservés dans notre base de données (Supabase, région de Paris) pendant 90 jours, puis supprimés automatiquement. Vous pouvez les supprimer à tout moment depuis la page Historique ; ils sont aussi effacés avec votre compte. Le fichier d’origine n’est jamais conservé.",
       "accountTitle": "Votre compte",
       "account": "Si vous créez un compte, nous conservons : votre adresse e-mail, votre mot de passe (chiffré, jamais lisible), votre langue et la date de chaque adaptation (pour appliquer la limite mensuelle). Base légale : l’exécution du service que vous demandez. Durée : jusqu’à la suppression de votre compte.",
       "trialTitle": "Sans compte",
@@ -735,6 +735,40 @@
       "rightsTitle": "Vos droits",
       "rights": "Vous pouvez accéder à vos données, les corriger, les effacer, vous opposer à leur traitement ou demander leur portabilité. Vous pouvez supprimer votre compte vous-même depuis la page Profil, ou nous écrire à {email}. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (cnil.fr).",
       "deleteLink": "Supprimer mon compte"
+    }
+  },
+  "history": {
+    "title": "Historique",
+    "subtitle": "Les CV adaptés que vous avez choisi d'enregistrer. Chacun est supprimé automatiquement après 90 jours.",
+    "loading": "Chargement de l'historique…",
+    "error": "Impossible de charger ou de modifier l'historique. Réessayez dans un instant.",
+    "emptyTitle": "Aucun CV enregistré pour l'instant",
+    "emptyText": "Après une adaptation, cliquez sur « Enregistrer dans mon historique » dans l'aperçu pour retrouver votre CV ici.",
+    "adapt": "Adapter un CV",
+    "guest": "Connectez-vous pour retrouver les CV adaptés que vous avez enregistrés.",
+    "login": "Se connecter",
+    "layout": {
+      "compact": "Compact",
+      "detailed": "Détaillé"
+    },
+    "score": "correspondance {score} %",
+    "expires": "Supprimé automatiquement le {date}",
+    "delete": "Supprimer « {title} »",
+    "deleteAll": "Supprimer tout mon historique",
+    "deleteAllConfirm": "Supprimer définitivement {count, plural, one {ce CV} other {ces # CV}} ? Cette action est irréversible.",
+    "deleteAllButton": "Oui, tout supprimer",
+    "cancel": "Annuler",
+    "save": {
+      "button": "Enregistrer dans mon historique",
+      "hint": "Facultatif : retrouvez ce CV pendant 90 jours, supprimable à tout moment.",
+      "done": "Enregistré dans votre historique.",
+      "open": "Voir mon historique",
+      "guest": "<link>Créez un compte gratuit</link> pour garder vos CV adaptés dans un historique.",
+      "errors": {
+        "history_full": "Votre historique est plein (50 CV). Supprimez-en quelques-uns pour en enregistrer un nouveau.",
+        "not_signed_in": "Votre session a expiré : reconnectez-vous pour enregistrer ce CV.",
+        "unknown": "L'enregistrement n'a pas fonctionné. Réessayez."
+      }
     }
   }
 }
