@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check, Download, FileText } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { PdfPages, useTouchDevice } from "./pdf-pages";
 import { SaveToHistory } from "@/components/history/save-to-history";
 import type { HistoryMeta } from "@/components/history/history-api";
 import { AtsCompare } from "./ats-compare";
-import type { AtsReadiness } from "@/lib/ats/checks";
+import { computeAtsScore, keywordCheck, type AtsReadiness } from "@/lib/ats/checks";
 
 type Files = { pdf: Blob | null; docx: Blob | null };
 
@@ -27,6 +27,7 @@ export function PreviewStep({
   onRestart,
   onError,
   history,
+  keywords = [],
 }: {
   file: File;
   resume: ParsedResume;
@@ -36,6 +37,8 @@ export function PreviewStep({
   onError: (code: string | null) => void;
   /** Pour l'historique : titre de l'offre, entreprise, score, et si la personne est connectée. */
   history?: { meta: HistoryMeta; signedIn: boolean };
+  /** Mots-clés de l'offre (analyse), comptés dans le score ATS avant et après */
+  keywords?: { term: string; importance: "required" | "nice" }[];
 }) {
   const t = useTranslations("adapt.preview");
   const ta = useTranslations("adapt.analyzing");
@@ -61,11 +64,11 @@ export function PreviewStep({
     setAts({ pdf: null, docx: null });
     setProgress({ pdf: false, docx: false });
     // Chaque fichier signale sa fin dès qu'il est prêt : la progression affichée est réelle
-    const pdfJob = exportResume("pdf", file, resume, accepted, template, layout).then((r) => {
+    const pdfJob = exportResume("pdf", file, resume, accepted, template, layout, keywords).then((r) => {
       if (!cancelled) setProgress((p) => ({ ...p, pdf: true }));
       return r;
     });
-    const docxJob = exportResume("docx", file, resume, accepted, template, layout).then((r) => {
+    const docxJob = exportResume("docx", file, resume, accepted, template, layout, keywords).then((r) => {
       if (!cancelled) setProgress((p) => ({ ...p, docx: true }));
       return r;
     });
@@ -118,6 +121,17 @@ export function PreviewStep({
   };
 
   const ready = files.pdf && files.docx;
+  // Score du CV d'origine : lisibilité mesurée à l'import + mots-clés de l'offre dans son texte
+  const atsBefore = useMemo(() => {
+    if (!resume.ats) return null;
+    if (!keywords.length) return resume.ats;
+    const k = keywordCheck(
+      resume.blocks.map((b) => b.text).join("\n"),
+      keywords.map((x) => ({ ...x, variants: [] })),
+    );
+    const checks = [...resume.ats.checks.filter((c) => c.id !== "keywords"), k.check];
+    return { score: computeAtsScore(checks), checks, keywords: { found: k.found, missing: k.missing } };
+  }, [resume, keywords]);
   const note =
     template === "moderne"
       ? t("templateHintTwoColumns")
@@ -246,7 +260,7 @@ export function PreviewStep({
 
         {/* Contrôle ATS du fichier affiché, comparé au CV d'origine */}
         <div className="mt-5 border-t border-border pt-5">
-          <AtsCompare before={resume.ats} after={ready ? ats[tab] : null} />
+          <AtsCompare before={atsBefore} after={ready ? ats[tab] : null} />
         </div>
 
         <div role="tablist" className="mt-5 inline-flex gap-1 rounded-lg bg-muted p-1">

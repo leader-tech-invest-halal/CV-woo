@@ -175,6 +175,12 @@ export function AdaptWizard() {
       .map((a) => a.skill),
   );
 
+  // Mots-clés de l'offre pour le score ATS (indispensables = « required », le reste = « nice »)
+  const offerKeywords = useMemo(
+    () => (result?.matches ?? []).slice(0, 80).map((m) => ({ term: m.skill, importance: m.importance === "required" ? ("required" as const) : ("nice" as const) })),
+    [result],
+  );
+
   const restart = () => {
     setOfferText("");
     setResult(null);
@@ -329,6 +335,7 @@ export function AdaptWizard() {
                 }
               : undefined
           }
+          keywords={offerKeywords}
         />
       )}
     </div>

@@ -13,6 +13,8 @@ export type Check = {
   status: CheckStatus;
   weight: number;
   params?: Record<string, string | number>;
+  /** Part obtenue de 0 à 1 quand le contrôle est proportionnel (ex. mots-clés trouvés) */
+  score?: number;
 };
 
 export type OfferKeyword = { term: string; variants: string[]; importance: "required" | "nice" };
@@ -25,17 +27,66 @@ export type AtsReport = {
 };
 
 /** Lisibilité seule (sans offre), pour comparer le CV d'origine et le CV exporté. */
-export type AtsReadiness = { score: number; checks: Check[] };
+export type AtsReadiness = { score: number; checks: Check[]; keywords?: { found: string[]; missing: string[] } };
 
 const EMAIL = /[\w.+-]+@[\w-]+\.[\w.-]+/;
 const PHONE = /(?:\+\d{1,3}[\s.-]?)?(?:\(?\d{1,4}\)?[\s.-]?){3,6}\d{2}/;
 
-// Titres de rubrique standard reconnus par les ATS (français et anglais)
+// Titres de rubrique standard reconnus par les ATS (français et anglais), avec leurs variantes
+// courantes (« Expériences professionnelles », « Formation académique », « Outils informatiques »,
+// « Compétences & outils »…). Le titre doit COMMENCER par l'un de ces mots (40 caractères au plus).
 const SECTIONS: Record<"experience" | "education" | "skills", RegExp> = {
-  experience: /^(experiences?( professionnelles?)?|parcours( professionnel)?|emplois?|work experience|experience|employment( history)?|professional experience)$/,
-  education: /^(formations?|etudes|diplomes?|cursus|parcours (academique|scolaire)|education|academic background)$/,
-  skills: /^(competences?( techniques| cles)?|savoir-faire|outils|skills|technical skills|key skills)$/,
+  experience:
+    /^(experiences?|parcours( professionnel)?$|emplois?|stages?( et experiences?)?|work experience|professional experience|employment( history)?)\b/,
+  education:
+    /^(formations?|etudes|diplomes?|cursus|parcours (academique|scolaire|universitaire)|education|academic background|qualifications)\b/,
+  skills:
+    /^(competences?|savoir[- ]faire|savoir[- ]etre|outils|logiciels|informatique|skills|technical skills|key skills|hard skills|soft skills|tools)\b/,
 };
+
+/** Regroupement des contrôles par rubrique, pour le détail du score (avant / après). */
+export const CHECK_GROUPS: Record<string, string[]> = {
+  contact: ["email", "phone", "contact_header"],
+  structure: ["sections", "dates", "pages"],
+  content: ["length", "quantified"],
+  readability: ["readable", "layout", "icons", "images"],
+  vocabulary: ["keywords"],
+};
+
+/** Score de 0 à 100 de chaque rubrique (null si aucun contrôle de cette rubrique). */
+export function groupScores(checks: Check[]): Record<string, number | null> {
+  return Object.fromEntries(
+    Object.entries(CHECK_GROUPS).map(([g, ids]) => {
+      const list = checks.filter((c) => ids.includes(c.id));
+      return [g, list.length ? computeAtsScore(list) : null];
+    }),
+  );
+}
+
+/**
+ * Mots-clés de l'offre présents dans un texte (CV d'origine ou fichier généré), comme les cherche
+ * un logiciel de recrutement : le mot exact, accents et majuscules ignorés. Les indispensables
+ * comptent double. Le score est proportionnel : chaque mot-clé ajouté se voit.
+ */
+export function keywordCheck(text: string, offerKeywords: OfferKeyword[]) {
+  const source = normalize(text);
+  const has = (k: OfferKeyword) => [k.term, ...k.variants].some((v) => v.trim() && source.includes(normalize(v)));
+  const found = offerKeywords.filter(has).map((k) => k.term);
+  const missing = offerKeywords.filter((k) => !has(k)).map((k) => k.term);
+  const weight = (k: OfferKeyword) => (k.importance === "required" ? 2 : 1);
+  const total = offerKeywords.reduce((s, k) => s + weight(k), 0);
+  const got = offerKeywords.filter(has).reduce((s, k) => s + weight(k), 0);
+  const ratio = total ? got / total : 0;
+  const check: Check = {
+    id: "keywords",
+    category: "offer",
+    status: ratio >= 0.7 ? "pass" : ratio >= 0.4 ? "warn" : "fail",
+    weight: 20,
+    score: ratio,
+    params: { percent: Math.round(ratio * 100), found: found.length, total: offerKeywords.length },
+  };
+  return { check, found, missing };
+}
 
 // Caractères des polices d'icônes (zone privée Unicode) et emojis : illisibles pour un ATS
 const ICONS = /[-]|[\u{1F300}-\u{1FAFF}]|[☀-➿]/gu;
@@ -123,18 +174,9 @@ export function runChecks(insp: Inspection, offerKeywords: OfferKeyword[] | null
   // ——— Offre (optionnel) ———
   let keywords: AtsReport["keywords"] = null;
   if (offerKeywords && offerKeywords.length) {
-    const source = normalize(text);
-    const has = (k: OfferKeyword) => [k.term, ...k.variants].some((v) => v.trim() && source.includes(normalize(v)));
-    const found = offerKeywords.filter(has).map((k) => k.term);
-    const miss = offerKeywords.filter((k) => !has(k)).map((k) => k.term);
-    const required = offerKeywords.filter((k) => k.importance === "required");
-    const ratio = required.length ? required.filter(has).length / required.length : found.length / offerKeywords.length;
-    add("keywords", "offer", ratio >= 0.7 ? "pass" : ratio >= 0.4 ? "warn" : "fail", 20, {
-      percent: Math.round(ratio * 100),
-      found: found.length,
-      total: offerKeywords.length,
-    });
-    keywords = { found, missing: miss };
+    const k = keywordCheck(text, offerKeywords);
+    checks.push(k.check);
+    keywords = { found: k.found, missing: k.missing };
   }
 
   return { score: computeAtsScore(checks), checks, plainText: text, keywords };
@@ -142,7 +184,10 @@ export function runChecks(insp: Inspection, offerKeywords: OfferKeyword[] | null
 
 export function computeAtsScore(checks: Check[]): number {
   const total = checks.reduce((s, c) => s + c.weight, 0);
-  const got = checks.reduce((s, c) => s + (c.status === "pass" ? c.weight : c.status === "warn" ? c.weight / 2 : 0), 0);
+  const got = checks.reduce(
+    (s, c) => s + (c.score !== undefined ? c.weight * c.score : c.status === "pass" ? c.weight : c.status === "warn" ? c.weight / 2 : 0),
+    0,
+  );
   return total ? Math.round((got / total) * 100) : 0;
 }
 

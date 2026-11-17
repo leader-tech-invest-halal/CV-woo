@@ -363,15 +363,31 @@
         "tooLong": "Your background doesn't fit legibly on one page: it stays on several pages, with nothing removed."
       },
       "ats": {
-        "title": "Readability for applicant tracking systems (ATS)",
+        "title": "ATS score: compatibility with applicant tracking systems",
         "before": "Original resume",
         "after": "File to download",
-        "score": "Readability score",
+        "score": "ATS score",
         "loading": "Checking ATS readability…",
         "improved": "Fixed",
         "remaining": "Still to check",
         "allGood": "All readability checks passed.",
-        "note": "Computed without AI on the file shown (PDF or Word tab), with the same rules as our free ATS checker. An internal estimate, not the result of a specific ATS."
+        "note": "Computed without AI on the text actually extracted from each document (your original resume, then the file shown), with the job keywords. Internal estimate: not a guarantee of success with every ATS.",
+        "unchanged": "unchanged",
+        "groups": {
+          "contact": "Contact details",
+          "structure": "Structure and sections",
+          "content": "Content",
+          "readability": "Machine readability",
+          "vocabulary": "Job vocabulary"
+        },
+        "same": {
+          "keywordsMissing": "The score didn't change: the accepted edits rephrase your text but add none of the job's missing keywords, and the document structure is the same. To improve it, add the missing keywords you genuinely have (“Enrich my profile” step).",
+          "alreadyGood": "The score didn't change: your original resume already had the job keywords and a readable structure. The rewrites improve how a recruiter reads it, which this score doesn't measure.",
+          "balanced": "The score didn't change: keywords were added, but another point went down (see details below)."
+        },
+        "keywordsAdded": "{count, plural, one {# job keyword added} other {# job keywords added}}",
+        "keywordsMissing": "{count, plural, one {# job keyword missing from the resume} other {# job keywords missing from the resume}}",
+        "keywordsHint": "Only add them if they truly match your background."
       },
       "notice": {
         "docx_textboxes": "Your Word file uses fixed-size text boxes. To keep texts from overlapping, your resume was rebuilt with your colours, font and layout instead of being edited directly in your file. Please check the result."
@@ -635,9 +651,9 @@
       },
       "keywords": {
         "title": "Job keywords",
-        "pass": "{found} of {total} keywords found, including {percent}% of the must-haves.",
-        "warn": "{found} of {total} keywords found, including {percent}% of the must-haves.",
-        "fail": "{found} of {total} keywords found, including {percent}% of the must-haves."
+        "pass": "{found} of {total} keywords found ({percent}% — required ones count double).",
+        "warn": "{found} of {total} keywords found ({percent}% — required ones count double).",
+        "fail": "{found} of {total} keywords found ({percent}% — required ones count double)."
       }
     }
   },

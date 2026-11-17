@@ -363,15 +363,31 @@
         "tooLong": "Votre parcours ne tient pas lisiblement sur une page : il reste sur plusieurs pages, sans rien supprimer."
       },
       "ats": {
-        "title": "Lisibilité par les logiciels de recrutement (ATS)",
+        "title": "Score ATS : compatibilité avec les logiciels de recrutement",
         "before": "CV d'origine",
         "after": "Fichier à télécharger",
-        "score": "Score de lisibilité",
+        "score": "Score ATS",
         "loading": "Vérification de la lisibilité ATS…",
         "improved": "Points corrigés",
         "remaining": "Encore à vérifier",
         "allGood": "Tous les contrôles de lisibilité sont validés.",
-        "note": "Calculé sans IA sur le fichier affiché (onglet PDF ou Word), avec les mêmes règles que notre vérificateur ATS gratuit. Estimation interne, pas le résultat d'un ATS précis."
+        "note": "Calculé sans IA sur le texte réellement extrait de chaque document (votre CV d'origine, puis le fichier affiché), avec les mots-clés de l'offre. Estimation interne : ce n'est pas une garantie de réussite auprès de tous les logiciels de recrutement.",
+        "unchanged": "inchangé",
+        "groups": {
+          "contact": "Coordonnées",
+          "structure": "Structure et rubriques",
+          "content": "Contenu",
+          "readability": "Lecture automatique",
+          "vocabulary": "Vocabulaire du poste"
+        },
+        "same": {
+          "keywordsMissing": "Le score n'a pas changé : les modifications acceptées reformulent votre texte, mais n'ajoutent aucun des mots-clés de l'offre qui manquent encore, et la structure du document est restée la même. Pour progresser, intégrez les mots-clés manquants que vous possédez vraiment (étape « Enrichir mon profil »).",
+          "alreadyGood": "Le score n'a pas changé : votre CV d'origine contenait déjà les mots-clés de l'offre et sa structure était déjà lisible. Les reformulations améliorent la lecture par un recruteur, ce que ce score ne mesure pas.",
+          "balanced": "Le score n'a pas changé : des mots-clés ont été ajoutés, mais un autre point a baissé (voir le détail ci-dessous)."
+        },
+        "keywordsAdded": "{count, plural, one {# mot-clé de l'offre ajouté} other {# mots-clés de l'offre ajoutés}}",
+        "keywordsMissing": "{count, plural, one {# mot-clé de l'offre absent du CV} other {# mots-clés de l'offre absents du CV}}",
+        "keywordsHint": "Ajoutez-les seulement s'ils correspondent vraiment à votre parcours."
       },
       "notice": {
         "docx_textboxes": "Votre fichier Word utilise des zones de texte de taille fixe. Pour éviter que les textes se chevauchent, votre CV a été recréé avec vos couleurs, votre police et votre disposition, au lieu d'être modifié directement dans votre fichier. Vérifiez le résultat."
@@ -635,9 +651,9 @@
       },
       "keywords": {
         "title": "Mots-clés de l'offre",
-        "pass": "{found} mots-clés sur {total} trouvés, dont {percent} % des indispensables.",
-        "warn": "{found} mots-clés sur {total} trouvés, dont {percent} % des indispensables.",
-        "fail": "{found} mots-clés sur {total} trouvés, dont {percent} % des indispensables."
+        "pass": "{found} mots-clés sur {total} trouvés ({percent} % — les indispensables comptent double).",
+        "warn": "{found} mots-clés sur {total} trouvés ({percent} % — les indispensables comptent double).",
+        "fail": "{found} mots-clés sur {total} trouvés ({percent} % — les indispensables comptent double)."
       }
     }
   },

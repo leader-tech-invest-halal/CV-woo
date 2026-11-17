@@ -83,9 +83,10 @@ export async function exportResume(
   accepted: Record<string, string>,
   template = "original",
   layout: "compact" | "detailed" = "compact",
+  keywords: { term: string; importance: "required" | "nice" }[] = [],
 ): Promise<{ blob: Blob; pages: number | null; ats: AtsReadiness | null; notice: string | null }> {
   const form = new FormData();
-  form.append("payload", JSON.stringify({ format, template, layout, resume, accepted }));
+  form.append("payload", JSON.stringify({ format, template, layout, resume, accepted, keywords }));
   if (resume.format === "docx" && file) form.append("file", file);
   const res = await request("/api/export", { method: "POST", body: form });
   const pages = Number(res.headers.get("x-cv-pages")) || null;

@@ -17,6 +17,11 @@ const Payload = z.object({
   format: z.enum(["pdf", "docx"]),
   template: z.enum(TEMPLATES).default("original"),
   layout: z.enum(LAYOUT_MODES).default("compact"),
+  // Mots-clés de l'offre (issus de l'analyse), pour le contrôle ATS du fichier généré
+  keywords: z
+    .array(z.object({ term: z.string().max(120), importance: z.enum(["required", "nice"]) }))
+    .max(80)
+    .default([]),
   resume: z.object({
     format: z.enum(["pdf", "docx"]),
     fileName: z.string().max(300),
@@ -103,7 +108,8 @@ export async function POST(request: Request) {
 
     const filename = `${base}-cv-woo.${format}`;
     // Lisibilité ATS du fichier exporté, pour la comparer à celle du CV d'origine
-    const ats = await safeAtsReadiness(body, format, filename);
+    const offerKeywords = parsed.data.keywords.map((k) => ({ ...k, variants: [] as string[] }));
+    const ats = await safeAtsReadiness(body, format, filename, offerKeywords.length ? offerKeywords : null);
     return new Response(Buffer.from(body), {
       headers: {
         "content-type": type,
