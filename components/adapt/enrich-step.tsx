@@ -9,6 +9,7 @@ import type {
   AnalysisResult,
   ParsedResume,
   ProfileAnswer,
+  ProfileFigure,
   SkillImportance,
   SkillMatch,
 } from "@/lib/cv/types";
@@ -89,11 +90,40 @@ export function toAnswers(drafts: Record<string, Draft>): ProfileAnswer[] {
     }));
 }
 
+/** Expériences principales pour lesquelles on demande un chiffre réel (3 au plus, dans l'ordre du CV). */
+export function figureEntries(
+  resume: ParsedResume,
+): { id: string; label: string }[] {
+  const text = (id: string) =>
+    resume.blocks.find((b) => b.id === id)?.text ?? "";
+  const pick = (kinds: string[]) =>
+    resume.structure.sections
+      .filter((s) => kinds.includes(s.kind))
+      .flatMap((s) => s.entries)
+      .filter((e) => e.headerBlockIds[0] && e.bulletBlockIds.length > 0)
+      .map((e) => ({
+        id: e.headerBlockIds[0],
+        label: e.headerBlockIds.map(text).filter(Boolean).join(" · "),
+      }))
+      .filter((e) => e.label);
+  const main = pick(["experience"]);
+  return (main.length ? main : pick(["projects", "other"])).slice(0, 3);
+}
+
+/** Chiffres envoyés au serveur : seulement ceux qui contiennent vraiment un nombre. */
+export function toFigures(figures: Record<string, string>): ProfileFigure[] {
+  return Object.entries(figures)
+    .map(([entryId, text]) => ({ entryId, text: text.trim().slice(0, 200) }))
+    .filter((f) => /[0-9]/.test(f.text));
+}
+
 export function EnrichStep({
   result,
   resume,
   drafts,
   onDraft,
+  figures,
+  onFigure,
   busy,
   integrated,
   onIntegrate,
@@ -105,6 +135,8 @@ export function EnrichStep({
   resume: ParsedResume;
   drafts: Record<string, Draft>;
   onDraft: (skill: string, draft: Draft) => void;
+  figures: Record<string, string>;
+  onFigure: (entryId: string, text: string) => void;
   busy: boolean;
   /** Nombre de propositions déjà ajoutées d'après les réponses (null = pas encore intégré). */
   integrated: number | null;
@@ -134,8 +166,11 @@ export function EnrichStep({
   const confirmed = Object.values(drafts).filter(
     (d) => d.answer === "yes" || d.answer === "similar",
   ).length;
+  const figurePlaces = useMemo(() => figureEntries(resume), [resume]);
+  const figureCount = toFigures(figures).length;
+  const total = confirmed + figureCount;
 
-  if (candidates.length === 0) {
+  if (candidates.length === 0 && figurePlaces.length === 0) {
     return (
       <StepShell
         title={t("title")}
@@ -151,104 +186,146 @@ export function EnrichStep({
 
   return (
     <StepShell title={t("title")} hint={t("hint")}>
-      <Card className="p-4 sm:p-6">
-        <h3 className="font-semibold">{t("question")}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{t("reassure")}</p>
+      {candidates.length > 0 && (
+        <Card className="p-4 sm:p-6">
+          <h3 className="font-semibold">{t("question")}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{t("reassure")}</p>
 
-        {/* Une case par compétence : cochée = « je l'ai ». Rien n'est coché à l'avance.
+          {/* Une case par compétence : cochée = « je l'ai ». Rien n'est coché à l'avance.
             Deux questions utiles seulement, facultatives : dans quelle expérience la placer (déjà
             remplie quand le CV le dit) et un exemple concret pour bien la formuler. */}
-        <ul className="mt-5 divide-y divide-border rounded-lg border border-border">
-          {candidates.map((m) => {
-            const d = drafts[m.skill] ?? emptyDraft(resume, m);
-            const set = (patch: Partial<Draft>) =>
-              onDraft(m.skill, { ...d, ...patch });
-            const checked = d.answer === "yes";
-            const id = `enrich-${m.skill.replace(/\W+/g, "-")}`;
-            return (
-              <li
-                key={m.skill}
-                className={`p-4 transition-colors ${checked ? "bg-accent/30" : ""}`}
-              >
-                <label
-                  htmlFor={id}
-                  className="flex cursor-pointer items-start gap-3"
+          <ul className="mt-5 divide-y divide-border rounded-lg border border-border">
+            {candidates.map((m) => {
+              const d = drafts[m.skill] ?? emptyDraft(resume, m);
+              const set = (patch: Partial<Draft>) =>
+                onDraft(m.skill, { ...d, ...patch });
+              const checked = d.answer === "yes";
+              const id = `enrich-${m.skill.replace(/\W+/g, "-")}`;
+              return (
+                <li
+                  key={m.skill}
+                  className={`p-4 transition-colors ${checked ? "bg-accent/30" : ""}`}
                 >
-                  <input
-                    id={id}
-                    type="checkbox"
-                    checked={checked}
-                    onChange={(e) =>
-                      set({ answer: e.target.checked ? "yes" : null })
-                    }
-                    className="mt-0.5 size-5 shrink-0 accent-[var(--primary)]"
-                  />
-                  <span>
-                    <span className="block font-medium">{m.skill}</span>
-                    <span className="block text-xs text-muted-foreground">
-                      {t(`importance.${m.importance}`)} ·{" "}
-                      {m.status === "weak" ? t("weak") : t("missing")}
+                  <label
+                    htmlFor={id}
+                    className="flex cursor-pointer items-start gap-3"
+                  >
+                    <input
+                      id={id}
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) =>
+                        set({ answer: e.target.checked ? "yes" : null })
+                      }
+                      className="mt-0.5 size-5 shrink-0 accent-[var(--primary)]"
+                    />
+                    <span>
+                      <span className="block font-medium">{m.skill}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {t(`importance.${m.importance}`)} ·{" "}
+                        {m.status === "weak" ? t("weak") : t("missing")}
+                      </span>
                     </span>
-                  </span>
-                </label>
-                {checked && (
-                  <div className="mt-3 grid gap-3 pl-8 sm:grid-cols-2">
-                    {places.length > 0 && (
-                      <label className="block text-sm" htmlFor={`${id}-where`}>
-                        <span className="font-medium">{t("whereLabel")}</span>{" "}
+                  </label>
+                  {checked && (
+                    <div className="mt-3 grid gap-3 pl-8 sm:grid-cols-2">
+                      {places.length > 0 && (
+                        <label
+                          className="block text-sm"
+                          htmlFor={`${id}-where`}
+                        >
+                          <span className="font-medium">{t("whereLabel")}</span>{" "}
+                          <span className="text-muted-foreground">
+                            {t("optional")}
+                          </span>
+                          <select
+                            id={`${id}-where`}
+                            value={d.entryId}
+                            onChange={(e) => set({ entryId: e.target.value })}
+                            className="mt-1 h-10 w-full rounded-md border border-border bg-background px-2"
+                          >
+                            <option value="">{t("whereUnset")}</option>
+                            {places.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
+                      <label
+                        className="block text-sm"
+                        htmlFor={`${id}-example`}
+                      >
+                        <span className="font-medium">{t("exampleLabel")}</span>{" "}
                         <span className="text-muted-foreground">
                           {t("optional")}
                         </span>
-                        <select
-                          id={`${id}-where`}
-                          value={d.entryId}
-                          onChange={(e) => set({ entryId: e.target.value })}
-                          className="mt-1 h-10 w-full rounded-md border border-border bg-background px-2"
-                        >
-                          <option value="">{t("whereUnset")}</option>
-                          {places.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.label}
-                            </option>
-                          ))}
-                        </select>
+                        <input
+                          id={`${id}-example`}
+                          value={d.example}
+                          maxLength={300}
+                          onChange={(e) => set({ example: e.target.value })}
+                          placeholder={t("examplePlaceholder")}
+                          className="mt-1 h-10 w-full rounded-md border border-border bg-background px-3"
+                        />
                       </label>
-                    )}
-                    <label className="block text-sm" htmlFor={`${id}-example`}>
-                      <span className="font-medium">{t("exampleLabel")}</span>{" "}
-                      <span className="text-muted-foreground">
-                        {t("optional")}
-                      </span>
-                      <input
-                        id={`${id}-example`}
-                        value={d.example}
-                        maxLength={300}
-                        onChange={(e) => set({ example: e.target.value })}
-                        placeholder={t("examplePlaceholder")}
-                        className="mt-1 h-10 w-full rounded-md border border-border bg-background px-3"
-                      />
-                    </label>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
+      )}
 
-        {integrated !== null && (
-          <div className="mt-5 flex flex-col gap-3 rounded-lg border border-primary/25 bg-accent p-4 text-sm text-accent-foreground sm:flex-row sm:items-center sm:justify-between">
-            <p>{t("integrated", { count: integrated })}</p>
-            <button
-              type="button"
-              className={buttonClass("outline", "md", "shrink-0")}
-              onClick={onUndo}
-            >
-              <Undo2 className="size-4" strokeWidth={1.75} aria-hidden />
-              {t("undo")}
-            </button>
+      {/* Chiffres réels : un CV chiffré obtient plus d'entretiens, mais seul le candidat connaît ses chiffres.
+          On les demande ; l'IA ne les invente jamais. */}
+      {figurePlaces.length > 0 && (
+        <Card className="p-4 sm:p-6">
+          <h3 className="font-semibold">{t("figures.title")}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t("figures.hint")}
+          </p>
+          <div className="mt-4 grid gap-4">
+            {figurePlaces.map((p) => (
+              <label
+                key={p.id}
+                className="block text-sm"
+                htmlFor={`figure-${p.id}`}
+              >
+                <span className="font-medium">{p.label}</span>{" "}
+                <span className="text-muted-foreground">{t("optional")}</span>
+                <input
+                  id={`figure-${p.id}`}
+                  value={figures[p.id] ?? ""}
+                  maxLength={200}
+                  onChange={(e) => onFigure(p.id, e.target.value)}
+                  placeholder={t("figures.placeholder")}
+                  className="mt-1 h-10 w-full rounded-md border border-border bg-background px-3"
+                />
+              </label>
+            ))}
           </div>
-        )}
-      </Card>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {t("figures.note")}
+          </p>
+        </Card>
+      )}
+
+      {integrated !== null && (
+        <div className="flex flex-col gap-3 rounded-lg border border-primary/25 bg-accent p-4 text-sm text-accent-foreground sm:flex-row sm:items-center sm:justify-between">
+          <p>{t("integrated", { count: integrated })}</p>
+          <button
+            type="button"
+            className={buttonClass("outline", "md", "shrink-0")}
+            onClick={onUndo}
+          >
+            <Undo2 className="size-4" strokeWidth={1.75} aria-hidden />
+            {t("undo")}
+          </button>
+        </div>
+      )}
 
       <div className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-border bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
         <button
@@ -272,14 +349,14 @@ export function EnrichStep({
             type="button"
             className={buttonClass("primary")}
             onClick={onIntegrate}
-            disabled={busy || confirmed === 0}
+            disabled={busy || total === 0}
           >
             {busy ? (
               <LoaderCircle className="size-4 animate-spin" aria-hidden />
             ) : (
               <Sparkles className="size-4" strokeWidth={1.75} aria-hidden />
             )}
-            {busy ? t("integrating") : t("integrate", { count: confirmed })}
+            {busy ? t("integrating") : t("integrate", { count: total })}
             {!busy && (
               <ArrowRight className="size-4" strokeWidth={1.75} aria-hidden />
             )}

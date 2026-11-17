@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { checkRewrite, normalize } from "./guardrails";
-import type { Block, EnrichResult, ProfileAnswer, Rewrite } from "@/lib/cv/types";
+import type { Block, EnrichResult, ProfileAnswer, ProfileFigure, Rewrite } from "@/lib/cv/types";
 
 // Contrôles du code sur les propositions « Enrichir mon profil » (testables sans IA).
 
@@ -18,7 +18,7 @@ export const EnrichSchema = z.object({
 
 export function checkEnrichment(
   parsed: z.infer<typeof EnrichSchema>,
-  input: { answers: ProfileAnswer[]; current: Record<string, string> },
+  input: { answers: ProfileAnswer[]; current: Record<string, string>; figures?: ProfileFigure[] },
   byId: Map<string, Block>,
   editable: Set<string>,
 ): EnrichResult {
@@ -31,6 +31,8 @@ export function checkEnrichment(
     ...[...byId.values()].map((b) => b.text),
     ...Object.values(input.current),
     ...input.answers.flatMap((a) => [a.answer === "yes" ? a.skill : "", a.context, a.duration, a.example, a.similar]),
+    // Les chiffres réels donnés par la personne sont des faits qu'elle a fournis
+    ...(input.figures ?? []).map((f) => f.text),
   ]
     .filter(Boolean)
     .join("\n");

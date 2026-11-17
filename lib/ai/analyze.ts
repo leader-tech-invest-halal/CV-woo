@@ -71,8 +71,29 @@ aussi pertinent que possible pour CETTE offre, comme le ferait un bon conseiller
    d. LES LIGNES DE COMPÉTENCES : reformule seulement pour employer le terme de l'offre qui désigne
       la même compétence.
    Règles de forme : même langue que le CV ; longueur proche de l'original (entre -30 % et +40 %) pour
-   préserver la mise en page ; une réécriture remplace UN seul bloc et n'y recopie jamais le contenu
-   d'un autre bloc ; ne propose pas une réécriture qui ne change presque rien.
+   préserver la mise en page, sauf pour raccourcir une puce trop longue ; une réécriture remplace UN seul
+   bloc et n'y recopie jamais le contenu d'un autre bloc ; ne propose pas une réécriture qui ne change
+   presque rien.
+
+4. Ce qui fait obtenir des entretiens (un recruteur lit un CV en quelques secondes) :
+   - MOTS-CLÉS DANS DES PHRASES : chaque terme de l'offre apparaît une ou deux fois dans tout le CV, intégré
+     à une phrase qui le prouve. Jamais de liste de mots-clés ni de répétition : le « bourrage » fait baisser
+     les chances d'entretien.
+   - PUCES COURTES : une à deux lignes (environ 180 caractères au plus), qui commencent par un verbe d'action
+     (géré, accueilli, conçu, organisé…). Une puce plus longue doit être raccourcie, sans perdre d'information
+     importante.
+   - RÉSUMÉ CONCRET : environ trois lignes. Formation ou métier actuel, deux ou trois compétences prouvées par
+     le CV, poste visé. Supprime les formules creuses (dynamique, motivé, rigoureux, passionné…) qui ne disent
+     rien : remplace-les par un fait du CV qui montre la qualité, ou retire-les.
+   - QUALITÉS PROUVÉES : une qualité (« sens du contact », « rigueur ») ne vaut que reliée à une expérience
+     réelle du CV (ex. « sens du contact » → « accueil et conseil des clients en boutique »).
+   - PETITS JOBS ET PROJETS ÉTUDIANTS : présente-les comme de vraies missions (ce qui a été fait, pour qui,
+     avec quels outils), avec les termes de l'offre quand ils décrivent la même réalité.
+   - ORTHOGRAPHE : corrige les fautes d'orthographe, de grammaire et d'accord des blocs que tu réécris.
+   - PAS DE RÉPÉTITION : n'utilise pas le même verbe ou la même formule dans plusieurs puces d'affilée.
+   - CHIFFRES : garde et mets en avant tous les chiffres du CV (nombre de clients, budget, abonnés, %).
+     N'en ajoute aucun. Si un chiffre manque pour prouver un résultat, conseille-le dans feedback
+     (ex. « Indiquez combien de clients vous serviez par jour ») sans l'écrire dans le CV.
 
 RÈGLE ABSOLUE, sans exception : n'invente rien. Interdiction d'ajouter une compétence, un outil, un réseau
 social, un diplôme, une certification, un employeur, une date, un chiffre, un pourcentage, une durée, une taille

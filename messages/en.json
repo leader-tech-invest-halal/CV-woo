@@ -517,7 +517,13 @@
         "integrated": "{count, plural, =0 {No suggestion added.} one {# suggestion added from your answers.} other {# suggestions added from your answers.}}",
         "undo": "Remove these additions",
         "none": "Your resume already covers every skill the employer wants: nothing to add.",
-        "noneHint": "Good news: no questions for you."
+        "noneHint": "Good news: no questions for you.",
+        "figures": {
+          "title": "Your real figures",
+          "hint": "Resumes with figures get more interviews. If you know yours, add them: we will never make them up for you.",
+          "placeholder": "E.g. 80 customers a day, 2,000 followers, $500 budget",
+          "note": "Only the figures you type here are added, as written. Leave blank if you are not sure."
+        }
       }
     }
   },
@@ -654,6 +660,21 @@
         "pass": "{found} of {total} keywords found ({percent}% — required ones count double).",
         "warn": "{found} of {total} keywords found ({percent}% — required ones count double).",
         "fail": "{found} of {total} keywords found ({percent}% — required ones count double)."
+      },
+      "cliches": {
+        "title": "Empty buzzwords",
+        "pass": "No pile-up of empty buzzwords.",
+        "warn": "{count} empty buzzwords ({words}). Recruiters see them everywhere: prove a quality with an experience instead."
+      },
+      "long_bullets": {
+        "title": "Bullet length",
+        "pass": "Bullets are short and easy to read.",
+        "warn": "{count} bullets run over two lines. In the first few-second scan, long bullets aren't read: aim for one or two lines."
+      },
+      "stuffing": {
+        "title": "Repeated keywords",
+        "pass": "Job keywords are worked in naturally.",
+        "warn": "Keyword repeated too often: {terms}. Keyword-stuffed resumes get fewer interviews: keep them in sentences, once or twice each."
       }
     }
   },

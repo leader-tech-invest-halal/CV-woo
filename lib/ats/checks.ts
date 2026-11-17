@@ -48,9 +48,9 @@ const SECTIONS: Record<"experience" | "education" | "skills", RegExp> = {
 export const CHECK_GROUPS: Record<string, string[]> = {
   contact: ["email", "phone", "contact_header"],
   structure: ["sections", "dates", "pages"],
-  content: ["length", "quantified"],
+  content: ["length", "quantified", "cliches", "long_bullets"],
   readability: ["readable", "layout", "icons", "images"],
-  vocabulary: ["keywords"],
+  vocabulary: ["keywords", "stuffing"],
 };
 
 /** Score de 0 à 100 de chaque rubrique (null si aucun contrôle de cette rubrique). */
@@ -61,6 +61,28 @@ export function groupScores(checks: Check[]): Record<string, number | null> {
       return [g, list.length ? computeAtsScore(list) : null];
     }),
   );
+}
+
+// Formules creuses fréquentes dans les CV (texte sans accents, en minuscules)
+const CLICHES =
+  /\b(dynamique|motive|motivee|rigoureux|rigoureuse|serieux|serieuse|passionne|passionnee|perfectionniste|travailleur|travailleuse|investi|investie|hard[- ]working|motivated|passionate|dynamic|detail[- ]oriented|team player)\b/g;
+
+/** Mots-clés de l'offre répétés plus de 4 fois : signe de bourrage. */
+export function keywordStuffing(text: string, offerKeywords: OfferKeyword[]): string[] {
+  const source = normalize(text);
+  return offerKeywords
+    .map((k) => k.term)
+    .filter((term) => {
+      const n = normalize(term);
+      if (n.length < 3) return false;
+      let count = 0;
+      let i = source.indexOf(n);
+      while (i >= 0) {
+        count++;
+        i = source.indexOf(n, i + n.length);
+      }
+      return count > 4;
+    });
 }
 
 /**
@@ -152,6 +174,15 @@ export function runChecks(insp: Inspection, offerKeywords: OfferKeyword[] | null
   }).length;
   add("quantified", "content", quantified >= 2 ? "pass" : "warn", 6, { count: quantified });
 
+  // Formules creuses (« dynamique, motivé, rigoureux ») : les recruteurs les ignorent ; mieux vaut
+  // une qualité prouvée par une expérience. Signalées à partir de 3 différentes.
+  const cliches = [...new Set((normalize(text).match(CLICHES) ?? []).map((w) => w.replace(/(e|s|es)$/, "")))];
+  add("cliches", "content", cliches.length >= 3 ? "warn" : "pass", 4, { count: cliches.length, words: cliches.slice(0, 5).join(", ") });
+
+  // Points trop longs : au-delà d'environ deux lignes, un point n'est plus lu lors du premier tri
+  const longBullets = insp.blocks.filter((b) => /^[•\-–·▪●■◦*]/.test(b.text.trim()) && b.text.length > 220).length;
+  add("long_bullets", "content", longBullets >= 2 ? "warn" : "pass", 4, { count: longBullets });
+
   const formats = DATE_FORMATS.filter(([, re]) => re.test(text)).map(([name]) => name);
   add("dates", "content", formats.length === 0 ? "warn" : formats.length > 1 ? "warn" : "pass", 4, {
     formats: formats.join(", "),
@@ -176,6 +207,15 @@ export function runChecks(insp: Inspection, offerKeywords: OfferKeyword[] | null
   if (offerKeywords && offerKeywords.length) {
     const k = keywordCheck(text, offerKeywords);
     checks.push(k.check);
+    // Bourrage : un même mot-clé répété sans cesse fait baisser les chances (contre-productif)
+    const stuffed = keywordStuffing(text, offerKeywords);
+    checks.push({
+      id: "stuffing",
+      category: "offer",
+      status: stuffed.length ? "warn" : "pass",
+      weight: 4,
+      params: { terms: stuffed.slice(0, 3).join(", "), count: stuffed.length },
+    });
     keywords = { found: k.found, missing: k.missing };
   }
 

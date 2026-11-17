@@ -15,7 +15,7 @@ import { PdfPages, useTouchDevice } from "./pdf-pages";
 import { SaveToHistory } from "@/components/history/save-to-history";
 import type { HistoryMeta } from "@/components/history/history-api";
 import { AtsCompare } from "./ats-compare";
-import { computeAtsScore, keywordCheck, type AtsReadiness } from "@/lib/ats/checks";
+import { computeAtsScore, keywordCheck, keywordStuffing, type AtsReadiness } from "@/lib/ats/checks";
 
 type Files = { pdf: Blob | null; docx: Blob | null };
 
@@ -125,11 +125,16 @@ export function PreviewStep({
   const atsBefore = useMemo(() => {
     if (!resume.ats) return null;
     if (!keywords.length) return resume.ats;
-    const k = keywordCheck(
-      resume.blocks.map((b) => b.text).join("\n"),
-      keywords.map((x) => ({ ...x, variants: [] })),
-    );
-    const checks = [...resume.ats.checks.filter((c) => c.id !== "keywords"), k.check];
+    const text = resume.blocks.map((b) => b.text).join("\n");
+    const offer = keywords.map((x) => ({ ...x, variants: [] }));
+    const k = keywordCheck(text, offer);
+    const stuffed = keywordStuffing(text, offer);
+    // Mêmes contrôles qu'après adaptation, pour une comparaison juste
+    const checks = [
+      ...resume.ats.checks.filter((c) => c.id !== "keywords" && c.id !== "stuffing"),
+      k.check,
+      { id: "stuffing", category: "offer" as const, status: stuffed.length ? ("warn" as const) : ("pass" as const), weight: 4, params: { terms: stuffed.slice(0, 3).join(", "), count: stuffed.length } },
+    ];
     return { score: computeAtsScore(checks), checks, keywords: { found: k.found, missing: k.missing } };
   }, [resume, keywords]);
   const note =

@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { CircleAlert, CircleCheck, RotateCcw } from "lucide-react";
 import type { AnalysisResult, ParsedResume, Rewrite } from "@/lib/cv/types";
 import { ApiError, analyzeResume, enrichProfile, parseResume } from "./api";
-import { EnrichStep, toAnswers, type Draft } from "./enrich-step";
+import { EnrichStep, toAnswers, toFigures, type Draft } from "./enrich-step";
 import { MAX_FILE_BYTES, ResumeStep } from "./resume-step";
 import { OfferStep } from "./offer-step";
 import { Analyzing, ChangesStep, CompareStep, RequirementsStep, ReviewStep } from "./analysis-step";
@@ -36,6 +36,8 @@ export function AdaptWizard() {
   const [edits, setEdits] = useState<Record<string, string>>({});
   // « Enrichir mon profil » : réponses de la personne, et propositions de l'analyse avant enrichissement
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  // Chiffres réels donnés pour les expériences principales (id de l'expérience → texte)
+  const [figures, setFigures] = useState<Record<string, string>>({});
   const [baseRewrites, setBaseRewrites] = useState<Rewrite[] | null>(null);
   const [unplaced, setUnplaced] = useState<string[]>([]);
   const [enriching, setEnriching] = useState(false);
@@ -126,7 +128,8 @@ export function AdaptWizard() {
   const onEnrich = async () => {
     if (!result || !resume) return;
     const answers = toAnswers(drafts);
-    if (!answers.length) return;
+    const figs = toFigures(figures);
+    if (!answers.length && !figs.length) return;
     const base = baseRewrites ?? result.rewrites;
     const current = Object.fromEntries(
       base.filter((r) => accepted[r.blockId] ?? r.flags.length === 0).map((r) => [r.blockId, edits[r.blockId] ?? r.after]),
@@ -135,7 +138,7 @@ export function AdaptWizard() {
     setSuccess(null);
     setEnriching(true);
     try {
-      const e = await enrichProfile(locale, resume, result.offer.title, current, answers);
+      const e = await enrichProfile(locale, resume, result.offer.title, current, answers, figs);
       const byBlock = new Map(e.rewrites.map((r) => [r.blockId, r]));
       const merged = [
         ...base.map((r) => byBlock.get(r.blockId) ?? r),
@@ -277,6 +280,8 @@ export function AdaptWizard() {
           resume={resume}
           drafts={drafts}
           onDraft={(skill, d) => setDrafts((all) => ({ ...all, [skill]: d }))}
+          figures={figures}
+          onFigure={(id, text) => setFigures((all) => ({ ...all, [id]: text }))}
           busy={enriching}
           integrated={baseRewrites ? result.rewrites.filter((r) => r.source === "profile").length : null}
           onIntegrate={onEnrich}

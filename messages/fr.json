@@ -517,7 +517,13 @@
         "integrated": "{count, plural, =0 {Aucune proposition ajoutée.} one {# proposition ajoutée d'après vos réponses.} other {# propositions ajoutées d'après vos réponses.}}",
         "undo": "Retirer ces ajouts",
         "none": "Votre CV couvre déjà toutes les compétences recherchées : rien à ajouter.",
-        "noneHint": "Bonne nouvelle : aucune question à vous poser."
+        "noneHint": "Bonne nouvelle : aucune question à vous poser.",
+        "figures": {
+          "title": "Vos chiffres réels",
+          "hint": "Les CV avec des chiffres obtiennent plus d'entretiens. Si vous les connaissez, indiquez-les : nous ne les inventerons jamais à votre place.",
+          "placeholder": "Ex. : 80 clients par jour, 2 000 abonnés, budget de 500 €",
+          "note": "Seuls les chiffres que vous écrivez ici sont ajoutés, tels quels. Laissez vide si vous ne savez pas."
+        }
       }
     }
   },
@@ -654,6 +660,21 @@
         "pass": "{found} mots-clés sur {total} trouvés ({percent} % — les indispensables comptent double).",
         "warn": "{found} mots-clés sur {total} trouvés ({percent} % — les indispensables comptent double).",
         "fail": "{found} mots-clés sur {total} trouvés ({percent} % — les indispensables comptent double)."
+      },
+      "cliches": {
+        "title": "Formules creuses",
+        "pass": "Pas d'accumulation de formules creuses.",
+        "warn": "{count} formules creuses ({words}). Les recruteurs les lisent partout : prouvez plutôt une qualité par une expérience (ex. « gestion de l'affluence du samedi » plutôt que « dynamique »)."
+      },
+      "long_bullets": {
+        "title": "Longueur des points",
+        "pass": "Les points sont courts et faciles à lire.",
+        "warn": "{count} points dépassent deux lignes. Lors du premier tri (quelques secondes), un point long n'est pas lu : visez une ligne ou deux."
+      },
+      "stuffing": {
+        "title": "Mots-clés répétés",
+        "pass": "Les mots-clés de l'offre sont intégrés naturellement.",
+        "warn": "Mot-clé répété trop souvent : {terms}. Un CV « bourré » de mots-clés obtient moins d'entretiens : gardez-les dans des phrases, une ou deux fois chacun."
       }
     }
   },

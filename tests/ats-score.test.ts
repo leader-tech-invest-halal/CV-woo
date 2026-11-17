@@ -81,3 +81,34 @@ describe("détail par rubrique", () => {
     expect(computeAtsScore(checks)).toBeGreaterThan(0);
   });
 });
+
+describe("qualité de rédaction", () => {
+  const withText = (lines: string[]): Inspection => {
+    const base = inspection(["Expérience", "Formation", "Compétences", ...lines]);
+    return base;
+  };
+
+  it("signale l'accumulation de formules creuses, pas une seule", () => {
+    const one = runChecks(withText(["Vendeuse dynamique en boutique"]), null).checks.find((c) => c.id === "cliches")!;
+    expect(one.status).toBe("pass");
+    const many = runChecks(withText(["Étudiante dynamique, motivée, rigoureuse et passionnée"]), null).checks.find((c) => c.id === "cliches")!;
+    expect(many.status).toBe("warn");
+    expect(many.params?.count).toBe(4);
+  });
+
+  it("signale les points de plus de deux lignes", () => {
+    const long = "- " + "Gestion de la caisse et accueil des clients en magasin ".repeat(5);
+    const checks = runChecks(withText([long, long]), null).checks;
+    expect(checks.find((c) => c.id === "long_bullets")!.status).toBe("warn");
+    const short = runChecks(withText(["- Accueil de 80 clients par jour"]), null).checks;
+    expect(short.find((c) => c.id === "long_bullets")!.status).toBe("pass");
+  });
+
+  it("signale un mot-clé répété sans cesse (bourrage)", () => {
+    const keys = [kw("React")];
+    const stuffed = runChecks(withText(["React React React", "React et React", "Projet React"]), keys).checks;
+    expect(stuffed.find((c) => c.id === "stuffing")!.status).toBe("warn");
+    const natural = runChecks(withText(["Application React", "Tests de composants React"]), keys).checks;
+    expect(natural.find((c) => c.id === "stuffing")!.status).toBe("pass");
+  });
+});

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { checkEnrichment } from "@/lib/ai/enrich-check";
-import { enrichCandidates, toAnswers, type Draft } from "@/components/adapt/enrich-step";
+import { enrichCandidates, figureEntries, toAnswers, toFigures, type Draft } from "@/components/adapt/enrich-step";
 import type { AnalysisResult, Block, ProfileAnswer, SkillMatch } from "@/lib/cv/types";
 
 // « Enrichir mon profil » : seules les réponses de la personne peuvent compléter son CV.
@@ -146,5 +146,71 @@ describe("questionnaire", () => {
       { skill: "Figma", answer: "yes", entryId: "b1", context: undefined, duration: "2 ans", example: undefined, similar: undefined },
       { skill: "Power BI", answer: "similar", entryId: null, context: "projet perso", duration: undefined, example: undefined, similar: "Excel" },
     ]);
+  });
+});
+
+describe("chiffres réels donnés par la personne", () => {
+  const base = { answers: [] as ProfileAnswer[], current: {} };
+
+  it("accepte un chiffre que la personne a donné, tel quel", () => {
+    const r = checkEnrichment(
+      {
+        rewrites: [
+          { block_id: "b2", new_text: "- Développement de 12 fonctionnalités React avec l'équipe produit.", reason: "Chiffre donné", skills_used: [] },
+        ],
+        unplaced: [],
+      },
+      { ...base, figures: [{ entryId: "b1", text: "12 fonctionnalités livrées" }] },
+      byId,
+      editable,
+    );
+    expect(r.rewrites[0].flags).toEqual([]);
+  });
+
+  it("signale un chiffre que la personne n'a pas donné", () => {
+    const r = checkEnrichment(
+      {
+        rewrites: [
+          { block_id: "b2", new_text: "- Développement de 40 fonctionnalités React avec l'équipe produit.", reason: "Chiffre", skills_used: [] },
+        ],
+        unplaced: [],
+      },
+      { ...base, figures: [{ entryId: "b1", text: "12 fonctionnalités livrées" }] },
+      byId,
+      editable,
+    );
+    expect(r.rewrites[0].flags).toContain("number:40");
+  });
+
+  it("n'envoie que les réponses qui contiennent un nombre", () => {
+    expect(toFigures({ b1: " 80 clients par jour ", b4: "beaucoup", b5: "" })).toEqual([{ entryId: "b1", text: "80 clients par jour" }]);
+  });
+
+  it("demande les chiffres pour 3 expériences au plus, celles qui ont des puces", () => {
+    const resume = {
+      blocks: [
+        ...Array.from({ length: 5 }, (_, i) => ({ id: `h${i}`, text: `Poste ${i}` })),
+        { id: "f0", text: "Licence" },
+      ],
+      structure: {
+        nameBlockId: null,
+        headlineBlockId: null,
+        contactBlockIds: [],
+        summaryBlockIds: [],
+        sections: [
+          { headingBlockId: null, heading: "Formation", kind: "education", entries: [{ headerBlockIds: ["f0"], bulletBlockIds: ["x"] }] },
+          {
+            headingBlockId: null,
+            heading: "Expérience",
+            kind: "experience",
+            entries: [
+              { headerBlockIds: ["h0"], bulletBlockIds: [] },
+              ...[1, 2, 3, 4].map((i) => ({ headerBlockIds: [`h${i}`], bulletBlockIds: [`p${i}`] })),
+            ],
+          },
+        ],
+      },
+    } as unknown as Parameters<typeof figureEntries>[0];
+    expect(figureEntries(resume).map((e) => e.id)).toEqual(["h1", "h2", "h3"]);
   });
 });

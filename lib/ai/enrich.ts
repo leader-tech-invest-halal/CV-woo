@@ -31,9 +31,14 @@ export const EnrichInput = z.object({
         similar: text(300),
       }),
     )
-    .min(1)
-    .max(12),
-});
+    .max(12)
+    .default([]),
+  /** Chiffres réels donnés par la personne pour ses expériences principales. */
+  figures: z
+    .array(z.object({ entryId: z.string().max(20), text: z.string().trim().min(1).max(200) }))
+    .max(4)
+    .default([]),
+}).refine((v) => v.answers.length + v.figures.length > 0);
 
 const SYSTEM = `Tu aides un candidat à compléter son CV pour une offre d'emploi. Il a CONFIRMÉ LUI-MÊME posséder
 certaines compétences absentes de son CV, et a parfois donné des précisions. Ton travail : intégrer ces
@@ -50,6 +55,12 @@ Si une compétence ne peut aller nulle part, mets-la dans "unplaced".
 
 Réponse « expérience similaire » : le candidat N'A PAS cette compétence. N'écris jamais son nom ; décris
 seulement l'expérience similaire qu'il a donnée, avec ses mots (ex. « Excel » pour « Power BI »).
+
+Chiffres réels : le candidat a parfois donné un chiffre pour une expérience (ex. « 80 clients par jour »,
+« 2 000 abonnés »). Intègre chaque chiffre dans UNE puce de cette expérience, celle qui décrit la même
+tâche, en le reprenant exactement (même nombre, même unité). Si l'expérience n'a pas de puce modifiable,
+n'intègre pas ce chiffre. Ne calcule rien, n'arrondis rien et n'extrapole jamais (pas de « par mois » si
+le candidat a dit « par jour »). Garde la puce courte : une à deux lignes, verbe d'action en tête.
 
 RÈGLE ABSOLUE : n'utilise que des faits présents dans le CV ou dans les réponses du candidat. N'invente aucune
 durée, chiffre, outil, employeur, résultat ni niveau. Si le candidat n'a pas donné de durée, n'en écris pas.
@@ -93,7 +104,12 @@ export async function enrich(input: z.infer<typeof EnrichInput>): Promise<Enrich
     .flatMap((s) => s.entries.map((e) => `## ${s.heading}\n` + [...e.headerBlockIds, ...e.bulletBlockIds].map(line).join("\n")))
     .join("\n\n");
   const summary = structure.summaryBlockIds.map(line).join("\n");
-  const answersText = input.answers.map((a) => describeAnswer(a, entries)).join("\n");
+  const answersText = input.answers.map((a) => describeAnswer(a, entries)).join("\n") || "(aucune)";
+  const figuresText =
+    input.figures
+      .filter((f) => entries.has(f.entryId))
+      .map((f) => `- expérience [${f.entryId}] « ${entries.get(f.entryId)} » : ${f.text}`)
+      .join("\n") || "(aucun)";
 
   let parsed: z.infer<typeof EnrichSchema>;
   try {
@@ -107,7 +123,7 @@ export async function enrich(input: z.infer<typeof EnrichInput>): Promise<Enrich
       messages: [
         {
           role: "user",
-          content: `<poste_vise>${input.offerTitle}</poste_vise>\n\n<resume>\n${summary}\n</resume>\n\n<cv>\n${cv}\n</cv>\n\n<reponses_du_candidat>\n${answersText}\n</reponses_du_candidat>`,
+          content: `<poste_vise>${input.offerTitle}</poste_vise>\n\n<resume>\n${summary}\n</resume>\n\n<cv>\n${cv}\n</cv>\n\n<reponses_du_candidat>\n${answersText}\n</reponses_du_candidat>\n\n<chiffres_reels_du_candidat>\n${figuresText}\n</chiffres_reels_du_candidat>`,
         },
       ],
     });

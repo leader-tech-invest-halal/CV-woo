@@ -1,6 +1,6 @@
 "use client";
 
-import type { AnalysisResult, EnrichResult, ParsedResume, ProfileAnswer } from "@/lib/cv/types";
+import type { AnalysisResult, EnrichResult, ParsedResume, ProfileAnswer, ProfileFigure } from "@/lib/cv/types";
 import type { AtsReadiness } from "@/lib/ats/checks";
 import type { OfferResult } from "@/lib/offer/fetch";
 
@@ -60,6 +60,7 @@ export async function enrichProfile(
   offerTitle: string,
   current: Record<string, string>,
   answers: ProfileAnswer[],
+  figures: ProfileFigure[] = [],
 ): Promise<EnrichResult> {
   return (
     await request("/api/profile/enrich", {
@@ -70,6 +71,7 @@ export async function enrichProfile(
         offerTitle,
         current,
         answers,
+        figures,
         resume: { blocks: resume.blocks, structure: resume.structure },
       }),
     })

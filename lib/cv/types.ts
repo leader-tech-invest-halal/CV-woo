@@ -115,6 +115,13 @@ export type ProfileAnswer = {
   similar?: string;
 };
 
+/** Chiffre réel donné par la personne pour une expérience (ex. « 80 clients par jour »). */
+export type ProfileFigure = {
+  /** Id du premier bloc d'en-tête de l'expérience concernée. */
+  entryId: string;
+  text: string;
+};
+
 export type EnrichResult = { rewrites: Rewrite[]; unplaced: string[] };
 
 export type AnalysisResult = {
