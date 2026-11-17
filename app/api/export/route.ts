@@ -8,7 +8,7 @@ import type { ParsedResume } from "@/lib/cv/types";
 import { applyTemplate, TEMPLATES } from "@/lib/export/templates";
 import { LAYOUT_MODES } from "@/lib/export/layout";
 import { safeAtsReadiness } from "@/lib/ats/readiness";
-import { NEW_HEADLINE_ID, withNewHeadline } from "@/lib/cv/compose";
+import { completeStructure, NEW_HEADLINE_ID, withNewHeadline } from "@/lib/cv/compose";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -40,7 +40,13 @@ export async function POST(request: Request) {
     if (!parsed.success) throw new UserFacingError("invalid_request");
     const { format, accepted, template, layout } = parsed.data;
     const original = parsed.data.resume as ParsedResume;
-    const resume = { ...original, style: applyTemplate(original.style, template) };
+    // Structure revérifiée à chaque export (doublons retirés, titre du résumé à sa place) :
+    // vaut aussi pour les CV lus avant ces corrections (historique, session en cours)
+    const resume = {
+      ...original,
+      structure: completeStructure(original.blocks, original.structure),
+      style: applyTemplate(original.style, template),
+    };
 
     // On n'accepte que des réécritures de blocs qui existent
     const known = new Set(resume.blocks.map((b) => b.id));
