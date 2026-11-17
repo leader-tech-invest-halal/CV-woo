@@ -47,6 +47,8 @@ export type ResumeStructure = {
   /** Blocs rattachés automatiquement (non classés par l'IA) : jamais réécrits. */
   lockedBlockIds?: string[];
   summaryBlockIds: string[];
+  /** Titre du résumé (ex. « PROFIL »), s'il existe : affiché au-dessus du résumé, jamais dans les coordonnées. */
+  summaryHeadingBlockId?: string | null;
   sections: {
     headingBlockId: string | null;
     heading: string;

@@ -359,6 +359,9 @@
         "remaining": "Encore à vérifier",
         "allGood": "Tous les contrôles de lisibilité sont validés.",
         "note": "Calculé sans IA sur le fichier affiché (onglet PDF ou Word), avec les mêmes règles que notre vérificateur ATS gratuit. Estimation interne, pas le résultat d'un ATS précis."
+      },
+      "notice": {
+        "docx_textboxes": "Votre fichier Word utilise des zones de texte de taille fixe. Pour éviter que les textes se chevauchent, votre CV a été recréé avec vos couleurs, votre police et votre disposition, au lieu d'être modifié directement dans votre fichier. Vérifiez le résultat."
       }
     },
     "errors": {

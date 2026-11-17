@@ -13,7 +13,7 @@ import {
   WidthType,
 } from "docx";
 import type { Block, ResumeStructure, ResumeStyle } from "@/lib/cv/types";
-import { stripBullet, textResolver } from "@/lib/cv/compose";
+import { orderedSections, stripBullet, textResolver } from "@/lib/cv/compose";
 import { DENSITIES, type Density } from "@/lib/export/layout";
 
 // Génère un .docx à partir d'un CV importé en PDF, avec le style du PDF d'origine.
@@ -73,18 +73,22 @@ export async function renderResumeDocx(
           }),
         ),
       );
-      for (const id of e.bulletBlockIds) {
+      // Une expérience courte (jusqu'à 6 points) reste entière sur une même page ; une plus longue
+      // peut continuer sur la page suivante, mais jamais au milieu d'un point.
+      const keepWhole = e.headerBlockIds.length > 0 && e.bulletBlockIds.length <= 6;
+      e.bulletBlockIds.forEach((id, k) => {
         const text = stripBullet(t(id));
         const asBullet = !compact && e.headerBlockIds.length > 0 && section.kind !== "skills" && section.kind !== "languages";
         out.push(
           new Paragraph({
             bullet: asBullet ? { level: 0 } : undefined,
             spacing: { before: tw(d.bulletGap) },
+            keepNext: keepWhole && k < e.bulletBlockIds.length - 1,
             keepLines: true,
             children: [new TextRun({ text, size: half(d.body) })],
           }),
         );
-      }
+      });
     });
     return out;
   };
@@ -118,21 +122,22 @@ export async function renderResumeDocx(
   if (!sidebar && contacts.length) {
     header.push(new Paragraph({ alignment: align, children: [new TextRun({ text: contacts.join("  ·  "), size: half(d.small) })] }));
   }
+  if (structure.summaryHeadingBlockId && structure.summaryBlockIds.length) {
+    header.push(heading(t(structure.summaryHeadingBlockId)));
+  }
   for (const id of structure.summaryBlockIds) {
     header.push(new Paragraph({ spacing: { before: tw(d.summaryGap) }, children: [new TextRun({ text: t(id), size: half(d.body) })] }));
   }
 
-  const main = [
-    ...header,
-    ...structure.sections.filter((x) => !sidebar || x.placement === "main").flatMap((x) => sectionParagraphs(x, false)),
-  ];
+  const sections = orderedSections(structure, sidebar);
+  const main = [...header, ...sections.main.flatMap((x) => sectionParagraphs(x, false))];
 
   let children: (Paragraph | Table)[] = main;
   if (sidebar) {
     const side = [
       ...(structure.contactHeadingBlockId && contacts.length ? [heading(t(structure.contactHeadingBlockId))] : []),
       ...contacts.map((c) => new Paragraph({ spacing: { after: tw(2) }, children: [new TextRun({ text: c, size: half(d.small) })] })),
-      ...structure.sections.filter((x) => x.placement === "sidebar").flatMap((x) => sectionParagraphs(x, true)),
+      ...sections.side.flatMap((x) => sectionParagraphs(x, true)),
     ];
     const sideCell = new TableCell({
       width: { size: 32, type: WidthType.PERCENTAGE },

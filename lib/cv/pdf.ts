@@ -75,7 +75,11 @@ function readLines(items: Item[][]): Line[] {
         if (otherColumn) cur.aside = it.x - startX > 150;
       }
       const line: Line = cur;
-      const glue = line.text && !line.text.endsWith(" ") && !it.str.startsWith(" ") && it.x - lastRight > 1 ? " " : "";
+      // Écart entre deux morceaux = espace entre deux mots. Seuil proportionnel à la taille du texte :
+      // un texte serré ou justifié peut avoir des espaces de moins d'un point (« Gestiondelarelation… »),
+      // alors que deux morceaux d'un même mot se touchent (écart quasi nul).
+      const gap = it.x - lastRight;
+      const glue = line.text && !line.text.endsWith(" ") && !it.str.startsWith(" ") && gap > Math.max(0.3, it.fontSize * 0.05) ? " " : "";
       line.text += glue + it.str;
       line.size = Math.max(line.size, it.fontSize);
       line.right = Math.max(line.right, it.x + it.width);
@@ -86,7 +90,79 @@ function readLines(items: Item[][]): Line[] {
   }
   // Un fragment « à côté » n'est un aparté que s'il est court (date, lieu) ; sinon c'est une autre colonne
   for (const l of lines) if (l.aside && l.text.length > 30) l.aside = false;
-  return lines;
+  return byColumns(lines);
+}
+
+/**
+ * CV en deux colonnes : beaucoup de PDF (Canva, Word) écrivent les deux colonnes ligne par ligne,
+ * en alternance. On remet les lignes dans l'ordre de lecture : ce qui est au-dessus des colonnes
+ * (en-tête pleine largeur), puis la colonne de gauche, puis celle de droite.
+ * On ne touche à rien si la page n'a pas deux colonnes nettes (ex. CV une colonne avec des dates
+ * alignées à droite : les lignes de gauche y dépassent la séparation, ce n'est pas une colonne).
+ */
+function byColumns(lines: Line[]): Line[] {
+  const out: Line[] = [];
+  const pages = [...new Set(lines.map((l) => l.page))];
+  for (const page of pages) {
+    const pageLines = lines.filter((l) => l.page === page);
+    const split = columnSplit(pageLines);
+    if (split === null) {
+      out.push(...pageLines);
+      continue;
+    }
+    const left = pageLines.filter((l) => l.x < split && l.right <= split + 2);
+    const right = pageLines.filter((l) => l.x >= split);
+    const full = pageLines.filter((l) => !left.includes(l) && !right.includes(l));
+    // L'alternance n'a lieu d'être corrigée que si les colonnes sont réellement mélangées
+    let switches = 0;
+    let previous: "l" | "r" | null = null;
+    for (const l of pageLines) {
+      const side = left.includes(l) ? "l" : right.includes(l) ? "r" : null;
+      if (side && previous && side !== previous) switches++;
+      if (side) previous = side;
+    }
+    if (switches < 4) {
+      out.push(...pageLines);
+      continue;
+    }
+    // Les lignes qui commencent au bord de la colonne de droite sont des lignes de cette colonne,
+    // pas des apartés (dates alignées à droite) : elles peuvent former des paragraphes
+    const rightEdge = Math.min(...right.map((l) => l.x));
+    for (const l of right) if (Math.abs(l.x - rightEdge) < 6) l.aside = false;
+    const top = Math.max(...left.map((l) => l.y), ...right.map((l) => l.y));
+    out.push(...full.filter((l) => l.y > top), ...left, ...right, ...full.filter((l) => l.y <= top));
+  }
+  return out;
+}
+
+/** Position x qui sépare deux colonnes sur une page, ou null s'il n'y en a pas. */
+function columnSplit(lines: Line[]): number | null {
+  if (lines.length < 8) return null;
+  const xs = [...new Set(lines.map((l) => Math.round(l.x)))].sort((a, b) => a - b);
+  // Plus grand écart entre deux débuts de ligne
+  let best: { gap: number; at: number } | null = null;
+  for (let i = 1; i < xs.length; i++) {
+    const gap = xs[i] - xs[i - 1];
+    if (!best || gap > best.gap) best = { gap, at: xs[i] };
+  }
+  if (!best || best.gap < 60) return null;
+  const split = best.at - 5;
+  const left = lines.filter((l) => l.x < split);
+  const right = lines.filter((l) => l.x >= split);
+  if (left.length < 3 || right.length < 3) return null;
+  // Une vraie colonne contient du texte sur une certaine largeur ; des dates ou des lieux alignés
+  // à droite (CV une colonne) forment une bande étroite, qui n'est pas une colonne.
+  const width = (ls: Line[]) => Math.max(...ls.map((l) => l.right)) - Math.min(...ls.map((l) => l.x));
+  if (width(right) < 120 || width(left) < 80) return null;
+  // Colonne de gauche réelle : ses lignes s'arrêtent avant la colonne de droite
+  const contained = left.filter((l) => l.right <= split + 2).length / left.length;
+  if (contained < 0.8) return null;
+  // Les deux colonnes occupent la même hauteur de page (sinon : simple retrait, pas des colonnes)
+  const span = (ls: Line[]) => [Math.min(...ls.map((l) => l.y)), Math.max(...ls.map((l) => l.y))];
+  const [l1, l2] = span(left);
+  const [r1, r2] = span(right);
+  const overlap = Math.min(l2, r2) - Math.max(l1, r1);
+  return overlap > 0.3 * Math.min(l2 - l1, r2 - r1) ? split : null;
 }
 
 const isHeading = (t: string) => t.length <= 40 && t === t.toUpperCase() && /\p{Lu}/u.test(t);

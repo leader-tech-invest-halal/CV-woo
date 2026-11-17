@@ -359,6 +359,9 @@
         "remaining": "Still to check",
         "allGood": "All readability checks passed.",
         "note": "Computed without AI on the file shown (PDF or Word tab), with the same rules as our free ATS checker. An internal estimate, not the result of a specific ATS."
+      },
+      "notice": {
+        "docx_textboxes": "Your Word file uses fixed-size text boxes. To keep texts from overlapping, your resume was rebuilt with your colours, font and layout instead of being edited directly in your file. Please check the result."
       }
     },
     "errors": {

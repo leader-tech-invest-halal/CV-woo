@@ -186,6 +186,18 @@ export async function extractDocx(bytes: Uint8Array): Promise<DocxExtraction> {
 }
 
 /** Applique les réécritures acceptées dans le fichier d'origine et renvoie le nouveau .docx. */
+/**
+ * Le Word contient-il des zones de texte (cadres de taille fixe) ? On n'y réécrit pas sur place :
+ * un texte plus long y déborderait sur la zone voisine (textes qui se chevauchent).
+ */
+export async function hasTextBoxes(bytes: Uint8Array): Promise<boolean> {
+  const zip = await openZip(bytes);
+  const file = zip.file("word/document.xml");
+  if (!file) return false;
+  const xml = await readPart(file);
+  return /<w:txbxContent[\s>]|<v:textbox[\s>]|<wps:txbx[\s>]/.test(xml);
+}
+
 export async function rewriteDocx(
   bytes: Uint8Array,
   rewrites: Record<string, string>,

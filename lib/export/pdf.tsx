@@ -5,7 +5,7 @@ import { PDFDocument } from "pdf-lib";
 import path from "node:path";
 import type { Block, ResumeStructure, ResumeStyle } from "@/lib/cv/types";
 import { FONTS, matchFont, type FontKey } from "@/lib/fonts";
-import { pdfSafe, stripBullet, textResolver } from "@/lib/cv/compose";
+import { orderedSections, pdfSafe, stripBullet, textResolver } from "@/lib/cv/compose";
 import { DENSITIES, type Density, type LayoutMode } from "@/lib/export/layout";
 
 // Génère le PDF du CV optimisé en reprenant le style du CV d'origine :
@@ -80,7 +80,7 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
       fontWeight: 700,
       fontSize: d.heading,
       lineHeight: 1.2,
-      marginTop: d.headingBefore,
+      paddingTop: d.headingBefore, // marge interne : voir la note sur les sauts de page plus bas
       marginBottom: d.headingAfter,
       paddingBottom: style.headingRule ? 2 : 0,
       textTransform: style.headingCase === "upper" ? "uppercase" : "none",
@@ -105,15 +105,18 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
         </Text>
       ));
 
-    // Un point n'est jamais coupé entre deux pages
+    // Un point n'est jamais coupé entre deux pages.
+    // Les espacements sont des marges INTERNES (padding) des blocs insécables : le moteur PDF
+    // déplace mal les marges externes d'un bloc renvoyé à la page suivante, ce qui faisait
+    // chevaucher les textes juste avant un saut de page.
     const line = (e: Entry, id: string) => {
       const text = stripBullet(t(id));
       return compact || e.headerBlockIds.length === 0 ? (
-        <Text key={id} style={{ marginTop: d.bulletGap }} wrap={false}>
-          {text}
-        </Text>
+        <View key={id} style={{ paddingTop: d.bulletGap }} wrap={false}>
+          <Text>{text}</Text>
+        </View>
       ) : (
-        <View key={id} style={s.bullet} wrap={false}>
+        <View key={id} style={[s.bullet, { marginTop: 0, paddingTop: d.bulletGap }]} wrap={false}>
           <Text style={s.dot}>•</Text>
           <Text style={s.bulletText}>{text}</Text>
         </View>
@@ -122,18 +125,28 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
 
     // Une expérience peut se poursuivre sur la page suivante entre deux points,
     // mais son intitulé reste toujours avec son premier point.
+    // Tous les blocs sont posés à plat dans la colonne (pas de bloc sécable qui en contient
+    // d'insécables) : c'est cette imbrication qui provoquait les chevauchements.
     const entry = (e: Entry, i: number, withHeading: boolean) => {
-      const [firstLine, ...otherLines] = e.bulletBlockIds;
-      return (
-        <View key={i} style={{ marginTop: i === 0 ? 0 : d.entryGap }}>
-          <View wrap={false}>
+      // Une expérience courte (jusqu'à 6 points) reste entière sur une même page
+      if (!compact && e.headerBlockIds.length > 0 && e.bulletBlockIds.length <= 6) {
+        return [
+          <View key={`${i}-all`} style={{ paddingTop: i === 0 ? 0 : d.entryGap }} wrap={false}>
             {withHeading && headingText}
             {header(e)}
-            {firstLine && line(e, firstLine)}
-          </View>
-          {otherLines.map((id) => line(e, id))}
-        </View>
-      );
+            {e.bulletBlockIds.map((id) => line(e, id))}
+          </View>,
+        ];
+      }
+      const [firstLine, ...otherLines] = e.bulletBlockIds;
+      return [
+        <View key={`${i}-head`} style={{ paddingTop: i === 0 ? 0 : d.entryGap }} wrap={false}>
+          {withHeading && headingText}
+          {header(e)}
+          {firstLine && line(e, firstLine)}
+        </View>,
+        ...otherLines.map((id) => line(e, id)),
+      ];
     };
 
     const headingText = (
@@ -150,11 +163,10 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
 
     if (section.entries.length === 0) return <View wrap={false}>{headingText}</View>;
     // Le titre de la rubrique reste toujours sur la même page que le début du premier élément
-    return <View>{section.entries.map((e, i) => entry(e, i, i === 0))}</View>;
+    return <>{section.entries.flatMap((e, i) => entry(e, i, i === 0))}</>;
   };
 
-  const mainSections = structure.sections.filter((x) => !sidebar || x.placement === "main");
-  const sideSections = structure.sections.filter((x) => sidebar && x.placement === "sidebar");
+  const { main: mainSections, side: sideSections } = orderedSections(structure, sidebar);
   const contacts = structure.contactBlockIds.map(t).filter(Boolean);
   const fullName = [structure.nameBlockId, ...(structure.nameExtraBlockIds ?? [])].map(t).join(" ");
 
@@ -163,6 +175,9 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
       {structure.nameBlockId && <Text style={s.name}>{fullName}</Text>}
       {structure.headlineBlockId && <Text style={s.headline}>{t(structure.headlineBlockId)}</Text>}
       {!sidebar && contacts.length > 0 && <Text style={s.contacts}>{contacts.join("  ·  ")}</Text>}
+      {structure.summaryHeadingBlockId && structure.summaryBlockIds.length > 0 && (
+        <Text style={[s.heading, { color: style.headingColor }]}>{t(structure.summaryHeadingBlockId)}</Text>
+      )}
       {structure.summaryBlockIds.map((id) => (
         <Text key={id} style={{ marginTop: d.summaryGap }}>
           {t(id)}
@@ -177,7 +192,7 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
         <Text
           style={[
             s.heading,
-            { color: sidebarDark ? "#ffffff" : style.headingColor, marginTop: 0 },
+            { color: sidebarDark ? "#ffffff" : style.headingColor, paddingTop: 0 },
             sidebarDark ? { borderBottomColor: "#ffffff" } : {},
           ]}
         >

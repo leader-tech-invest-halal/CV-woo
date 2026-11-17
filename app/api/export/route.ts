@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { renderResumePdf } from "@/lib/export/pdf";
 import { renderResumeDocx } from "@/lib/export/docx-template";
-import { rewriteDocx } from "@/lib/cv/docx";
+import { hasTextBoxes, rewriteDocx } from "@/lib/cv/docx";
 import { detectFormat, UserFacingError } from "@/lib/cv/validate-file";
 import { errorResponse, rateLimit } from "@/lib/http";
 import type { ParsedResume } from "@/lib/cv/types";
@@ -61,9 +61,22 @@ export async function POST(request: Request) {
     // Word d'origine + design d'origine : on modifie le fichier lui-même (mise en page identique)
     // (Depuis l'historique, le fichier d'origine n'est pas conservé : le Word est alors recomposé.)
     const file = form.get("file");
+    let sourceDocx: Uint8Array | null = null;
+    // Notice affichée dans l'aperçu quand le fichier n'a pas pu être modifié sur place
+    let notice: string | null = null;
     if (format === "docx" && resume.format === "docx" && template === "original" && file instanceof File) {
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      if (detectFormat(bytes) !== "docx") throw new UserFacingError("unsupported_file");
+      sourceDocx = new Uint8Array(await file.arrayBuffer());
+      if (detectFormat(sourceDocx) !== "docx") throw new UserFacingError("unsupported_file");
+      // Zones de texte de taille fixe (CV « deux colonnes » faits dans Word, modèles Canva…) :
+      // un texte réécrit plus long y déborde et chevauche la zone voisine. On recrée alors le CV
+      // avec ses couleurs et sa police, et on le dit à la personne.
+      if (await hasTextBoxes(sourceDocx)) {
+        sourceDocx = null;
+        notice = "docx_textboxes";
+      }
+    }
+    if (sourceDocx) {
+      const bytes = sourceDocx;
       body = await rewriteDocx(bytes, safeAccepted, {
         afterBlockIds: [resume.structure.nameBlockId, ...(resume.structure.nameExtraBlockIds ?? [])].filter(Boolean) as string[],
         text: resume.structure.headlineBlockId ? undefined : safeAccepted[NEW_HEADLINE_ID],
@@ -92,6 +105,7 @@ export async function POST(request: Request) {
         "cache-control": "no-store",
         ...(pages ? { "x-cv-pages": String(pages) } : {}),
         ...(ats ? { "x-cv-ats": encodeURIComponent(JSON.stringify(ats)) } : {}),
+        ...(notice ? { "x-cv-notice": notice } : {}),
       },
     });
   } catch (error) {

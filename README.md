@@ -25,7 +25,7 @@ Puis ouvrir http://localhost:3000 (redirige vers `/fr`). Pages disponibles : acc
 npm test
 ```
 
-136 tests, sans réseau ni clé (l'IA et la base de données sont simulées), avec des CV fictifs fabriqués à la volée :
+158 tests, sans réseau ni clé (l'IA et la base de données sont simulées), avec des CV fictifs fabriqués à la volée :
 
 - `tests/guardrails.test.ts` : garde-fous « ne jamais inventer » (chiffres, outils, sigles, compétences manquantes) et preuves des compétences ;
 - `tests/scoring.test.ts` : score de correspondance (poids 60 / 25 / 15) ;
@@ -37,5 +37,6 @@ npm test
 - `tests/security.test.ts` : liens d'offres (adresses internes refusées, y compris écrites en IPv6), fichiers Word piégés, règles des mots de passe.
 - `tests/headline.test.ts` : titre du poste créé sous le nom quand le CV n'en a pas (PDF, Word recomposé et Word d'origine).
 - `tests/offer-extract.test.ts` : récupération des offres (données structurées, microdonnées, texte de page, registre des plateformes, règles robots.txt). `tests/live-offers.test.ts` teste de vraies offres en ligne, seulement avec `LIVE=1`.
+- `tests/generation.test.ts` et `tests/overlap-scan.test.ts` : génération sans défaut (espaces gardés, PDF deux colonnes lus dans l'ordre, aucun bloc en double, titre du résumé à sa place, aucun texte qui se chevauche sur 288 CV de test, Word à zones de texte recréé).
 
 Ils sont relancés automatiquement par GitHub à chaque envoi (`.github/workflows/tests.yml`).

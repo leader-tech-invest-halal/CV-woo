@@ -18,6 +18,10 @@ const StructureSchema = z.object({
   headline_block_id: z.string().nullable().describe("Titre du poste ou accroche sous le nom"),
   contact_block_ids: z.array(z.string()),
   contact_heading_block_id: z.string().nullable().describe("Titre de la zone de coordonnées (Contact, Coordonnées...), null s'il n'y en a pas"),
+  summary_heading_block_id: z
+    .string()
+    .nullable()
+    .describe("Titre du résumé s'il existe (ex. « PROFIL », « À PROPOS ») ; jamais dans les coordonnées"),
   summary_block_ids: z.array(z.string()).describe("Profil / résumé en haut du CV"),
   sections: z.array(
     z.object({
@@ -53,7 +57,10 @@ Ta tâche : ranger chaque bloc dans la bonne partie du CV et décrire son style 
 Règles :
 - Utilise uniquement des identifiants présents dans la liste. N'invente aucun identifiant ni aucun texte.
 - Chaque bloc doit apparaître une seule fois (nom, accroche, contacts, titre des contacts, résumé ou une rubrique).
-- Le résumé (summary) ne contient que des phrases de présentation, jamais un titre.
+- Le résumé (summary) ne contient que des phrases de présentation, jamais un titre. Son titre (« PROFIL »,
+  « À PROPOS »…) va dans summary_heading_block_id. Les coordonnées ne contiennent que des coordonnées.
+- CV en deux colonnes : placement "sidebar" pour les rubriques de la colonne étroite (compétences, langues,
+  centres d'intérêt, outils…), "main" pour la colonne principale (expérience, formation…).
 - Conserve l'ordre du CV d'origine, pour les rubriques comme pour les blocs.
 - placement "sidebar" : la rubrique est dans une colonne latérale étroite ; sinon "main".
 - Pour le style, décris fidèlement le CV d'origine (couleurs réelles, police avec ou sans empattement, disposition en colonnes).
@@ -123,6 +130,7 @@ export async function structureResume(input: {
     contactBlockIds: ids(parsed.contact_block_ids),
     contactHeadingBlockId: one(parsed.contact_heading_block_id),
     summaryBlockIds: ids(parsed.summary_block_ids),
+    summaryHeadingBlockId: one(parsed.summary_heading_block_id),
     sections: parsed.sections.map((s) => ({
       headingBlockId: one(s.heading_block_id),
       heading: s.heading,

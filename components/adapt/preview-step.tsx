@@ -42,6 +42,8 @@ export function PreviewStep({
   const [layout, setLayout] = useState<LayoutMode>("compact");
   const [pages, setPages] = useState<number | null>(null);
   const [ats, setAts] = useState<{ pdf: AtsReadiness | null; docx: AtsReadiness | null }>({ pdf: null, docx: null });
+  // Avertissement du serveur (ex. Word à zones de texte recréé au lieu d'être modifié sur place)
+  const [notice, setNotice] = useState<string | null>(null);
   const [files, setFiles] = useState<Files>({ pdf: null, docx: null });
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const docxRef = useRef<HTMLDivElement>(null);
@@ -63,6 +65,7 @@ export function PreviewStep({
         setFiles({ pdf: pdf.blob, docx: docx.blob });
         setPages(pdf.pages);
         setAts({ pdf: pdf.ats, docx: docx.ats });
+        setNotice(docx.notice);
         setPdfUrl(URL.createObjectURL(pdf.blob));
       })
       .catch((e) => !cancelled && onError(e instanceof ApiError ? e.code : "server_error"));
@@ -251,6 +254,11 @@ export function PreviewStep({
           ))}
         </div>
         <p className="mt-3 text-sm text-muted-foreground">{note}</p>
+        {notice && (
+          <p role="status" className="mt-2 rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
+            {t(`notice.${notice}`)}
+          </p>
+        )}
         <p className="mt-2 text-xs text-muted-foreground">{t("printHint")}</p>
       </Card>
 

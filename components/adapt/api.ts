@@ -83,7 +83,7 @@ export async function exportResume(
   accepted: Record<string, string>,
   template = "original",
   layout: "compact" | "detailed" = "compact",
-): Promise<{ blob: Blob; pages: number | null; ats: AtsReadiness | null }> {
+): Promise<{ blob: Blob; pages: number | null; ats: AtsReadiness | null; notice: string | null }> {
   const form = new FormData();
   form.append("payload", JSON.stringify({ format, template, layout, resume, accepted }));
   if (resume.format === "docx" && file) form.append("file", file);
@@ -94,5 +94,5 @@ export async function exportResume(
     const raw = res.headers.get("x-cv-ats");
     if (raw) ats = JSON.parse(decodeURIComponent(raw));
   } catch {}
-  return { blob: await res.blob(), pages, ats };
+  return { blob: await res.blob(), pages, ats, notice: res.headers.get("x-cv-notice") };
 }
