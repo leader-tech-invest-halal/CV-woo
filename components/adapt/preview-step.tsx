@@ -2,14 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Download, FileText, LoaderCircle } from "lucide-react";
+import { Check, Download, FileText } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { ParsedResume } from "@/lib/cv/types";
 import { ApiError, exportResume } from "./api";
-import { applyTemplate, TEMPLATES, type TemplateId } from "@/lib/export/templates";
+import { ATS_SAFE, TEMPLATES, type TemplateId } from "@/lib/export/templates";
 import { LAYOUT_MODES, type LayoutMode } from "@/lib/export/layout";
-import { TemplateThumbnail } from "./template-thumbnail";
+import { LiveThumbnail } from "./live-thumbnail";
+import { ProgressSteps } from "./analysis-step";
 import { PdfPages, useTouchDevice } from "./pdf-pages";
 import { SaveToHistory } from "@/components/history/save-to-history";
 import type { HistoryMeta } from "@/components/history/history-api";
@@ -37,6 +38,7 @@ export function PreviewStep({
   history?: { meta: HistoryMeta; signedIn: boolean };
 }) {
   const t = useTranslations("adapt.preview");
+  const ta = useTranslations("adapt.analyzing");
   const [tab, setTab] = useState<"pdf" | "docx">(resume.format === "docx" ? "docx" : "pdf");
   const [template, setTemplate] = useState<TemplateId>("original");
   const [layout, setLayout] = useState<LayoutMode>("compact");
@@ -48,6 +50,7 @@ export function PreviewStep({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const docxRef = useRef<HTMLDivElement>(null);
   const touch = useTouchDevice();
+  const [progress, setProgress] = useState({ pdf: false, docx: false });
 
   // Génère les deux fichiers une seule fois : ce sont exactement ceux qui seront téléchargés
   useEffect(() => {
@@ -56,10 +59,17 @@ export function PreviewStep({
     setFiles({ pdf: null, docx: null });
     setPages(null);
     setAts({ pdf: null, docx: null });
-    Promise.all([
-      exportResume("pdf", file, resume, accepted, template, layout),
-      exportResume("docx", file, resume, accepted, template, layout),
-    ])
+    setProgress({ pdf: false, docx: false });
+    // Chaque fichier signale sa fin dès qu'il est prêt : la progression affichée est réelle
+    const pdfJob = exportResume("pdf", file, resume, accepted, template, layout).then((r) => {
+      if (!cancelled) setProgress((p) => ({ ...p, pdf: true }));
+      return r;
+    });
+    const docxJob = exportResume("docx", file, resume, accepted, template, layout).then((r) => {
+      if (!cancelled) setProgress((p) => ({ ...p, docx: true }));
+      return r;
+    });
+    Promise.all([pdfJob, docxJob])
       .then(([pdf, docx]) => {
         if (cancelled) return;
         setFiles({ pdf: pdf.blob, docx: docx.blob });
@@ -109,7 +119,9 @@ export function PreviewStep({
 
   const ready = files.pdf && files.docx;
   const note =
-    template !== "original"
+    template === "moderne"
+      ? t("templateHintTwoColumns")
+      : template !== "original"
       ? t("templateHint")
       : resume.format === "pdf"
         ? t("fromPdf")
@@ -150,10 +162,10 @@ export function PreviewStep({
 
         <p className="mt-5 text-sm font-medium">{t("templates.title")}</p>
         {/* Miniatures des modèles : « Votre design » utilise les couleurs et la disposition du CV importé */}
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4" role="radiogroup" aria-label={t("templates.title")}>
+        {/* Chaque miniature est la vraie première page du PDF de ce modèle, avec ce CV */}
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" role="radiogroup" aria-label={t("templates.title")}>
           {TEMPLATES.map((id) => {
             const selected = template === id;
-            const style = applyTemplate(resume.style, id);
             return (
               <button
                 key={id}
@@ -171,11 +183,11 @@ export function PreviewStep({
                   </span>
                 )}
                 <div className="mx-auto w-full max-w-[150px]">
-                  <TemplateThumbnail style={style} />
+                  <LiveThumbnail template={id} file={file} resume={resume} accepted={accepted} layout={layout} />
                 </div>
                 <span className="mt-2 text-sm font-medium">{t(`templates.${id}`)}</span>
                 <span className="text-xs leading-snug text-muted-foreground">{t(`templateDesc.${id}`)}</span>
-                {style.layout === "single" && (
+                {(ATS_SAFE.has(id) || (id === "original" && resume.style.layout === "single")) && (
                   <span className="mt-1.5 inline-flex w-fit rounded-full bg-accent px-2 py-0.5 text-[11px] font-medium text-accent-foreground">
                     {t("atsSafe")}
                   </span>
@@ -264,9 +276,13 @@ export function PreviewStep({
 
       <div className="overflow-hidden rounded-lg border border-border bg-muted">
         {!ready ? (
-          <div className="flex h-96 flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
-            <LoaderCircle className="size-6 animate-spin text-primary" aria-hidden />
-            {t("loading")}
+          <div className="flex h-96 items-center justify-center bg-background px-6">
+            <ProgressSteps
+              steps={[
+                { label: ta("layout"), state: progress.pdf ? "done" : "active" },
+                { label: ta("preview"), state: progress.docx ? "done" : progress.pdf ? "active" : "pending" },
+              ]}
+            />
           </div>
         ) : tab === "pdf" ? (
           touch && files.pdf ? (

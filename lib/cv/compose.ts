@@ -1,4 +1,4 @@
-import type { Block, ParsedResume, ResumeStructure } from "./types";
+import type { Block, DesignId, ParsedResume, ResumeStructure } from "./types";
 
 /**
  * Titre du poste visé, créé sous le nom quand le CV n'en a pas.
@@ -142,10 +142,56 @@ export function completeStructure(blocks: Block[], structure: ResumeStructure): 
  * d'origine (compétences, langues, centres d'intérêt…) passent APRÈS les rubriques principales
  * (expérience, formation) : sinon l'expérience arrivait tout en bas, après les langues.
  */
-export function orderedSections(structure: ResumeStructure, sidebar: boolean) {
+export function orderedSections(structure: ResumeStructure, sidebar: boolean, design: DesignId = "original") {
+  // Modèles CV Woo : ordre standard des recruteurs, et colonne latérale choisie par type de rubrique
+  if (design !== "original") {
+    const rank = (k: string) => {
+      const i = KIND_ORDER.indexOf(k as (typeof KIND_ORDER)[number]);
+      return i < 0 ? KIND_ORDER.length : i;
+    };
+    const sorted = structure.sections.map((x, i) => ({ x, i })).sort((a, b) => rank(a.x.kind) - rank(b.x.kind) || a.i - b.i).map((o) => o.x);
+    if (!sidebar) return { main: sorted, side: [] as typeof sorted };
+    return { main: sorted.filter((x) => !SIDE_KINDS.has(x.kind)), side: sorted.filter((x) => SIDE_KINDS.has(x.kind)) };
+  }
   const main = structure.sections.filter((x) => x.placement !== "sidebar");
   const side = structure.sections.filter((x) => x.placement === "sidebar");
   return sidebar ? { main, side } : { main: [...main, ...side], side: [] as typeof side };
+}
+
+/** Ordre standard des rubriques : profil (en-tête), expérience, formation, compétences, langues… */
+const KIND_ORDER = ["experience", "education", "skills", "languages", "certifications", "projects", "interests", "other"] as const;
+/** Rubriques placées dans la colonne latérale des modèles à deux colonnes */
+const SIDE_KINDS = new Set(["skills", "languages", "interests"]);
+
+const DATE_PART =
+  /\b(19|20)\d{2}\b|aujourd.hui|pr[ée]sent|actuel|en cours|depuis|\b(janv|f[ée]vr|mars|avr|mai|juin|juil|ao[uû]t|sept|oct|nov|d[ée]c)[a-zé]*\.?\s/i;
+
+/**
+ * En-tête d'une expérience découpé pour la mise en page : intitulé, dates (alignées à droite
+ * dans les modèles), et le reste (entreprise, lieu). Aucun texte n'est perdu ni modifié :
+ * les morceaux sont seulement répartis. Ex. « Paris | Mai 2024 – 2025 » → lieu « Paris »,
+ * dates « Mai 2024 – 2025 ».
+ */
+export function splitEntryHeader(lines: string[]): { title: string; date: string | null; meta: string[] } {
+  const [title = "", ...rest] = lines;
+  let date: string | null = null;
+  const meta: string[] = [];
+  for (const line of rest) {
+    if (date) {
+      meta.push(line);
+      continue;
+    }
+    const parts = line.split(/\s+[|·•]\s+/);
+    const i = parts.findIndex((p) => DATE_PART.test(p) && p.length <= 40);
+    if (i < 0) {
+      meta.push(line);
+      continue;
+    }
+    date = parts[i].trim();
+    const others = parts.filter((_, j) => j !== i).join(" · ").trim();
+    if (others) meta.push(others);
+  }
+  return { title, date, meta };
 }
 
 /** Texte final d'un bloc : la réécriture acceptée si elle existe, sinon l'original. */

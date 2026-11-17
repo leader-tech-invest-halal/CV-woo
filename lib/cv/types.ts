@@ -23,7 +23,14 @@ export type ResumeStyle = {
   headerAlign: "left" | "center";
   headingCase: "upper" | "normal";
   headingRule: boolean; // filet sous les titres de rubrique
+  /**
+   * Modèle de mise en page. Absent ou « original » : on reprend le CV de la personne.
+   * Les autres ont chacun leur propre structure (en-tête, titres, dates, colonnes).
+   */
+  design?: DesignId;
 };
+
+export type DesignId = "original" | "encre" | "classique" | "moderne" | "minimaliste";
 
 export type SectionKind =
   | "experience"

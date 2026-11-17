@@ -2,10 +2,11 @@ import "server-only";
 import React from "react";
 import { Document, Font, Page, StyleSheet, Text, View, renderToBuffer } from "@react-pdf/renderer";
 import { PDFDocument } from "pdf-lib";
+import type { Style } from "@react-pdf/types";
 import path from "node:path";
 import type { Block, ResumeStructure, ResumeStyle } from "@/lib/cv/types";
 import { FONTS, matchFont, type FontKey } from "@/lib/fonts";
-import { orderedSections, pdfSafe, stripBullet, textResolver } from "@/lib/cv/compose";
+import { orderedSections, pdfSafe, splitEntryHeader, stripBullet, textResolver } from "@/lib/cv/compose";
 import { DENSITIES, type Density, type LayoutMode } from "@/lib/export/layout";
 
 // Génère le PDF du CV optimisé en reprenant le style du CV d'origine :
@@ -49,6 +50,11 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
   const sidebar = style.layout !== "single";
   const sidebarDark = style.sidebarColor ? luminance(style.sidebarColor) < 0.45 : false;
   const sideText = sidebarDark ? "#ffffff" : style.textColor;
+  // Modèle choisi : « original » reprend le CV de la personne ; les autres ont leur propre structure
+  const design = style.design ?? "original";
+  const designed = design !== "original";
+  const muted = "#6b7280";
+  const fr = (structure.language ?? "fr").startsWith("fr");
 
   const s = StyleSheet.create({
     // Marges haute et basse sur la page : elles se répètent donc sur chaque page
@@ -80,7 +86,6 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
       fontWeight: 700,
       fontSize: d.heading,
       lineHeight: 1.2,
-      paddingTop: d.headingBefore, // marge interne : voir la note sur les sauts de page plus bas
       marginBottom: d.headingAfter,
       paddingBottom: style.headingRule ? 2 : 0,
       textTransform: style.headingCase === "upper" ? "uppercase" : "none",
@@ -93,17 +98,76 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
     bullet: { flexDirection: "row", marginTop: d.bulletGap },
     dot: { width: 10 },
     bulletText: { flex: 1 },
+    // Ligne « intitulé ……… dates » des modèles CV Woo
+    titleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+    titleText: { flex: 1, fontFamily: bold, fontWeight: 700, paddingRight: 8 },
+    date: { fontSize: d.small, color: muted, textAlign: "right" },
+    meta: { fontSize: d.small, color: muted },
+    // Compétences et langues sur deux colonnes (Encre, Classique)
+    gridRow: { flexDirection: "row" },
+    gridCell: { width: "50%", paddingRight: 8 },
   });
+
+  // Titres de rubrique : chaque modèle a les siens
+  const headingByDesign: Record<string, Style> = {
+    encre: { fontSize: d.heading * 0.86, letterSpacing: 0.5, borderBottomWidth: 0.6, borderBottomColor: "#cbd5e1", paddingBottom: 3, marginBottom: d.headingAfter + 1 },
+    classique: { letterSpacing: 0.5, borderBottomWidth: 1, borderBottomColor: "#111111", paddingBottom: 2 },
+    moderne: { letterSpacing: 0.4, borderBottomWidth: 0, borderLeftWidth: 3, borderLeftColor: style.accentColor, paddingLeft: 6, paddingBottom: 0 },
+    minimaliste: { fontSize: d.heading + 0.5, letterSpacing: 0, borderBottomWidth: 0, paddingBottom: 0 },
+  };
+  const headingStyle = headingByDesign[design] ?? {};
+  // En-tête (nom, accroche, coordonnées)
+  const headerByDesign: Record<string, Style> = {
+    classique: { borderBottomWidth: 1, borderBottomColor: "#111111", paddingBottom: d.summaryGap + 2 },
+  };
+  const nameByDesign: Record<string, Style> = {
+    encre: { fontSize: d.name + 3, color: "#111827", letterSpacing: -0.3 },
+    classique: { textTransform: "uppercase", letterSpacing: 0.8, color: "#111111" },
+    moderne: { fontSize: d.name + 4, color: "#111827" },
+    minimaliste: { color: "#000000" },
+  };
+  const contactsColor = designed && design !== "minimaliste" ? muted : undefined;
+  // Titre de rubrique dans une boîte : l'espace au-dessus est une marge interne de la boîte
+  // (sûr aux sauts de page), et le texte lui-même n'a pas d'espace en haut — sinon le repère de
+  // couleur du modèle Moderne débordait au-dessus du titre.
+  const headingLabel = (text: string) =>
+    // Minimaliste : casse uniforme (« Expérience », jamais « EXPÉRIENCE » à côté de « Profil »)
+    design === "minimaliste" && text === text.toUpperCase() ? text.charAt(0) + text.slice(1).toLowerCase() : text;
+  const headingBox = (text: string, extra: Style[], top: number = d.headingBefore) => (
+    <View style={{ paddingTop: top }}>
+      <Text style={[s.heading, headingStyle, ...extra]}>{headingLabel(text)}</Text>
+    </View>
+  );
+  // Libellés de structure (pas des informations sur la personne) pour les modèles CV Woo
+  const label = { profile: fr ? "Profil" : "Profile", contact: fr ? "Contact" : "Contact" };
 
   const SectionView = ({ section, onSide }: { section: Section; onSide: boolean }) => {
     const compact = onSide || section.kind === "skills" || section.kind === "languages";
 
-    const header = (e: Entry) =>
-      e.headerBlockIds.map((id, j) => (
+    const header = (e: Entry) => {
+      // Modèles CV Woo : « intitulé ……… dates » sur une ligne, puis entreprise et lieu en gris.
+      // Le texte est seulement réparti, jamais modifié (voir splitEntryHeader).
+      if (designed && design !== "minimaliste" && !compact && e.headerBlockIds.length > 0) {
+        const { title, date, meta } = splitEntryHeader(e.headerBlockIds.map((id) => t(id)));
+        return [
+          <View key="row" style={s.titleRow}>
+            <Text style={s.titleText}>{title}</Text>
+            {date && <Text style={s.date}>{date}</Text>}
+          </View>,
+          ...meta.map((m, j) => (
+            <Text key={`m${j}`} style={s.meta}>
+              {m}
+            </Text>
+          )),
+        ];
+      }
+      return e.headerBlockIds.map((id, j) => (
         <Text key={id} style={j === 0 && !compact ? s.entryTitle : j === 0 ? {} : s.entryMeta}>
           {t(id)}
         </Text>
       ));
+    };
+    const dotColor = design === "encre" || design === "moderne" ? style.accentColor : undefined;
 
     // Un point n'est jamais coupé entre deux pages.
     // Les espacements sont des marges INTERNES (padding) des blocs insécables : le moteur PDF
@@ -117,7 +181,7 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
         </View>
       ) : (
         <View key={id} style={[s.bullet, { marginTop: 0, paddingTop: d.bulletGap }]} wrap={false}>
-          <Text style={s.dot}>•</Text>
+          <Text style={[s.dot, dotColor ? { color: dotColor } : {}]}>•</Text>
           <Text style={s.bulletText}>{text}</Text>
         </View>
       );
@@ -128,6 +192,37 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
     // Tous les blocs sont posés à plat dans la colonne (pas de bloc sécable qui en contient
     // d'insécables) : c'est cette imbrication qui provoquait les chevauchements.
     const entry = (e: Entry, i: number, withHeading: boolean) => {
+      // Encre et Classique : compétences et langues courtes sur deux colonnes (lignes insécables)
+      const items = e.bulletBlockIds.map((id) => stripBullet(t(id)));
+      if (
+        (design === "encre" || design === "classique") &&
+        !onSide &&
+        compact &&
+        e.headerBlockIds.length === 0 &&
+        items.length >= 3 &&
+        items.every((x) => x.length <= 45)
+      ) {
+        const rows: string[][] = [];
+        for (let k = 0; k < items.length; k += 2) rows.push(items.slice(k, k + 2));
+        const rowView = (row: string[], r: number) => (
+          <View key={`${i}-g${r}`} style={[s.gridRow, { paddingTop: r === 0 && i > 0 ? d.entryGap : d.bulletGap }]} wrap={false}>
+            {row.map((x, c) => (
+              <Text key={c} style={s.gridCell}>
+                {x}
+              </Text>
+            ))}
+          </View>
+        );
+        // Le titre de la rubrique reste avec la première ligne
+        const [first, ...others] = rows;
+        return [
+          <View key={`${i}-g-head`} wrap={false}>
+            {withHeading && headingText}
+            {rowView(first, 0)}
+          </View>,
+          ...others.map((row, r) => rowView(row, r + 1)),
+        ];
+      }
       // Une expérience courte (jusqu'à 6 points) reste entière sur une même page
       if (!compact && e.headerBlockIds.length > 0 && e.bulletBlockIds.length <= 6) {
         return [
@@ -149,34 +244,35 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
       ];
     };
 
-    const headingText = (
-      <Text
-        style={[
-          s.heading,
-          { color: onSide && sidebarDark ? "#ffffff" : style.headingColor },
-          onSide && sidebarDark ? { borderBottomColor: "#ffffff" } : {},
-        ]}
-      >
-        {section.headingBlockId ? t(section.headingBlockId) : pdfSafe(section.heading)}
-      </Text>
-    );
+    const headingText = headingBox(section.headingBlockId ? t(section.headingBlockId) : pdfSafe(section.heading), [
+      { color: onSide && sidebarDark ? "#ffffff" : style.headingColor },
+      onSide && sidebarDark ? { borderBottomColor: "#ffffff" } : {},
+      // Moderne, colonne latérale : titre blanc souligné d'un filet fin, sans repère de couleur
+      design === "moderne" && onSide ? { borderLeftWidth: 0, paddingLeft: 0, borderBottomWidth: 0.6, paddingBottom: 2 } : {},
+    ]);
 
     if (section.entries.length === 0) return <View wrap={false}>{headingText}</View>;
     // Le titre de la rubrique reste toujours sur la même page que le début du premier élément
     return <>{section.entries.flatMap((e, i) => entry(e, i, i === 0))}</>;
   };
 
-  const { main: mainSections, side: sideSections } = orderedSections(structure, sidebar);
+  const { main: mainSections, side: sideSections } = orderedSections(structure, sidebar, design);
   const contacts = structure.contactBlockIds.map(t).filter(Boolean);
   const fullName = [structure.nameBlockId, ...(structure.nameExtraBlockIds ?? [])].map(t).join(" ");
+  // Titre du résumé : celui du CV ; à défaut, les modèles CV Woo affichent « Profil »
+  const summaryHeading = structure.summaryHeadingBlockId ? t(structure.summaryHeadingBlockId) : designed ? label.profile : null;
 
   const header = (
     <View>
-      {structure.nameBlockId && <Text style={s.name}>{fullName}</Text>}
-      {structure.headlineBlockId && <Text style={s.headline}>{t(structure.headlineBlockId)}</Text>}
-      {!sidebar && contacts.length > 0 && <Text style={s.contacts}>{contacts.join("  ·  ")}</Text>}
-      {structure.summaryHeadingBlockId && structure.summaryBlockIds.length > 0 && (
-        <Text style={[s.heading, { color: style.headingColor }]}>{t(structure.summaryHeadingBlockId)}</Text>
+      <View style={headerByDesign[design] ?? {}}>
+        {structure.nameBlockId && <Text style={[s.name, nameByDesign[design] ?? {}]}>{fullName}</Text>}
+        {structure.headlineBlockId && <Text style={s.headline}>{t(structure.headlineBlockId)}</Text>}
+        {!sidebar && contacts.length > 0 && (
+          <Text style={[s.contacts, contactsColor ? { color: contactsColor } : {}]}>{contacts.join("  ·  ")}</Text>
+        )}
+      </View>
+      {summaryHeading && structure.summaryBlockIds.length > 0 && (
+        headingBox(summaryHeading, [{ color: style.headingColor }])
       )}
       {structure.summaryBlockIds.map((id) => (
         <Text key={id} style={{ marginTop: d.summaryGap }}>
@@ -188,16 +284,16 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
 
   const side = sidebar ? (
     <View style={s.side}>
-      {structure.contactHeadingBlockId && contacts.length > 0 && (
-        <Text
-          style={[
-            s.heading,
-            { color: sidebarDark ? "#ffffff" : style.headingColor, paddingTop: 0 },
+      {(structure.contactHeadingBlockId || design === "moderne") && contacts.length > 0 && (
+        headingBox(
+          structure.contactHeadingBlockId ? t(structure.contactHeadingBlockId) : label.contact,
+          [
+            { color: sidebarDark ? "#ffffff" : style.headingColor },
             sidebarDark ? { borderBottomColor: "#ffffff" } : {},
-          ]}
-        >
-          {t(structure.contactHeadingBlockId)}
-        </Text>
+            design === "moderne" ? { borderLeftWidth: 0, paddingLeft: 0, borderBottomWidth: 0.6, paddingBottom: 2 } : {},
+          ],
+          0,
+        )
       )}
       {contacts.map((c, i) => (
         <Text key={i} style={{ fontSize: d.small, marginBottom: 2 }}>

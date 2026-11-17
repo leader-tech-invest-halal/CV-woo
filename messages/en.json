@@ -275,7 +275,18 @@
       "s2": "Looking for the skills in your resume",
       "s3": "Rewording your experience",
       "s4": "Checking: nothing made up",
-      "hint": "This usually takes 20 to 60 seconds."
+      "hint": "The analysis usually takes 20 to 60 seconds. The layout and preview are prepared at the Download step.",
+      "read": "Reading the file",
+      "sections": "Identifying the sections",
+      "analysis": "Analysing content and ATS compatibility",
+      "layout": "Preparing the layout",
+      "preview": "Generating the preview",
+      "elapsed": "Elapsed: {seconds} s",
+      "state": {
+        "done": "done",
+        "active": "in progress",
+        "pending": "to come"
+      }
     },
     "analysis": {
       "for": "For the role",
@@ -328,15 +339,17 @@
         "original": "Your design",
         "classique": "Classic",
         "moderne": "Modern",
-        "minimaliste": "Minimal"
+        "minimaliste": "Minimal ATS",
+        "encre": "Ink"
       },
       "templateHint": "One-column template, the safest for recruiting software.",
       "font": "Font used: {font}",
       "templateDesc": {
-        "original": "Your colors, font and layout",
-        "classique": "Sober, serif font, underlined headings",
-        "moderne": "Clean, with your resume's color",
-        "minimaliste": "Black and white, no frills"
+        "original": "Your colours, font and layout",
+        "classique": "Traditional: centred header, serif font",
+        "moderne": "Two columns with a coloured sidebar",
+        "minimaliste": "Black and white, the simplest structure for ATS",
+        "encre": "One column, spaced headings, right-aligned dates"
       },
       "atsSafe": "One column · ATS-friendly",
       "layout": {
@@ -362,7 +375,8 @@
       },
       "notice": {
         "docx_textboxes": "Your Word file uses fixed-size text boxes. To keep texts from overlapping, your resume was rebuilt with your colours, font and layout instead of being edited directly in your file. Please check the result."
-      }
+      },
+      "templateHintTwoColumns": "Two-column template: more visual. For online applications, prefer a one-column template (Ink, Classic, Minimal ATS)."
     },
     "errors": {
       "file_too_large": "The file is larger than 5 MB.",

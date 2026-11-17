@@ -275,7 +275,18 @@
       "s2": "Recherche des compétences dans votre CV",
       "s3": "Reformulation de vos expériences",
       "s4": "Vérification : aucune information inventée",
-      "hint": "Cela prend en général entre 20 et 60 secondes."
+      "hint": "L'analyse prend en général entre 20 et 60 secondes. La mise en page et l'aperçu sont préparés à l'étape Téléchargement.",
+      "read": "Lecture du fichier",
+      "sections": "Identification des rubriques",
+      "analysis": "Analyse du contenu et compatibilité ATS",
+      "layout": "Préparation de la mise en page",
+      "preview": "Génération de l'aperçu",
+      "elapsed": "Temps écoulé : {seconds} s",
+      "state": {
+        "done": "terminé",
+        "active": "en cours",
+        "pending": "à venir"
+      }
     },
     "analysis": {
       "for": "Pour le poste",
@@ -328,15 +339,17 @@
         "original": "Votre design",
         "classique": "Classique",
         "moderne": "Moderne",
-        "minimaliste": "Minimaliste"
+        "minimaliste": "Minimaliste ATS",
+        "encre": "Encre"
       },
       "templateHint": "Modèle une colonne, le plus sûr pour les logiciels de recrutement.",
       "font": "Police reprise : {font}",
       "templateDesc": {
         "original": "Vos couleurs, votre police et votre disposition",
-        "classique": "Sobre, police avec empattement, titres soulignés",
-        "moderne": "Épuré, avec la couleur de votre CV",
-        "minimaliste": "Noir et blanc, sans fioritures"
+        "classique": "Traditionnel : en-tête centré, police à empattement",
+        "moderne": "Deux colonnes avec barre latérale colorée",
+        "minimaliste": "Noir et blanc, structure la plus simple pour les ATS",
+        "encre": "Une colonne, titres espacés, dates alignées à droite"
       },
       "atsSafe": "Une colonne · idéal ATS",
       "layout": {
@@ -362,7 +375,8 @@
       },
       "notice": {
         "docx_textboxes": "Votre fichier Word utilise des zones de texte de taille fixe. Pour éviter que les textes se chevauchent, votre CV a été recréé avec vos couleurs, votre police et votre disposition, au lieu d'être modifié directement dans votre fichier. Vérifiez le résultat."
-      }
+      },
+      "templateHintTwoColumns": "Modèle deux colonnes : plus visuel. Pour les candidatures en ligne, préférez un modèle une colonne (Encre, Classique, Minimaliste ATS)."
     },
     "errors": {
       "file_too_large": "Le fichier dépasse 5 Mo.",

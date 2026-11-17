@@ -37,34 +37,64 @@ export function useOrigin(resume: ParsedResume) {
 // Écrans 3 à 6 du parcours : exigences de l'offre, comparaison avec le CV,
 // propositions (accepter / refuser / modifier) et validation avant génération.
 
-/** Écran d'attente pendant l'analyse par l'IA. */
+export type StepState = "done" | "active" | "pending";
+
+/**
+ * Liste d'étapes qui reflète l'état RÉEL du traitement : une étape n'est cochée que lorsque
+ * l'opération correspondante est terminée (aucune progression simulée par un minuteur).
+ */
+export function ProgressSteps({ steps, elapsed }: { steps: { label: string; state: StepState }[]; elapsed?: number }) {
+  const t = useTranslations("adapt.analyzing");
+  return (
+    <div role="status" aria-live="polite">
+      <ol className="space-y-3">
+        {steps.map(({ label, state }, i) => (
+          <li key={i} className={`flex items-center gap-3 text-sm ${state === "pending" ? "text-muted-foreground" : ""}`}>
+            {state === "done" ? (
+              <CircleCheck className="size-5 shrink-0 text-primary" strokeWidth={1.5} aria-hidden />
+            ) : state === "active" ? (
+              <LoaderCircle className="size-5 shrink-0 animate-spin text-primary" strokeWidth={1.5} aria-hidden />
+            ) : (
+              <span className="size-5 shrink-0 rounded-full border border-border" aria-hidden />
+            )}
+            <span>
+              {label}
+              <span className="sr-only"> : {t(`state.${state}`)}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+      {elapsed !== undefined && <p className="mt-5 text-center text-xs text-muted-foreground tabular-nums">{t("elapsed", { seconds: elapsed })}</p>}
+    </div>
+  );
+}
+
+/** Écran d'attente pendant l'analyse par l'IA : étapes réelles du parcours et temps écoulé. */
 export function Analyzing() {
   const t = useTranslations("adapt.analyzing");
-  const [step, setStep] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setStep((s) => Math.min(s + 1, 3)), 9000);
+    const start = Date.now();
+    const id = setInterval(() => setElapsed(Math.round((Date.now() - start) / 1000)), 1000);
     return () => clearInterval(id);
   }, []);
-  const steps = [t("s1"), t("s2"), t("s3"), t("s4")];
+  // Lecture du fichier et rubriques : faites à l'import. Analyse : en cours (la requête est envoyée).
+  // Mise en page et aperçu : se feront à l'étape Téléchargement.
   return (
     <Card className="px-6 py-12" aria-busy="true">
-      <div className="mx-auto max-w-sm" role="status">
-        <h2 className="text-center text-lg font-semibold">{t("title")}</h2>
-        <ol className="mt-6 space-y-3">
-          {steps.map((label, i) => (
-            <li key={i} className={`flex items-center gap-3 text-sm ${i > step ? "text-muted-foreground" : ""}`}>
-              {i < step ? (
-                <CircleCheck className="size-5 text-primary" strokeWidth={1.5} aria-hidden />
-              ) : i === step ? (
-                <LoaderCircle className="size-5 animate-spin text-primary" strokeWidth={1.5} aria-hidden />
-              ) : (
-                <span className="size-5 rounded-full border border-border" aria-hidden />
-              )}
-              {label}
-            </li>
-          ))}
-        </ol>
-        <p className="mt-6 text-center text-xs text-muted-foreground">{t("hint")}</p>
+      <div className="mx-auto max-w-sm">
+        <h2 className="mb-6 text-center text-lg font-semibold">{t("title")}</h2>
+        <ProgressSteps
+          elapsed={elapsed}
+          steps={[
+            { label: t("read"), state: "done" },
+            { label: t("sections"), state: "done" },
+            { label: t("analysis"), state: "active" },
+            { label: t("layout"), state: "pending" },
+            { label: t("preview"), state: "pending" },
+          ]}
+        />
+        <p className="mt-2 text-center text-xs text-muted-foreground">{t("hint")}</p>
       </div>
     </Card>
   );

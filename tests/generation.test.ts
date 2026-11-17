@@ -154,3 +154,29 @@ describe("Word à zones de texte", () => {
     expect(await hasTextBoxes(await zip.generateAsync({ type: "uint8array" }))).toBe(true);
   });
 });
+
+describe("modèles : rien n'est perdu, en PDF comme en Word", async () => {
+  const { applyTemplate, TEMPLATES } = await import("@/lib/export/templates");
+  const { renderResumeDocx } = await import("@/lib/export/docx-template");
+  const JSZip = (await import("jszip")).default;
+  const pieces = (s: string) => s.replace(/^-\s*/, "").split(/\s+[|·•]\s+/).map((x) => x.trim()).filter(Boolean);
+  // Casse ignorée : certains modèles écrivent le nom ou les titres en majuscules (mise en forme voulue)
+  const flat = (s: string) => s.replace(/\s+/g, " ").toLowerCase();
+
+  for (const id of TEMPLATES) {
+    it(id, async () => {
+      const cv = makeCv({ experiences: 3, bullets: 3, sidebar: true });
+      cv.blocks.find((b) => b.text.startsWith("Janv. 2010"))!.text = "Paris | Janv. 2010 – Déc. 2010";
+      const style = applyTemplate(cv.style, id);
+      const pdfText = flat((await extractPdf((await renderResumePdf({ ...cv, style })).bytes)).blocks.map((b) => b.text).join(" "));
+      const xml = await (await JSZip.loadAsync(await renderResumeDocx({ ...cv, style }))).file("word/document.xml")!.async("string");
+      const docxText = flat(xml.replace(/<w:tab\/>/g, " ").replace(/<[^>]+>/g, "").replace(/&apos;/g, "'").replace(/&amp;/g, "&"));
+      for (const b of cv.blocks) {
+        for (const p of pieces(b.text)) {
+          expect(pdfText, `PDF ${id} : ${p}`).toContain(flat(p));
+          expect(docxText, `Word ${id} : ${p}`).toContain(flat(p));
+        }
+      }
+    });
+  }
+});

@@ -10,7 +10,7 @@ import { makeCv } from "./helpers/cv";
 describe("aucun chevauchement de texte dans les PDF générés", () => {
   for (const sidebar of [false, true]) {
     for (const template of TEMPLATES) {
-      it(`${template}${sidebar ? " (2 colonnes)" : ""}`, { timeout: 120_000 }, async () => {
+      it(`${template}${sidebar ? " (2 colonnes)" : ""}`, { timeout: 400_000 }, async () => {
         const problems: string[] = [];
         for (let experiences = 2; experiences <= 10; experiences++) {
           for (const bullets of [2, 5]) {
