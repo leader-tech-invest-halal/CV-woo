@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { readPickedFile } from "@/lib/picked-file";
 import { ArrowRight, ChevronDown, CircleAlert, CircleCheck, CircleX, FileText, LoaderCircle, ScanText, Upload } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { buttonClass } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import { SkillChip } from "@/components/analysis/skill-chip";
 import type { AtsReport, Check, CheckCategory } from "@/lib/ats/checks";
 import { useCheckMessage } from "./check-message";
 
-const MAX = 5 * 1024 * 1024;
 const CATEGORIES: CheckCategory[] = ["offer", "readability", "content", "file"];
 
 export function AtsChecker() {
@@ -27,12 +27,17 @@ export function AtsChecker() {
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<AtsReport | null>(null);
 
-  const pick = (f: File | undefined) => {
+  // Copie du fichier en mémoire dès qu'il est choisi (voir lib/picked-file.ts : sur Android,
+  // le fichier d'origine pouvait ne pas s'envoyer)
+  const pick = async (f: File | undefined) => {
     setError(null);
+    if (input.current) input.current.value = "";
     if (!f) return;
-    if (f.size > MAX) return setError("file_too_large");
-    if (!/\.(pdf|docx)$/i.test(f.name)) return setError("unsupported_file");
-    setFile(f);
+    try {
+      setFile(await readPickedFile(f));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "file_unreadable");
+    }
   };
 
   const check = async () => {
@@ -205,7 +210,7 @@ export function AtsChecker() {
             <p className="mt-3 text-xs text-muted-foreground">{tr("formats")}</p>
           </>
         )}
-        <input ref={input} type="file" hidden accept=".pdf,.docx" onChange={(e) => pick(e.target.files?.[0])} />
+        <input ref={input} type="file" hidden accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={(e) => pick(e.target.files?.[0])} />
       </div>
 
       <button

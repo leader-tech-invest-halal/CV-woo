@@ -422,7 +422,8 @@
       "offer_manual": "Ce site ne permet pas la récupération automatique de ses offres. Copiez le texte de l'annonce dans l'onglet « Texte de l'offre ».",
       "offer_not_found": "Aucune offre trouvée à cette adresse : elle a peut-être expiré ou été retirée. Vérifiez le lien, ou copiez le texte de l'annonce.",
       "offer_busy": "Le site reçoit trop de demandes pour le moment. Réessayez dans quelques minutes, ou copiez le texte de l'annonce dans l'onglet « Texte de l'offre ».",
-      "timeout": "La lecture a pris trop de temps (connexion lente ou interrompue). Réessayez en gardant la page ouverte ; si cela recommence, essayez avec la version Word ou un PDF plus léger."
+      "timeout": "La lecture a pris trop de temps (connexion lente ou interrompue). Réessayez en gardant la page ouverte ; si cela recommence, essayez avec la version Word ou un PDF plus léger.",
+      "file_unreadable": "Impossible de lire ce fichier sur votre téléphone. Il est peut-être seulement en ligne (Drive, messagerie) : téléchargez-le d’abord sur le téléphone (dossier Téléchargements), puis choisissez-le à nouveau."
     },
     "flow": {
       "steps": {

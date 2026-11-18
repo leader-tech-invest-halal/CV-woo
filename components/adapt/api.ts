@@ -34,10 +34,28 @@ async function request(url: string, init: RequestInit, timeoutMs = 170_000): Pro
   return res;
 }
 
+/**
+ * Résultat d’un traitement long (lecture, analyse, enrichissement) : la réponse arrive au fil de
+ * l’eau (espaces de maintien de la connexion, puis le JSON) ; une erreur survenue pendant le
+ * traitement est dans le corps ({ error }).
+ */
+async function longResult<T>(res: Response): Promise<T> {
+  let body: unknown;
+  try {
+    body = JSON.parse(await res.text());
+  } catch {
+    // Réponse interrompue en cours de route (connexion coupée)
+    throw new ApiError("network");
+  }
+  const error = (body as { error?: unknown } | null)?.error;
+  if (typeof error === "string") throw new ApiError(error);
+  return body as T;
+}
+
 export async function parseResume(file: File): Promise<ParsedResume> {
   const form = new FormData();
   form.append("file", file);
-  return (await request("/api/cv/parse", { method: "POST", body: form }, 150_000)).json();
+  return longResult<ParsedResume>(await request("/api/cv/parse", { method: "POST", body: form }, 290_000));
 }
 
 export async function fetchOffer(url: string): Promise<OfferResult> {
@@ -51,7 +69,7 @@ export async function fetchOffer(url: string): Promise<OfferResult> {
 }
 
 export async function analyzeResume(locale: string, resume: ParsedResume, offerText: string): Promise<AnalysisResult> {
-  return (
+  return longResult<AnalysisResult>(
     await request("/api/analyze", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -60,8 +78,8 @@ export async function analyzeResume(locale: string, resume: ParsedResume, offerT
         offerText,
         resume: { blocks: resume.blocks, structure: resume.structure },
       }),
-    }, 300_000)
-  ).json();
+    }, 300_000),
+  );
 }
 
 export async function enrichProfile(
@@ -72,7 +90,7 @@ export async function enrichProfile(
   answers: ProfileAnswer[],
   figures: ProfileFigure[] = [],
 ): Promise<EnrichResult> {
-  return (
+  return longResult<EnrichResult>(
     await request("/api/profile/enrich", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -84,8 +102,8 @@ export async function enrichProfile(
         figures,
         resume: { blocks: resume.blocks, structure: resume.structure },
       }),
-    }, 300_000)
-  ).json();
+    }, 300_000),
+  );
 }
 
 export async function exportResume(

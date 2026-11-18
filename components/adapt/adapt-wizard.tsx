@@ -6,29 +6,20 @@ import { CircleAlert, CircleCheck, RotateCcw } from "lucide-react";
 import type { AnalysisResult, ParsedResume, Rewrite } from "@/lib/cv/types";
 import { ApiError, analyzeResume, enrichProfile, parseResume } from "./api";
 import { EnrichStep, toAnswers, toFigures, type Draft } from "./enrich-step";
-import { MAX_FILE_BYTES, ResumeStep } from "./resume-step";
+import { ResumeStep } from "./resume-step";
 import { OfferStep } from "./offer-step";
 import { Analyzing, ChangesStep, CompareStep, RequirementsStep, ReviewStep } from "./analysis-step";
 import { PreviewStep } from "./preview-step";
 import { FLOW, FlowStepper, type FlowStep } from "./flow-stepper";
 import { AuthDialog } from "@/components/auth/auth-dialog";
 import { buttonClass } from "@/components/ui/button";
+import { readPickedFile } from "@/lib/picked-file";
 
 type Result = AnalysisResult & { remaining?: number | null; signedIn?: boolean };
 
 // Parcours guidé en 8 étapes :
 // CV → offre → exigences → comparaison → enrichir mon profil → propositions → validation → téléchargement.
 // Tout reste dans le navigateur ; le serveur ne garde rien.
-const RESUME_TYPES = new Set(["application/pdf", "application/x-pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]);
-
-/** PDF ou Word : par l'extension, ou par le type donné par le téléphone (nom parfois sans extension). */
-function isResumeFile(f: File): boolean {
-  if (/\.(pdf|docx)$/i.test(f.name)) return true;
-  if (RESUME_TYPES.has(f.type)) return true;
-  // Type inconnu et nom sans extension (certains gestionnaires de fichiers) : le serveur tranchera
-  return f.type === "" && !/\.[a-z0-9]{2,5}$/i.test(f.name);
-}
-
 export function AdaptWizard() {
   const t = useTranslations("adapt");
   const tf = useTranslations("adapt.flow");
@@ -77,11 +68,18 @@ export function AdaptWizard() {
 
   const codeOf = (e: unknown) => (e instanceof ApiError ? e.code : "server_error");
 
-  const onFile = async (f: File) => {
+  const onFile = async (picked: File) => {
     setError(null);
     setSuccess(null);
-    if (f.size > MAX_FILE_BYTES) return setError({ code: "file_too_large" });
-    if (!isResumeFile(f)) return setError({ code: "unsupported_file" });
+    // Copie du fichier en mémoire, lue tout de suite (voir lib/picked-file.ts) : sur Android,
+    // le fichier d'origine pouvait ne pas s'envoyer (« Connexion impossible »), ni pour la lecture
+    // ni pour l'export Word ensuite.
+    let f: File;
+    try {
+      f = await readPickedFile(picked);
+    } catch (e) {
+      return setError({ code: e instanceof Error ? e.message : "file_unreadable" });
+    }
     setBusy(true);
     setResume(null);
     setResult(null);

@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
 import { analyze, AnalyzeInput } from "@/lib/ai/analyze";
-import { errorResponse, rateLimit } from "@/lib/http";
+import { errorResponse, keepAliveJson, rateLimit } from "@/lib/http";
 import { checkAnalyzeAccess, recordAnalyze } from "@/lib/access";
 import { UserFacingError } from "@/lib/cv/validate-file";
 
@@ -17,12 +16,19 @@ export async function POST(request: Request) {
     }
     // Essai gratuit sans compte, puis compte obligatoire et quota mensuel
     const access = await checkAnalyzeAccess(request);
-    const result = await analyze(body.data);
-    await recordAnalyze(request, access);
-    return NextResponse.json({
-      ...result,
-      remaining: access.remaining === null ? null : access.remaining - 1,
-      signedIn: !!access.user,
+    // Sans compte, l'essai est déjà réservé pour cette adresse avant l'appel à l'IA : le cookie
+    // d'essai est posé maintenant, car la réponse part ensuite au fil de l'analyse (voir plus bas).
+    if (!access.user) await recordAnalyze(request, access);
+
+    // Analyse par l'IA (souvent plus d'une minute) : la connexion est maintenue ouverte
+    return keepAliveJson(async () => {
+      const result = await analyze(body.data);
+      if (access.user) await recordAnalyze(request, access);
+      return {
+        ...result,
+        remaining: access.remaining === null ? null : access.remaining - 1,
+        signedIn: !!access.user,
+      };
     });
   } catch (error) {
     return errorResponse(error);
