@@ -340,7 +340,8 @@
         "classique": "Classic",
         "moderne": "Modern",
         "minimaliste": "Minimal ATS",
-        "encre": "Ink"
+        "encre": "Ink",
+        "precis": "Precise"
       },
       "templateHint": "One-column template, the safest for recruiting software.",
       "font": "Font used: {font}",
@@ -349,7 +350,8 @@
         "classique": "Traditional: centred header, serif font",
         "moderne": "Two columns with a coloured sidebar",
         "minimaliste": "Black and white, the simplest structure for ATS",
-        "encre": "One column, spaced headings, right-aligned dates"
+        "encre": "One column, spaced headings, right-aligned dates",
+        "precis": "Dense single column, underlined headings, skills by category"
       },
       "atsSafe": "One column · ATS-friendly",
       "layout": {

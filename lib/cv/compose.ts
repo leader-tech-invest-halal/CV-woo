@@ -172,6 +172,13 @@ const DATE_PART =
  * les morceaux sont seulement répartis. Ex. « Paris | Mai 2024 – 2025 » → lieu « Paris »,
  * dates « Mai 2024 – 2025 ».
  */
+/** Ligne « Catégorie : valeurs » d'une rubrique de compétences (le texte n'est jamais modifié). */
+export function splitLabel(text: string): { label: string; rest: string } | null {
+  // La catégorie garde exactement sa ponctuation (« Langages : » ou « Languages: »)
+  const m = /^([^:•|]{2,40}:)\s+(\S.*)$/.exec(text);
+  return m ? { label: m[1], rest: m[2] } : null;
+}
+
 export function splitEntryHeader(lines: string[]): { title: string; date: string | null; meta: string[] } {
   const [title = "", ...rest] = lines;
   let date: string | null = null;

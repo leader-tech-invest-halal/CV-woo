@@ -182,7 +182,7 @@ export function PreviewStep({
         <p className="mt-5 text-sm font-medium">{t("templates.title")}</p>
         {/* Miniatures des modèles : « Votre design » utilise les couleurs et la disposition du CV importé */}
         {/* Chaque miniature est la vraie première page du PDF de ce modèle, avec ce CV */}
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" role="radiogroup" aria-label={t("templates.title")}>
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3" role="radiogroup" aria-label={t("templates.title")}>
           {TEMPLATES.map((id) => {
             const selected = template === id;
             return (

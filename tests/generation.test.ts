@@ -180,3 +180,13 @@ describe("modèles : rien n'est perdu, en PDF comme en Word", async () => {
     });
   }
 });
+
+describe("modèle Précis : catégorie de compétences en gras", () => {
+  it("sépare « Catégorie : valeurs » sans changer le texte", async () => {
+    const { splitLabel } = await import("@/lib/cv/compose");
+    expect(splitLabel("Langages : Python, SQL")).toEqual({ label: "Langages :", rest: "Python, SQL" });
+    expect(splitLabel("Languages: English, French")).toEqual({ label: "Languages:", rest: "English, French" });
+    expect(splitLabel("https://exemple.fr")).toBeNull();
+    expect(splitLabel("Python, SQL, Git")).toBeNull();
+  });
+});

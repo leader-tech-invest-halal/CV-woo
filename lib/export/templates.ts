@@ -4,16 +4,19 @@ import type { ResumeStyle } from "@/lib/cv/types";
 // - « original » : le design du CV de la personne (couleurs, police, colonnes), par défaut ;
 // - « encre » : une colonne, titres en majuscules espacées, filets fins, dates alignées à droite,
 //   compétences sur deux colonnes ; sobre, moderne, très lisible par les logiciels de recrutement ;
+// - « precis » : une colonne dense, nom centré en grand, coordonnées séparées par « | », titres
+//   en majuscules soulignés d'un filet noir, « intitulé | entreprise | lieu ……… dates » en gras,
+//   filet fin entre deux expériences, catégories de compétences en gras (« Langages : … ») ;
 // - « classique » : une colonne, en-tête centré, police à empattement, filets noirs, noir et blanc ;
 // - « moderne » : deux colonnes, barre latérale colorée (coordonnées, compétences, langues),
 //   titres avec repère de couleur ;
 // - « minimaliste » : une colonne, noir et blanc, titres standards, aucun élément graphique,
 //   la structure la plus simple pour les logiciels de recrutement (ATS).
-export const TEMPLATES = ["original", "encre", "classique", "moderne", "minimaliste"] as const;
+export const TEMPLATES = ["original", "encre", "precis", "classique", "moderne", "minimaliste"] as const;
 export type TemplateId = (typeof TEMPLATES)[number];
 
 /** Modèles en une colonne, conseillés pour les logiciels de recrutement */
-export const ATS_SAFE: ReadonlySet<TemplateId> = new Set(["encre", "classique", "minimaliste"]);
+export const ATS_SAFE: ReadonlySet<TemplateId> = new Set(["encre", "precis", "classique", "minimaliste"]);
 
 export function applyTemplate(style: ResumeStyle, id: TemplateId): ResumeStyle {
   switch (id) {
@@ -30,6 +33,22 @@ export function applyTemplate(style: ResumeStyle, id: TemplateId): ResumeStyle {
         bodyFont: "Inter",
         headingFont: "Inter",
         headerAlign: "left",
+        headingCase: "upper",
+        headingRule: true,
+      };
+    case "precis":
+      return {
+        ...style,
+        design: "precis",
+        layout: "single",
+        sidebarColor: null,
+        accentColor: "#111111",
+        headingColor: "#000000",
+        textColor: "#111111",
+        font: "sans",
+        bodyFont: "Calibri", // Carlito dans le PDF (mêmes dimensions), Calibri dans Word
+        headingFont: "Calibri",
+        headerAlign: "center",
         headingCase: "upper",
         headingRule: true,
       };

@@ -340,7 +340,8 @@
         "classique": "Classique",
         "moderne": "Moderne",
         "minimaliste": "Minimaliste ATS",
-        "encre": "Encre"
+        "encre": "Encre",
+        "precis": "Précis"
       },
       "templateHint": "Modèle une colonne, le plus sûr pour les logiciels de recrutement.",
       "font": "Police reprise : {font}",
@@ -349,7 +350,8 @@
         "classique": "Traditionnel : en-tête centré, police à empattement",
         "moderne": "Deux colonnes avec barre latérale colorée",
         "minimaliste": "Noir et blanc, structure la plus simple pour les ATS",
-        "encre": "Une colonne, titres espacés, dates alignées à droite"
+        "encre": "Une colonne, titres espacés, dates alignées à droite",
+        "precis": "Une colonne dense, titres soulignés, compétences par catégorie"
       },
       "atsSafe": "Une colonne · idéal ATS",
       "layout": {

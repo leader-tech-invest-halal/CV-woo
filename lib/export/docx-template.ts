@@ -15,7 +15,7 @@ import {
   type IBorderOptions,
 } from "docx";
 import type { Block, ResumeStructure, ResumeStyle } from "@/lib/cv/types";
-import { orderedSections, splitEntryHeader, stripBullet, textResolver } from "@/lib/cv/compose";
+import { orderedSections, splitEntryHeader, splitLabel, stripBullet, textResolver } from "@/lib/cv/compose";
 import { DENSITIES, type Density } from "@/lib/export/layout";
 
 // Génère un .docx recomposé, avec le même modèle et le même réglage de mise en page que le PDF :
@@ -77,6 +77,10 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
       border = { bottom: { style: BorderStyle.SINGLE, size: 4, color: "CBD5E1", space: 3 } };
       size = d.heading * 0.86;
       spacing = 28;
+    } else if (design === "precis") {
+      border = { bottom: { style: BorderStyle.SINGLE, size: 8, color: "000000", space: 1 } };
+      size = d.heading + 0.5;
+      spacing = 6;
     } else if (design === "classique") {
       border = { bottom: { style: BorderStyle.SINGLE, size: 8, color: "111111", space: 2 } };
       spacing = 22;
@@ -131,18 +135,21 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
       // En-tête de l'expérience. Modèles CV Woo : « intitulé ……… dates », puis entreprise et lieu.
       if (designed && design !== "minimaliste" && !compact && e.headerBlockIds.length > 0) {
         const { title, date, meta } = splitEntryHeader(e.headerBlockIds.map((id) => t(id)));
+        const precis = design === "precis";
         out.push(
           new Paragraph({
-            spacing: { before: i > 0 ? tw(d.entryGap) : 0 },
+            spacing: { before: i > 0 ? tw(precis ? d.entryGap * 0.6 : d.entryGap) : 0 },
             keepNext: true,
             keepLines: true,
+            // Précis : filet fin gris entre deux expériences de la même rubrique
+            border: precis && i > 0 ? { top: { style: BorderStyle.SINGLE, size: 4, color: "9CA3AF", space: tw(d.entryGap * 0.6) / 20 } } : undefined,
             tabStops: [{ type: TabStopType.RIGHT, position: width }],
             children: [
-              new TextRun({ text: title, bold: true, size: half(d.body) }),
-              ...(date ? [new TextRun({ text: `\t${date}`, size: half(d.small), color: MUTED })] : []),
+              new TextRun({ text: precis ? [title, ...meta].join("  |  ") : title, bold: true, size: half(d.body) }),
+              ...(date ? [new TextRun({ text: `\t${date}`, size: half(d.small), color: precis ? undefined : MUTED })] : []),
             ],
           }),
-          ...meta.map(
+          ...(precis ? [] : meta).map(
             (m) => new Paragraph({ keepNext: true, keepLines: true, children: [new TextRun({ text: m, size: half(d.small), color: MUTED })] }),
           ),
         );
@@ -170,7 +177,13 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
             spacing: { before: tw(d.bulletGap) },
             keepNext: keepWhole && k < items.length - 1,
             keepLines: true,
-            children: [new TextRun({ text, size: half(d.body), ...sideRun(onSide) })],
+            children: (() => {
+              // Précis : « Langages : Python, SQL » avec la catégorie en gras
+              const labelled = design === "precis" && compact && !onSide ? splitLabel(text) : null;
+              return labelled
+                ? [new TextRun({ text: labelled.label + " ", bold: true, size: half(d.body) }), new TextRun({ text: labelled.rest, size: half(d.body) })]
+                : [new TextRun({ text, size: half(d.body), ...sideRun(onSide) })];
+            })(),
           }),
         );
       });
@@ -187,12 +200,12 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
         alignment: align,
         children: [
           new TextRun({
-            text: design === "classique" ? name.toUpperCase() : name,
+            text: design === "classique" || design === "precis" ? name.toUpperCase() : name,
             bold: true,
             font: headingFont,
-            size: half(d.name + (design === "encre" ? 3 : design === "moderne" ? 4 : 0)),
-            color: designed ? (design === "minimaliste" ? "000000" : design === "classique" ? "111111" : "111827") : hex(style.headingColor),
-            characterSpacing: design === "classique" ? 44 : undefined,
+            size: half(d.name + (design === "encre" ? 3 : design === "moderne" ? 4 : design === "precis" ? 7 : 0)),
+            color: designed ? (design === "minimaliste" || design === "precis" ? "000000" : design === "classique" ? "111111" : "111827") : hex(style.headingColor),
+            characterSpacing: design === "classique" ? 44 : design === "precis" ? 10 : undefined,
           }),
         ],
       }),
@@ -211,7 +224,13 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
       new Paragraph({
         alignment: align,
         border: design === "classique" ? { bottom: { style: BorderStyle.SINGLE, size: 8, color: "111111", space: 6 } } : undefined,
-        children: [new TextRun({ text: contacts.join("  ·  "), size: half(d.small), color: designed && design !== "minimaliste" ? MUTED : undefined })],
+        children: [
+          new TextRun({
+            text: contacts.join(design === "precis" ? "  |  " : "  ·  "),
+            size: half(d.small),
+            color: designed && design !== "minimaliste" && design !== "precis" ? MUTED : undefined,
+          }),
+        ],
       }),
     );
   }

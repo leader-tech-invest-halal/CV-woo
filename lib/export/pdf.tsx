@@ -6,7 +6,7 @@ import type { Style } from "@react-pdf/types";
 import path from "node:path";
 import type { Block, ResumeStructure, ResumeStyle } from "@/lib/cv/types";
 import { FONTS, matchFont, type FontKey } from "@/lib/fonts";
-import { orderedSections, pdfSafe, splitEntryHeader, stripBullet, textResolver } from "@/lib/cv/compose";
+import { orderedSections, pdfSafe, splitEntryHeader, splitLabel, stripBullet, textResolver } from "@/lib/cv/compose";
 import { DENSITIES, type Density, type LayoutMode } from "@/lib/export/layout";
 
 // Génère le PDF du CV optimisé en reprenant le style du CV d'origine :
@@ -112,6 +112,7 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
   const headingByDesign: Record<string, Style> = {
     encre: { fontSize: d.heading * 0.86, letterSpacing: 0.5, borderBottomWidth: 0.6, borderBottomColor: "#cbd5e1", paddingBottom: 3, marginBottom: d.headingAfter + 1 },
     classique: { letterSpacing: 0.5, borderBottomWidth: 1, borderBottomColor: "#111111", paddingBottom: 2 },
+    precis: { fontSize: d.heading + 0.5, letterSpacing: 0.3, borderBottomWidth: 1, borderBottomColor: "#000000", paddingBottom: 1.5 },
     moderne: { letterSpacing: 0.4, borderBottomWidth: 0, borderLeftWidth: 3, borderLeftColor: style.accentColor, paddingLeft: 6, paddingBottom: 0 },
     minimaliste: { fontSize: d.heading + 0.5, letterSpacing: 0, borderBottomWidth: 0, paddingBottom: 0 },
   };
@@ -123,10 +124,12 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
   const nameByDesign: Record<string, Style> = {
     encre: { fontSize: d.name + 3, color: "#111827", letterSpacing: -0.3 },
     classique: { textTransform: "uppercase", letterSpacing: 0.8, color: "#111111" },
+    precis: { fontSize: d.name + 7, textTransform: "uppercase", letterSpacing: 0.5, color: "#000000" },
     moderne: { fontSize: d.name + 4, color: "#111827" },
     minimaliste: { color: "#000000" },
   };
-  const contactsColor = designed && design !== "minimaliste" ? muted : undefined;
+  const contactsColor = designed && design !== "minimaliste" && design !== "precis" ? muted : undefined;
+  const contactSep = design === "precis" ? "  |  " : "  ·  ";
   // Titre de rubrique dans une boîte : l'espace au-dessus est une marge interne de la boîte
   // (sûr aux sauts de page), et le texte lui-même n'a pas d'espace en haut — sinon le repère de
   // couleur du modèle Moderne débordait au-dessus du titre.
@@ -149,6 +152,15 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
       // Le texte est seulement réparti, jamais modifié (voir splitEntryHeader).
       if (designed && design !== "minimaliste" && !compact && e.headerBlockIds.length > 0) {
         const { title, date, meta } = splitEntryHeader(e.headerBlockIds.map((id) => t(id)));
+        // Précis : tout l'intitulé sur une ligne en gras (« Poste | Entreprise | Lieu »), dates à droite
+        if (design === "precis") {
+          return [
+            <View key="row" style={s.titleRow}>
+              <Text style={s.titleText}>{[title, ...meta].join("  |  ")}</Text>
+              {date && <Text style={[s.date, { color: style.textColor }]}>{date}</Text>}
+            </View>,
+          ];
+        }
         return [
           <View key="row" style={s.titleRow}>
             <Text style={s.titleText}>{title}</Text>
@@ -175,13 +187,22 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
     // chevaucher les textes juste avant un saut de page.
     const line = (e: Entry, id: string) => {
       const text = stripBullet(t(id));
+      // Précis : « Langages : Python, SQL » avec la catégorie en gras
+      const labelled = design === "precis" && compact && !onSide ? splitLabel(text) : null;
       return compact || e.headerBlockIds.length === 0 ? (
         <View key={id} style={{ paddingTop: d.bulletGap }} wrap={false}>
-          <Text>{text}</Text>
+          {labelled ? (
+            <Text>
+              <Text style={{ fontFamily: bold, fontWeight: 700 }}>{labelled.label} </Text>
+              {labelled.rest}
+            </Text>
+          ) : (
+            <Text>{text}</Text>
+          )}
         </View>
       ) : (
         <View key={id} style={[s.bullet, { marginTop: 0, paddingTop: d.bulletGap }]} wrap={false}>
-          <Text style={[s.dot, dotColor ? { color: dotColor } : {}]}>•</Text>
+          <Text style={[s.dot, dotColor ? { color: dotColor } : {}, design === "precis" ? { width: 18, paddingLeft: 8 } : {}]}>•</Text>
           <Text style={s.bulletText}>{text}</Text>
         </View>
       );
@@ -223,10 +244,15 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
           ...others.map((row, r) => rowView(row, r + 1)),
         ];
       }
+      // Précis : filet fin gris entre deux expériences de la même rubrique
+      const separated = design === "precis" && !compact && i > 0 && e.headerBlockIds.length > 0;
+      const entryTop: Style = separated
+        ? { marginTop: d.entryGap * 0.6, paddingTop: d.entryGap * 0.6, borderTopWidth: 0.6, borderTopColor: "#9ca3af" }
+        : { paddingTop: i === 0 ? 0 : d.entryGap };
       // Une expérience courte (jusqu'à 6 points) reste entière sur une même page
       if (!compact && e.headerBlockIds.length > 0 && e.bulletBlockIds.length <= 6) {
         return [
-          <View key={`${i}-all`} style={{ paddingTop: i === 0 ? 0 : d.entryGap }} wrap={false}>
+          <View key={`${i}-all`} style={entryTop} wrap={false}>
             {withHeading && headingText}
             {header(e)}
             {e.bulletBlockIds.map((id) => line(e, id))}
@@ -235,7 +261,7 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
       }
       const [firstLine, ...otherLines] = e.bulletBlockIds;
       return [
-        <View key={`${i}-head`} style={{ paddingTop: i === 0 ? 0 : d.entryGap }} wrap={false}>
+        <View key={`${i}-head`} style={entryTop} wrap={false}>
           {withHeading && headingText}
           {header(e)}
           {firstLine && line(e, firstLine)}
@@ -268,7 +294,7 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
         {structure.nameBlockId && <Text style={[s.name, nameByDesign[design] ?? {}]}>{fullName}</Text>}
         {structure.headlineBlockId && <Text style={s.headline}>{t(structure.headlineBlockId)}</Text>}
         {!sidebar && contacts.length > 0 && (
-          <Text style={[s.contacts, contactsColor ? { color: contactsColor } : {}]}>{contacts.join("  ·  ")}</Text>
+          <Text style={[s.contacts, contactsColor ? { color: contactsColor } : {}]}>{contacts.join(contactSep)}</Text>
         )}
       </View>
       {summaryHeading && structure.summaryBlockIds.length > 0 && (

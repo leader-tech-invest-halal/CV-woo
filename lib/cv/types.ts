@@ -30,7 +30,7 @@ export type ResumeStyle = {
   design?: DesignId;
 };
 
-export type DesignId = "original" | "encre" | "classique" | "moderne" | "minimaliste";
+export type DesignId = "original" | "encre" | "precis" | "classique" | "moderne" | "minimaliste";
 
 export type SectionKind =
   | "experience"
