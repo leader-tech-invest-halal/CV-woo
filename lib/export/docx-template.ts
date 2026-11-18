@@ -15,7 +15,7 @@ import {
   type IBorderOptions,
 } from "docx";
 import type { Block, ResumeStructure, ResumeStyle } from "@/lib/cv/types";
-import { orderedSections, splitEntryHeader, splitLabel, stripBullet, textResolver } from "@/lib/cv/compose";
+import { LABEL_KINDS, labelLine, orderedSections, precisDensity, splitEntryHeader, splitLabel, stripBullet, textResolver } from "@/lib/cv/compose";
 import { DENSITIES, type Density } from "@/lib/export/layout";
 
 // Génère un .docx recomposé, avec le même modèle et le même réglage de mise en page que le PDF :
@@ -43,7 +43,9 @@ function isDark(color: string | null): boolean {
 
 /** Même réglage de mise en page que le PDF (level), pour que les deux fichiers se ressemblent. */
 export async function renderResumeDocx({ blocks, structure, style, accepted }: Props, level = 0): Promise<Uint8Array> {
-  const d = DENSITIES[level] ?? DENSITIES[0];
+  const base = DENSITIES[level] ?? DENSITIES[0];
+  // Précis : lignes rapprochées, comme dans le PDF
+  const d = style.design === "precis" ? precisDensity(base) : base;
   const t = textResolver(blocks, accepted);
   // Word utilise la police d'origine si elle est installée (Calibri, Montserrat…), sinon une police proche
   const font = style.bodyFont ?? (style.font === "serif" ? "Times New Roman" : "Arial");
@@ -54,7 +56,7 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
   const design = style.design ?? "original";
   const designed = design !== "original";
   const fr = (structure.language ?? "fr").startsWith("fr");
-  const label = { profile: fr ? "Profil" : "Profile", contact: "Contact" };
+  const label = { profile: design === "precis" ? (fr ? "Résumé" : "Summary") : fr ? "Profil" : "Profile", contact: "Contact" };
 
   // Largeur utile, pour aligner les dates à droite (taquet de tabulation)
   const margin = tw(sidebar ? d.margin / 2 : d.margin);
@@ -78,9 +80,9 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
       size = d.heading * 0.86;
       spacing = 28;
     } else if (design === "precis") {
-      border = { bottom: { style: BorderStyle.SINGLE, size: 8, color: "000000", space: 1 } };
-      size = d.heading + 0.5;
-      spacing = 6;
+      border = { bottom: { style: BorderStyle.SINGLE, size: 10, color: "000000", space: 1 } };
+      size = d.heading + 1.5;
+      spacing = 4;
     } else if (design === "classique") {
       border = { bottom: { style: BorderStyle.SINGLE, size: 8, color: "111111", space: 2 } };
       spacing = 22;
@@ -95,7 +97,7 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
       border = { bottom: { style: BorderStyle.SINGLE, size: 6, color: white ? "FFFFFF" : hex(style.accentColor), space: 2 } };
     }
     return new Paragraph({
-      spacing: { before: tw(d.headingBefore), after: tw(d.headingAfter + (design === "encre" ? 1 : 0)) },
+      spacing: { before: tw(d.headingBefore), after: tw(design === "precis" ? Math.max(2, d.headingAfter - 2) : d.headingAfter + (design === "encre" ? 1 : 0)) },
       keepNext: true,
       border,
       children: [new TextRun({ text: headingText(text), bold: true, font: headingFont, size: half(size), color, characterSpacing: spacing || undefined })],
@@ -138,15 +140,15 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
         const precis = design === "precis";
         out.push(
           new Paragraph({
-            spacing: { before: i > 0 ? tw(precis ? d.entryGap * 0.6 : d.entryGap) : 0 },
+            spacing: { before: i > 0 ? tw(precis ? d.entryGap * 0.7 : d.entryGap) : 0 },
             keepNext: true,
             keepLines: true,
             // Précis : filet fin gris entre deux expériences de la même rubrique
-            border: precis && i > 0 ? { top: { style: BorderStyle.SINGLE, size: 4, color: "9CA3AF", space: tw(d.entryGap * 0.6) / 20 } } : undefined,
+            border: precis && i > 0 ? { top: { style: BorderStyle.SINGLE, size: 6, color: "4B5563", space: Math.round(d.entryGap * 0.7) } } : undefined,
             tabStops: [{ type: TabStopType.RIGHT, position: width }],
             children: [
-              new TextRun({ text: precis ? [title, ...meta].join("  |  ") : title, bold: true, size: half(d.body) }),
-              ...(date ? [new TextRun({ text: `\t${date}`, size: half(d.small), color: precis ? undefined : MUTED })] : []),
+              new TextRun({ text: precis ? [title, ...meta].join(" | ") : title, bold: true, size: half(d.body) }),
+              ...(date ? [new TextRun({ text: `\t${date}`, size: half(precis ? d.body : d.small), color: precis ? undefined : MUTED })] : []),
             ],
           }),
           ...(precis ? [] : meta).map(
@@ -170,7 +172,9 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
       // peut continuer sur la page suivante, mais jamais au milieu d'un point.
       const keepWhole = e.headerBlockIds.length > 0 && e.bulletBlockIds.length <= 6;
       items.forEach((text, k) => {
-        const asBullet = !compact && e.headerBlockIds.length > 0;
+        // Précis : une ligne « Certifications : … » écrite sans puce dans une formation reste sans puce
+        const labelledEntry = design === "precis" && !onSide && !compact && e.headerBlockIds.length > 0 && LABEL_KINDS.has(section.kind) ? labelLine(t(e.bulletBlockIds[k])) : null;
+        const asBullet = !compact && e.headerBlockIds.length > 0 && !labelledEntry;
         out.push(
           new Paragraph({
             bullet: asBullet ? { level: 0 } : undefined,
@@ -179,7 +183,7 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
             keepLines: true,
             children: (() => {
               // Précis : « Langages : Python, SQL » avec la catégorie en gras
-              const labelled = design === "precis" && compact && !onSide ? splitLabel(text) : null;
+              const labelled = labelledEntry ?? (design === "precis" && compact && !onSide ? splitLabel(text) : null);
               return labelled
                 ? [new TextRun({ text: labelled.label + " ", bold: true, size: half(d.body) }), new TextRun({ text: labelled.rest, size: half(d.body) })]
                 : [new TextRun({ text, size: half(d.body), ...sideRun(onSide) })];
@@ -203,9 +207,9 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
             text: design === "classique" || design === "precis" ? name.toUpperCase() : name,
             bold: true,
             font: headingFont,
-            size: half(d.name + (design === "encre" ? 3 : design === "moderne" ? 4 : design === "precis" ? 7 : 0)),
+            size: half(d.name + (design === "encre" ? 3 : design === "moderne" ? 4 : design === "precis" ? 6 : 0)),
             color: designed ? (design === "minimaliste" || design === "precis" ? "000000" : design === "classique" ? "111111" : "111827") : hex(style.headingColor),
-            characterSpacing: design === "classique" ? 44 : design === "precis" ? 10 : undefined,
+            characterSpacing: design === "classique" ? 44 : design === "precis" ? 4 : undefined,
           }),
         ],
       }),
@@ -215,7 +219,13 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
     header.push(
       new Paragraph({
         alignment: align,
-        children: [new TextRun({ text: t(structure.headlineBlockId), size: half(d.headline), color: hex(style.accentColor) })],
+        children: [
+          new TextRun({
+            text: t(structure.headlineBlockId),
+            size: half(design === "precis" ? d.headline - 0.5 : d.headline),
+            color: hex(style.accentColor),
+          }),
+        ],
       }),
     );
   }
@@ -227,7 +237,7 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
         children: [
           new TextRun({
             text: contacts.join(design === "precis" ? "  |  " : "  ·  "),
-            size: half(d.small),
+            size: half(design === "precis" ? d.small - 0.5 : d.small),
             color: designed && design !== "minimaliste" && design !== "precis" ? MUTED : undefined,
           }),
         ],
@@ -238,7 +248,9 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
   const summaryHeading = structure.summaryHeadingBlockId ? t(structure.summaryHeadingBlockId) : designed ? label.profile : null;
   if (summaryHeading && structure.summaryBlockIds.length) header.push(heading(summaryHeading));
   for (const id of structure.summaryBlockIds) {
-    header.push(new Paragraph({ spacing: { before: tw(d.summaryGap) }, children: [new TextRun({ text: t(id), size: half(d.body) })] }));
+    header.push(
+      new Paragraph({ spacing: { before: tw(design === "precis" ? 1 : d.summaryGap) }, children: [new TextRun({ text: t(id), size: half(d.body) })] }),
+    );
   }
 
   const sections = orderedSections(structure, sidebar, design);

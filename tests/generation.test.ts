@@ -190,3 +190,25 @@ describe("modèle Précis : catégorie de compétences en gras", () => {
     expect(splitLabel("Python, SQL, Git")).toBeNull();
   });
 });
+
+describe("modèle Précis : comme le modèle de référence", () => {
+  it("place les compétences juste après le résumé, les projets avant la formation", async () => {
+    const { orderedSections } = await import("@/lib/cv/compose");
+    const sec = (kind: string) => ({ headingBlockId: null, heading: kind, kind, entries: [] });
+    const structure = {
+      nameBlockId: null,
+      headlineBlockId: null,
+      contactBlockIds: [],
+      summaryBlockIds: [],
+      sections: ["experience", "education", "projects", "skills"].map(sec),
+    } as unknown as Parameters<typeof orderedSections>[0];
+    expect(orderedSections(structure, false, "precis").main.map((s) => s.kind)).toEqual(["skills", "experience", "projects", "education"]);
+    expect(orderedSections(structure, false, "encre").main.map((s) => s.kind)).toEqual(["experience", "education", "skills", "projects"]);
+  });
+
+  it("une ligne « Certifications : … » sans puce reste une ligne ; une puce reste une puce", async () => {
+    const { labelLine } = await import("@/lib/cv/compose");
+    expect(labelLine("Certifications : AWS Cloud Practitioner")).toEqual({ label: "Certifications :", rest: "AWS Cloud Practitioner" });
+    expect(labelLine("- Projet : application mobile")).toBeNull();
+  });
+});

@@ -145,9 +145,10 @@ export function completeStructure(blocks: Block[], structure: ResumeStructure): 
 export function orderedSections(structure: ResumeStructure, sidebar: boolean, design: DesignId = "original") {
   // Modèles CV Woo : ordre standard des recruteurs, et colonne latérale choisie par type de rubrique
   if (design !== "original") {
+    const order: readonly string[] = design === "precis" ? PRECIS_ORDER : KIND_ORDER;
     const rank = (k: string) => {
-      const i = KIND_ORDER.indexOf(k as (typeof KIND_ORDER)[number]);
-      return i < 0 ? KIND_ORDER.length : i;
+      const i = order.indexOf(k);
+      return i < 0 ? order.length : i;
     };
     const sorted = structure.sections.map((x, i) => ({ x, i })).sort((a, b) => rank(a.x.kind) - rank(b.x.kind) || a.i - b.i).map((o) => o.x);
     if (!sidebar) return { main: sorted, side: [] as typeof sorted };
@@ -160,6 +161,8 @@ export function orderedSections(structure: ResumeStructure, sidebar: boolean, de
 
 /** Ordre standard des rubriques : profil (en-tête), expérience, formation, compétences, langues… */
 const KIND_ORDER = ["experience", "education", "skills", "languages", "certifications", "projects", "interests", "other"] as const;
+/** Modèle Précis : compétences en tête (profils techniques, étudiants), projets avant la formation */
+const PRECIS_ORDER = ["skills", "experience", "projects", "education", "certifications", "languages", "interests", "other"] as const;
 /** Rubriques placées dans la colonne latérale des modèles à deux colonnes */
 const SIDE_KINDS = new Set(["skills", "languages", "interests"]);
 
@@ -177,6 +180,23 @@ export function splitLabel(text: string): { label: string; rest: string } | null
   // La catégorie garde exactement sa ponctuation (« Langages : » ou « Languages: »)
   const m = /^([^:•|]{2,40}:)\s+(\S.*)$/.exec(text);
   return m ? { label: m[1], rest: m[2] } : null;
+}
+
+/** Réglages serrés du modèle Précis (dense comme le modèle de référence), à partir d'un réglage donné. */
+export function precisDensity<T extends { lineHeight: number; bulletGap: number }>(d: T): T {
+  return { ...d, lineHeight: Math.min(d.lineHeight, 1.27), bulletGap: Math.min(d.bulletGap, 0.6) };
+}
+
+/**
+ * Ligne « Catégorie : valeurs » écrite sans puce dans une expérience ou une formation
+ * (ex. « Certifications : AWS ») : le modèle Précis l'affiche comme une ligne, catégorie en gras.
+ */
+/** Rubriques où une ligne « Catégorie : … » sans puce est fréquente (formation, certifications) */
+export const LABEL_KINDS: ReadonlySet<string> = new Set(["education", "certifications"]);
+
+export function labelLine(raw: string): { label: string; rest: string } | null {
+  if (/^\s*[•\-–·▪●■◦*]/.test(raw)) return null;
+  return splitLabel(raw.trim());
 }
 
 export function splitEntryHeader(lines: string[]): { title: string; date: string | null; meta: string[] } {

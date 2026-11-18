@@ -6,7 +6,7 @@ import type { Style } from "@react-pdf/types";
 import path from "node:path";
 import type { Block, ResumeStructure, ResumeStyle } from "@/lib/cv/types";
 import { FONTS, matchFont, type FontKey } from "@/lib/fonts";
-import { orderedSections, pdfSafe, splitEntryHeader, splitLabel, stripBullet, textResolver } from "@/lib/cv/compose";
+import { LABEL_KINDS, labelLine, orderedSections, pdfSafe, precisDensity, splitEntryHeader, splitLabel, stripBullet, textResolver } from "@/lib/cv/compose";
 import { DENSITIES, type Density, type LayoutMode } from "@/lib/export/layout";
 
 // Génère le PDF du CV optimisé en reprenant le style du CV d'origine :
@@ -43,7 +43,9 @@ type Entry = Section["entries"][number];
 
 const SIDE_WIDTH = "32%";
 
-function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Density }) {
+function CvDocument({ blocks, structure, style, accepted, d: density }: Props & { d: Density }) {
+  // Précis : lignes rapprochées, comme le modèle de référence
+  const d = style.design === "precis" ? precisDensity(density) : density;
   const t = (id: string | null | undefined) => pdfSafe(textResolver(blocks, accepted)(id));
   const regular = fontFamily(style.bodyFont, style.font);
   const bold = fontFamily(style.headingFont ?? style.bodyFont, style.font);
@@ -112,7 +114,7 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
   const headingByDesign: Record<string, Style> = {
     encre: { fontSize: d.heading * 0.86, letterSpacing: 0.5, borderBottomWidth: 0.6, borderBottomColor: "#cbd5e1", paddingBottom: 3, marginBottom: d.headingAfter + 1 },
     classique: { letterSpacing: 0.5, borderBottomWidth: 1, borderBottomColor: "#111111", paddingBottom: 2 },
-    precis: { fontSize: d.heading + 0.5, letterSpacing: 0.3, borderBottomWidth: 1, borderBottomColor: "#000000", paddingBottom: 1.5 },
+    precis: { fontSize: d.heading + 1.5, letterSpacing: 0.2, borderBottomWidth: 1.3, borderBottomColor: "#000000", paddingBottom: 1, marginBottom: Math.max(2, d.headingAfter - 2) },
     moderne: { letterSpacing: 0.4, borderBottomWidth: 0, borderLeftWidth: 3, borderLeftColor: style.accentColor, paddingLeft: 6, paddingBottom: 0 },
     minimaliste: { fontSize: d.heading + 0.5, letterSpacing: 0, borderBottomWidth: 0, paddingBottom: 0 },
   };
@@ -124,12 +126,13 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
   const nameByDesign: Record<string, Style> = {
     encre: { fontSize: d.name + 3, color: "#111827", letterSpacing: -0.3 },
     classique: { textTransform: "uppercase", letterSpacing: 0.8, color: "#111111" },
-    precis: { fontSize: d.name + 7, textTransform: "uppercase", letterSpacing: 0.5, color: "#000000" },
+    precis: { fontSize: d.name + 6, textTransform: "uppercase", letterSpacing: 0.2, color: "#000000" },
     moderne: { fontSize: d.name + 4, color: "#111827" },
     minimaliste: { color: "#000000" },
   };
   const contactsColor = designed && design !== "minimaliste" && design !== "precis" ? muted : undefined;
   const contactSep = design === "precis" ? "  |  " : "  ·  ";
+  const precisContacts: Style = design === "precis" ? { marginTop: 3, fontSize: d.small - 0.5 } : {};
   // Titre de rubrique dans une boîte : l'espace au-dessus est une marge interne de la boîte
   // (sûr aux sauts de page), et le texte lui-même n'a pas d'espace en haut — sinon le repère de
   // couleur du modèle Moderne débordait au-dessus du titre.
@@ -142,7 +145,10 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
     </View>
   );
   // Libellés de structure (pas des informations sur la personne) pour les modèles CV Woo
-  const label = { profile: fr ? "Profil" : "Profile", contact: fr ? "Contact" : "Contact" };
+  const label = {
+    profile: design === "precis" ? (fr ? "Résumé" : "Summary") : fr ? "Profil" : "Profile",
+    contact: fr ? "Contact" : "Contact",
+  };
 
   const SectionView = ({ section, onSide }: { section: Section; onSide: boolean }) => {
     const compact = onSide || section.kind === "skills" || section.kind === "languages";
@@ -156,8 +162,8 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
         if (design === "precis") {
           return [
             <View key="row" style={s.titleRow}>
-              <Text style={s.titleText}>{[title, ...meta].join("  |  ")}</Text>
-              {date && <Text style={[s.date, { color: style.textColor }]}>{date}</Text>}
+              <Text style={s.titleText}>{[title, ...meta].join(" | ")}</Text>
+              {date && <Text style={[s.date, { fontSize: d.body, color: style.textColor }]}>{date}</Text>}
             </View>,
           ];
         }
@@ -187,9 +193,11 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
     // chevaucher les textes juste avant un saut de page.
     const line = (e: Entry, id: string) => {
       const text = stripBullet(t(id));
-      // Précis : « Langages : Python, SQL » avec la catégorie en gras
-      const labelled = design === "precis" && compact && !onSide ? splitLabel(text) : null;
-      return compact || e.headerBlockIds.length === 0 ? (
+      // Précis : « Langages : Python, SQL » avec la catégorie en gras, et dans une expérience ou une
+      // formation, une ligne « Certifications : … » écrite sans puce reste sans puce
+      const labelled =
+        design === "precis" && !onSide ? (compact ? splitLabel(text) : e.headerBlockIds.length > 0 && LABEL_KINDS.has(section.kind) ? labelLine(t(id)) : null) : null;
+      return compact || e.headerBlockIds.length === 0 || labelled ? (
         <View key={id} style={{ paddingTop: d.bulletGap }} wrap={false}>
           {labelled ? (
             <Text>
@@ -202,7 +210,7 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
         </View>
       ) : (
         <View key={id} style={[s.bullet, { marginTop: 0, paddingTop: d.bulletGap }]} wrap={false}>
-          <Text style={[s.dot, dotColor ? { color: dotColor } : {}, design === "precis" ? { width: 18, paddingLeft: 8 } : {}]}>•</Text>
+          <Text style={[s.dot, dotColor ? { color: dotColor } : {}, design === "precis" ? { width: 22, paddingLeft: 10 } : {}]}>•</Text>
           <Text style={s.bulletText}>{text}</Text>
         </View>
       );
@@ -247,7 +255,7 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
       // Précis : filet fin gris entre deux expériences de la même rubrique
       const separated = design === "precis" && !compact && i > 0 && e.headerBlockIds.length > 0;
       const entryTop: Style = separated
-        ? { marginTop: d.entryGap * 0.6, paddingTop: d.entryGap * 0.6, borderTopWidth: 0.6, borderTopColor: "#9ca3af" }
+        ? { marginTop: d.entryGap * 0.7, paddingTop: d.entryGap * 0.7, borderTopWidth: 0.8, borderTopColor: "#4b5563" }
         : { paddingTop: i === 0 ? 0 : d.entryGap };
       // Une expérience courte (jusqu'à 6 points) reste entière sur une même page
       if (!compact && e.headerBlockIds.length > 0 && e.bulletBlockIds.length <= 6) {
@@ -292,16 +300,20 @@ function CvDocument({ blocks, structure, style, accepted, d }: Props & { d: Dens
     <View>
       <View style={headerByDesign[design] ?? {}}>
         {structure.nameBlockId && <Text style={[s.name, nameByDesign[design] ?? {}]}>{fullName}</Text>}
-        {structure.headlineBlockId && <Text style={s.headline}>{t(structure.headlineBlockId)}</Text>}
+        {structure.headlineBlockId && (
+          <Text style={[s.headline, design === "precis" ? { color: "#111111", fontSize: d.headline - 0.5, marginTop: 1 } : {}]}>
+            {t(structure.headlineBlockId)}
+          </Text>
+        )}
         {!sidebar && contacts.length > 0 && (
-          <Text style={[s.contacts, contactsColor ? { color: contactsColor } : {}]}>{contacts.join(contactSep)}</Text>
+          <Text style={[s.contacts, contactsColor ? { color: contactsColor } : {}, precisContacts]}>{contacts.join(contactSep)}</Text>
         )}
       </View>
       {summaryHeading && structure.summaryBlockIds.length > 0 && (
         headingBox(summaryHeading, [{ color: style.headingColor }])
       )}
       {structure.summaryBlockIds.map((id) => (
-        <Text key={id} style={{ marginTop: d.summaryGap }}>
+        <Text key={id} style={{ marginTop: design === "precis" ? 1 : d.summaryGap }}>
           {t(id)}
         </Text>
       ))}
