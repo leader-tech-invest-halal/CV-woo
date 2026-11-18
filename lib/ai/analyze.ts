@@ -171,7 +171,7 @@ export async function analyze(input: z.infer<typeof AnalyzeInput>): Promise<Anal
           content: `<cv>\n${cv}\n</cv>\n\n<offre>\n${input.offerText}\n</offre>`,
         },
       ],
-    });
+    }, { timeout: 240_000, maxRetries: 1 });
     logUsage("analyse", response.model, response.usage);
     if (response.stop_reason === "refusal") throw new UserFacingError("ai_refused", 422);
     if (response.stop_reason === "max_tokens" || !response.parsed_output) throw new UserFacingError("ai_failed", 502);

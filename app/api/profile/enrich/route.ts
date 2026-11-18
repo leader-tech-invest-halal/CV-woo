@@ -5,7 +5,7 @@ import { durableLimit } from "@/lib/limits";
 import { UserFacingError } from "@/lib/cv/validate-file";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 // Étape « Enrichir mon profil » : intègre les compétences confirmées par la personne.
 // Ne consomme pas d'adaptation (elle complète l'analyse déjà faite). Rien n'est stocké.

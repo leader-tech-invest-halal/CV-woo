@@ -126,7 +126,7 @@ export async function enrich(input: z.infer<typeof EnrichInput>): Promise<Enrich
           content: `<poste_vise>${input.offerTitle}</poste_vise>\n\n<resume>\n${summary}\n</resume>\n\n<cv>\n${cv}\n</cv>\n\n<reponses_du_candidat>\n${answersText}\n</reponses_du_candidat>\n\n<chiffres_reels_du_candidat>\n${figuresText}\n</chiffres_reels_du_candidat>`,
         },
       ],
-    });
+    }, { timeout: 240_000, maxRetries: 1 });
     logUsage("enrichissement", response.model, response.usage);
     if (response.stop_reason === "refusal") throw new UserFacingError("ai_refused", 422);
     if (response.stop_reason === "max_tokens" || !response.parsed_output) throw new UserFacingError("ai_failed", 502);

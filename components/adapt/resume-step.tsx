@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { FileText, LoaderCircle, Upload } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
@@ -26,16 +26,29 @@ export function ResumeStep({
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
 
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!loading) return;
+    setElapsed(0);
+    const start = Date.now();
+    const id = setInterval(() => setElapsed(Math.round((Date.now() - start) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [loading]);
+
   const pick = (f: File | undefined) => {
     if (f) onFile(f);
+    // Permet de choisir à nouveau le même fichier (sinon le navigateur ne signale aucun changement)
+    if (input.current) input.current.value = "";
   };
 
   if (loading) {
     return (
-      <Card className="flex flex-col items-center px-6 py-16 text-center">
+      <Card className="flex flex-col items-center px-6 py-16 text-center" aria-live="polite">
         <LoaderCircle className="size-8 animate-spin text-primary" strokeWidth={1.5} aria-hidden />
         <p className="mt-4 font-medium">{t("reading")}</p>
         <p className="mt-1 text-sm text-muted-foreground">{t("readingHint")}</p>
+        <p className="mt-3 text-xs text-muted-foreground tabular-nums">{t("readingElapsed", { seconds: elapsed })}</p>
+        {elapsed >= 20 && <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t("readingLong")}</p>}
       </Card>
     );
   }
@@ -103,7 +116,13 @@ export function ResumeStep({
             {t("next")}
           </button>
         </div>
-        <input ref={input} type="file" hidden accept=".pdf,.docx" onChange={(e) => pick(e.target.files?.[0])} />
+        <input
+          ref={input}
+          type="file"
+          hidden
+          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          onChange={(e) => pick(e.target.files?.[0])}
+        />
       </Card>
     );
   }

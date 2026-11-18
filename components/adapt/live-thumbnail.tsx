@@ -6,6 +6,7 @@ import type { LayoutMode } from "@/lib/export/layout";
 import { applyTemplate, type TemplateId } from "@/lib/export/templates";
 import { exportResume } from "./api";
 import { TemplateThumbnail } from "./template-thumbnail";
+import { loadPdfjs } from "@/lib/pdfjs-browser";
 
 // Miniature d'un modèle = la vraie première page du PDF, générée avec le CV de la personne.
 // Elle correspond donc exactement au fichier téléchargé. Pendant la génération, un croquis
@@ -14,8 +15,7 @@ import { TemplateThumbnail } from "./template-thumbnail";
 const cache = new Map<string, Promise<Blob>>();
 
 async function drawFirstPage(blob: Blob, canvas: HTMLCanvasElement, width: number) {
-  const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
+  const pdfjs = await loadPdfjs();
   const pdf = await pdfjs.getDocument({ data: new Uint8Array(await blob.arrayBuffer()), standardFontDataUrl: "/pdfjs/standard_fonts/" }).promise;
   const page = await pdf.getPage(1);
   const ratio = Math.min(2, window.devicePixelRatio || 1);

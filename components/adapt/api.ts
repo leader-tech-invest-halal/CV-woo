@@ -10,13 +10,23 @@ export class ApiError extends Error {
   }
 }
 
-async function request(url: string, init: RequestInit): Promise<Response> {
+/**
+ * Requête vers le serveur, avec un délai maximal : sur téléphone, une connexion coupée (passage
+ * dans une autre appli, réseau mobile faible) pouvait laisser l'écran de chargement tourner sans fin.
+ */
+async function request(url: string, init: RequestInit, timeoutMs = 170_000): Promise<Response> {
   let res: Response;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    res = await fetch(url, init);
+    res = await fetch(url, { ...init, signal: controller.signal });
   } catch {
-    throw new ApiError("network");
+    throw new ApiError(controller.signal.aborted ? "timeout" : "network");
+  } finally {
+    clearTimeout(timer);
   }
+  // Délai dépassé côté serveur (réponse sans JSON)
+  if (res.status === 504) throw new ApiError("timeout");
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
     throw new ApiError(body.error ?? "server_error");
@@ -27,7 +37,7 @@ async function request(url: string, init: RequestInit): Promise<Response> {
 export async function parseResume(file: File): Promise<ParsedResume> {
   const form = new FormData();
   form.append("file", file);
-  return (await request("/api/cv/parse", { method: "POST", body: form })).json();
+  return (await request("/api/cv/parse", { method: "POST", body: form }, 150_000)).json();
 }
 
 export async function fetchOffer(url: string): Promise<OfferResult> {
@@ -50,7 +60,7 @@ export async function analyzeResume(locale: string, resume: ParsedResume, offerT
         offerText,
         resume: { blocks: resume.blocks, structure: resume.structure },
       }),
-    })
+    }, 300_000)
   ).json();
 }
 
@@ -74,7 +84,7 @@ export async function enrichProfile(
         figures,
         resume: { blocks: resume.blocks, structure: resume.structure },
       }),
-    })
+    }, 300_000)
   ).json();
 }
 

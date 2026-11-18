@@ -109,7 +109,7 @@ export async function structureResume(input: {
       system: SYSTEM,
       messages: [{ role: "user", content }],
       output_config: { format: zodOutputFormat(StructureSchema) },
-    });
+    }, { timeout: 100_000, maxRetries: 1 });
     logUsage("structure", MODEL_FAST, response.usage);
     if (response.stop_reason === "refusal" || !response.parsed_output) throw new UserFacingError("ai_failed", 502);
     parsed = response.parsed_output;

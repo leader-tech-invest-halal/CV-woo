@@ -221,7 +221,9 @@
       "pdfNote": "PDF file: we'll rebuild your resume with the same colors, font and layout.",
       "change": "Change file",
       "next": "Continue",
-      "pickMobile": "Choose your resume (PDF or Word) from your phone"
+      "pickMobile": "Choose your resume (PDF or Word) from your phone",
+      "readingElapsed": "{seconds} s",
+      "readingLong": "A long resume or one with many images can take up to a minute. Keep this page open: on a phone, don't switch apps while it's reading."
     },
     "offer": {
       "title": "Add the job posting",
@@ -419,7 +421,8 @@
       "quota_reached": "You've used your 5 tailorings this month. They reset on the 1st of next month.",
       "offer_manual": "This site doesn't allow its job ads to be read automatically. Copy the ad text into the “Job ad text” tab.",
       "offer_not_found": "No job ad found at this address: it may have expired or been removed. Check the link, or copy the ad text.",
-      "offer_busy": "The site is receiving too many requests right now. Try again in a few minutes, or copy the ad text into the “Job ad text” tab."
+      "offer_busy": "The site is receiving too many requests right now. Try again in a few minutes, or copy the ad text into the “Job ad text” tab.",
+      "timeout": "This took too long (slow or interrupted connection). Try again with the page open; if it happens again, try the Word version or a lighter PDF."
     },
     "flow": {
       "steps": {

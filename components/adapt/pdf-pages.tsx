@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { LoaderCircle } from "lucide-react";
+import { loadPdfjs } from "@/lib/pdfjs-browser";
 
 /**
  * Aperçu d'un PDF dessiné page par page, à la largeur de l'écran.
@@ -20,8 +21,7 @@ export function PdfPages({ blob, label }: { blob: Blob; label: string }) {
     (async () => {
       try {
         // PDF.js version navigateur, chargée seulement sur téléphone et tablette
-        const pdfjs = await import("pdfjs-dist");
-        pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
+        const pdfjs = await loadPdfjs();
         // Polices standard des PDF (Helvetica, Times…) servies par le site, pour un rendu exact
         const pdf = await pdfjs.getDocument({
           data: new Uint8Array(await blob.arrayBuffer()),

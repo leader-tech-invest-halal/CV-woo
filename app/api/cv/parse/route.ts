@@ -10,7 +10,7 @@ import { completeStructure } from "@/lib/cv/compose";
 import { safeAtsReadiness } from "@/lib/ats/readiness";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 // Import d'un CV : rien n'est stocké. Le fichier est lu en mémoire puis oublié ;
 // le navigateur garde le fichier et le résultat pendant la session.
@@ -28,7 +28,11 @@ export async function POST(request: Request) {
 
     const extraction = format === "pdf" ? await extractPdf(bytes) : await extractDocx(bytes);
     // Lisibilité ATS du CV d'origine (sans IA), calculée en même temps que la lecture par l'IA
-    const atsPromise = safeAtsReadiness(bytes, format, file.name);
+    // (au plus 20 s : un PDF très lourd ne doit jamais bloquer la lecture du CV)
+    const atsPromise = Promise.race([
+      safeAtsReadiness(bytes, format, file.name),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 20_000)),
+    ]);
     const { structure, style } = await structureResume({
       format,
       blocks: extraction.blocks,

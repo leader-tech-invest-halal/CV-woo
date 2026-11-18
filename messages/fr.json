@@ -221,7 +221,9 @@
       "pdfNote": "Fichier PDF : nous recréerons votre CV avec les mêmes couleurs, police et disposition.",
       "change": "Changer de fichier",
       "next": "Continuer",
-      "pickMobile": "Choisissez votre CV (PDF ou Word) sur votre téléphone"
+      "pickMobile": "Choisissez votre CV (PDF ou Word) sur votre téléphone",
+      "readingElapsed": "{seconds} s",
+      "readingLong": "Un CV long ou avec beaucoup d'images peut prendre jusqu'à une minute. Gardez cette page ouverte : sur téléphone, ne changez pas d'application pendant la lecture."
     },
     "offer": {
       "title": "Ajoutez l'offre d'emploi",
@@ -419,7 +421,8 @@
       "quota_reached": "Vous avez utilisé vos 5 adaptations du mois. Elles reviennent le 1er du mois prochain.",
       "offer_manual": "Ce site ne permet pas la récupération automatique de ses offres. Copiez le texte de l'annonce dans l'onglet « Texte de l'offre ».",
       "offer_not_found": "Aucune offre trouvée à cette adresse : elle a peut-être expiré ou été retirée. Vérifiez le lien, ou copiez le texte de l'annonce.",
-      "offer_busy": "Le site reçoit trop de demandes pour le moment. Réessayez dans quelques minutes, ou copiez le texte de l'annonce dans l'onglet « Texte de l'offre »."
+      "offer_busy": "Le site reçoit trop de demandes pour le moment. Réessayez dans quelques minutes, ou copiez le texte de l'annonce dans l'onglet « Texte de l'offre ».",
+      "timeout": "La lecture a pris trop de temps (connexion lente ou interrompue). Réessayez en gardant la page ouverte ; si cela recommence, essayez avec la version Word ou un PDF plus léger."
     },
     "flow": {
       "steps": {

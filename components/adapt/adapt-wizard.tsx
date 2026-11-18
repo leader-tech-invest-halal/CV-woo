@@ -19,6 +19,16 @@ type Result = AnalysisResult & { remaining?: number | null; signedIn?: boolean }
 // Parcours guidé en 8 étapes :
 // CV → offre → exigences → comparaison → enrichir mon profil → propositions → validation → téléchargement.
 // Tout reste dans le navigateur ; le serveur ne garde rien.
+const RESUME_TYPES = new Set(["application/pdf", "application/x-pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]);
+
+/** PDF ou Word : par l'extension, ou par le type donné par le téléphone (nom parfois sans extension). */
+function isResumeFile(f: File): boolean {
+  if (/\.(pdf|docx)$/i.test(f.name)) return true;
+  if (RESUME_TYPES.has(f.type)) return true;
+  // Type inconnu et nom sans extension (certains gestionnaires de fichiers) : le serveur tranchera
+  return f.type === "" && !/\.[a-z0-9]{2,5}$/i.test(f.name);
+}
+
 export function AdaptWizard() {
   const t = useTranslations("adapt");
   const tf = useTranslations("adapt.flow");
@@ -71,7 +81,7 @@ export function AdaptWizard() {
     setError(null);
     setSuccess(null);
     if (f.size > MAX_FILE_BYTES) return setError({ code: "file_too_large" });
-    if (!/\.(pdf|docx)$/i.test(f.name)) return setError({ code: "unsupported_file" });
+    if (!isResumeFile(f)) return setError({ code: "unsupported_file" });
     setBusy(true);
     setResume(null);
     setResult(null);
