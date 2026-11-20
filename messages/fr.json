@@ -396,7 +396,14 @@
       "notice": {
         "docx_textboxes": "Votre fichier Word utilise des zones de texte de taille fixe. Pour éviter que les textes se chevauchent, votre CV a été recréé avec vos couleurs, votre police et votre disposition, au lieu d'être modifié directement dans votre fichier. Vérifiez le résultat."
       },
-      "templateHintTwoColumns": "Modèle deux colonnes : plus visuel. Pour les candidatures en ligne, préférez un modèle une colonne (Encre, Classique, Minimaliste ATS)."
+      "templateHintTwoColumns": "Modèle deux colonnes : plus visuel. Pour les candidatures en ligne, préférez un modèle une colonne (Encre, Classique, Minimaliste ATS).",
+      "exportFailedPdf": "Le PDF n'a pas pu être préparé. Le Word reste téléchargeable.",
+      "exportFailedDocx": "Le Word n'a pas pu être préparé. Le PDF reste téléchargeable.",
+      "exportFailedBoth": "Les fichiers n'ont pas pu être préparés.",
+      "exportRetry": "Réessayer",
+      "shareHint": "Rien ne se télécharge ?",
+      "sharePdf": "Enregistrer le PDF",
+      "shareDocx": "Enregistrer le Word"
     },
     "errors": {
       "file_too_large": "Le fichier dépasse 5 Mo.",
@@ -531,6 +538,16 @@
           "note": "Seuls les chiffres que vous écrivez ici sont ajoutés, tels quels. Laissez vide si vous ne savez pas."
         }
       }
+    },
+    "inApp": {
+      "title": "Vous êtes dans le navigateur de l'application {app}",
+      "titleGeneric": "Vous êtes dans le navigateur d'une application",
+      "howAndroid": "Le téléchargement de votre CV peut y être bloqué. Ouvrez plutôt cette page dans Chrome : bouton ci-dessous, ou menu ⋮ en haut → « Ouvrir dans le navigateur ».",
+      "howIos": "Le téléchargement de votre CV peut y être bloqué. Ouvrez plutôt cette page dans Safari : menu ⋯ ou ↗ en bas ou en haut → « Ouvrir dans Safari » (ou copiez le lien et collez-le dans Safari).",
+      "openChrome": "Ouvrir dans Chrome",
+      "copy": "Copier le lien",
+      "copied": "Lien copié",
+      "copyPrompt": "Copiez ce lien et ouvrez-le dans votre navigateur :"
     }
   },
   "ats": {

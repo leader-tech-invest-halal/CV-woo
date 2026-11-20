@@ -396,7 +396,14 @@
       "notice": {
         "docx_textboxes": "Your Word file uses fixed-size text boxes. To keep texts from overlapping, your resume was rebuilt with your colours, font and layout instead of being edited directly in your file. Please check the result."
       },
-      "templateHintTwoColumns": "Two-column template: more visual. For online applications, prefer a one-column template (Ink, Classic, Minimal ATS)."
+      "templateHintTwoColumns": "Two-column template: more visual. For online applications, prefer a one-column template (Ink, Classic, Minimal ATS).",
+      "exportFailedPdf": "The PDF couldn't be prepared. The Word file can still be downloaded.",
+      "exportFailedDocx": "The Word file couldn't be prepared. The PDF can still be downloaded.",
+      "exportFailedBoth": "The files couldn't be prepared.",
+      "exportRetry": "Try again",
+      "shareHint": "Nothing downloads?",
+      "sharePdf": "Save the PDF",
+      "shareDocx": "Save the Word file"
     },
     "errors": {
       "file_too_large": "The file is larger than 5 MB.",
@@ -531,6 +538,16 @@
           "note": "Only the figures you type here are added, as written. Leave blank if you are not sure."
         }
       }
+    },
+    "inApp": {
+      "title": "You're in the {app} app's browser",
+      "titleGeneric": "You're in an app's built-in browser",
+      "howAndroid": "Downloading your resume may be blocked here. Open this page in Chrome instead: button below, or the ⋮ menu → \"Open in browser\".",
+      "howIos": "Downloading your resume may be blocked here. Open this page in Safari instead: the ⋯ or ↗ menu → \"Open in Safari\" (or copy the link into Safari).",
+      "openChrome": "Open in Chrome",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "copyPrompt": "Copy this link and open it in your browser:"
     }
   },
   "ats": {

@@ -14,6 +14,7 @@ import { FLOW, FlowStepper, type FlowStep } from "./flow-stepper";
 import { AuthDialog } from "@/components/auth/auth-dialog";
 import { buttonClass } from "@/components/ui/button";
 import { readPickedFile } from "@/lib/picked-file";
+import { InAppNotice } from "./in-app-notice";
 
 type Result = AnalysisResult & { remaining?: number | null; signedIn?: boolean };
 
@@ -210,6 +211,7 @@ export function AdaptWizard() {
     <div className="space-y-6" ref={top}>
       <div className="space-y-5">
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <InAppNotice />
         <FlowStepper current={step} reached={busy ? FLOW.indexOf(step) : reached} onGo={(s) => !busy && go(s)} />
       </div>
 

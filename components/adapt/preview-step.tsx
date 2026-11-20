@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Download, FileText } from "lucide-react";
+import { Check, Download, FileText, RotateCcw } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { ParsedResume } from "@/lib/cv/types";
@@ -12,6 +12,8 @@ import { LAYOUT_MODES, type LayoutMode } from "@/lib/export/layout";
 import { LiveThumbnail } from "./live-thumbnail";
 import { ProgressSteps } from "./analysis-step";
 import { PdfPages, useTouchDevice } from "./pdf-pages";
+import { InAppNotice } from "./in-app-notice";
+import { detectInAppBrowser } from "@/lib/in-app-browser";
 import { SaveToHistory } from "@/components/history/save-to-history";
 import type { HistoryMeta } from "@/components/history/history-api";
 import { AtsCompare } from "./ats-compare";
@@ -54,6 +56,11 @@ export function PreviewStep({
   const docxRef = useRef<HTMLDivElement>(null);
   const touch = useTouchDevice();
   const [progress, setProgress] = useState({ pdf: false, docx: false });
+  // Fichier qui n'a pas pu être préparé (l'autre reste téléchargeable), et nouvel essai
+  const [failed, setFailed] = useState<{ pdf: boolean; docx: boolean }>({ pdf: false, docx: false });
+  const [attempt, setAttempt] = useState(0);
+  const inApp = useMemo(() => detectInAppBrowser(), []);
+  const [shareHelp, setShareHelp] = useState(false);
 
   // Génère les deux fichiers une seule fois : ce sont exactement ceux qui seront téléchargés
   useEffect(() => {
@@ -63,30 +70,39 @@ export function PreviewStep({
     setPages(null);
     setAts({ pdf: null, docx: null });
     setProgress({ pdf: false, docx: false });
-    // Chaque fichier signale sa fin dès qu'il est prêt : la progression affichée est réelle
-    const pdfJob = exportResume("pdf", file, resume, accepted, template, layout, keywords).then((r) => {
-      if (!cancelled) setProgress((p) => ({ ...p, pdf: true }));
-      return r;
-    });
-    const docxJob = exportResume("docx", file, resume, accepted, template, layout, keywords).then((r) => {
-      if (!cancelled) setProgress((p) => ({ ...p, docx: true }));
-      return r;
-    });
-    Promise.all([pdfJob, docxJob])
-      .then(([pdf, docx]) => {
+    setFailed({ pdf: false, docx: false });
+    // Chaque fichier est préparé et rendu disponible dès qu'il est prêt, indépendamment de l'autre :
+    // avant, un échec du Word empêchait aussi de télécharger le PDF.
+    const fail = (format: "pdf" | "docx") => (e: unknown) => {
+      if (cancelled) return;
+      setFailed((f) => ({ ...f, [format]: true }));
+      setProgress((p) => ({ ...p, [format]: true }));
+      onError(e instanceof ApiError ? e.code : "server_error");
+    };
+    exportResume("pdf", file, resume, accepted, template, layout, keywords)
+      .then((pdf) => {
         if (cancelled) return;
-        setFiles({ pdf: pdf.blob, docx: docx.blob });
+        setProgress((p) => ({ ...p, pdf: true }));
+        setFiles((f) => ({ ...f, pdf: pdf.blob }));
         setPages(pdf.pages);
-        setAts({ pdf: pdf.ats, docx: docx.ats });
-        setNotice(docx.notice);
+        setAts((a) => ({ ...a, pdf: pdf.ats }));
         setPdfUrl(URL.createObjectURL(pdf.blob));
       })
-      .catch((e) => !cancelled && onError(e instanceof ApiError ? e.code : "server_error"));
+      .catch(fail("pdf"));
+    exportResume("docx", file, resume, accepted, template, layout, keywords)
+      .then((docx) => {
+        if (cancelled) return;
+        setProgress((p) => ({ ...p, docx: true }));
+        setFiles((f) => ({ ...f, docx: docx.blob }));
+        setAts((a) => ({ ...a, docx: docx.ats }));
+        setNotice(docx.notice);
+      })
+      .catch(fail("docx"));
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file, resume, accepted, template, layout]);
+  }, [file, resume, accepted, template, layout, attempt]);
 
   useEffect(() => () => void (pdfUrl && URL.revokeObjectURL(pdfUrl)), [pdfUrl]);
 
@@ -110,17 +126,52 @@ export function PreviewStep({
     );
   }, [tab, files.docx]);
 
+  const fileName = (format: "pdf" | "docx") => `${resume.fileName.replace(/\.(pdf|docx)$/i, "") || "cv"}-cv-woo.${format}`;
+  const MIME = { pdf: "application/pdf", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" };
+
   const download = (format: "pdf" | "docx") => {
     const blob = files[format];
     if (!blob) return;
+    // Lien ajouté à la page avant le clic (exigé par Firefox) et libéré bien plus tard
+    // (Safari sur iPhone lit le fichier après le clic : le libérer trop tôt annulait le téléchargement)
+    const url = URL.createObjectURL(new Blob([blob], { type: MIME[format] }));
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${resume.fileName.replace(/\.(pdf|docx)$/i, "") || "cv"}-cv-woo.${format}`;
+    a.href = url;
+    a.download = fileName(format);
+    a.rel = "noopener";
+    a.style.display = "none";
+    document.body.appendChild(a);
     a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    // Navigateur intégré d'une application : le téléchargement est souvent bloqué, on explique quoi faire
+    if (inApp) setShareHelp(true);
   };
 
-  const ready = files.pdf && files.docx;
+  // Sur téléphone : « Enregistrer / partager » par le menu du système (Fichiers, Drive, e-mail…),
+  // solution de secours quand le téléchargement direct ne fait rien.
+  const canShareFiles =
+    typeof navigator !== "undefined" &&
+    typeof navigator.canShare === "function" &&
+    (() => {
+      try {
+        return navigator.canShare({ files: [new File([""], "cv.pdf", { type: "application/pdf" })] });
+      } catch {
+        return false;
+      }
+    })();
+  const share = async (format: "pdf" | "docx") => {
+    const blob = files[format];
+    if (!blob) return;
+    try {
+      await navigator.share({ files: [new File([blob], fileName(format), { type: MIME[format] })] });
+    } catch {
+      // partage annulé par la personne
+    }
+  };
+
+  const ready = { pdf: !!files.pdf, docx: !!files.docx };
+  const anyFailed = failed.pdf || failed.docx;
   // Score du CV d'origine : lisibilité mesurée à l'import + mots-clés de l'offre dans son texte
   const atsBefore = useMemo(() => {
     if (!resume.ats) return null;
@@ -154,16 +205,46 @@ export function PreviewStep({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold">{t("title")}</h2>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <button type="button" className={buttonClass("primary")} disabled={!ready} onClick={() => download("pdf")}>
+            <button type="button" className={buttonClass("primary")} disabled={!ready.pdf} onClick={() => download("pdf")}>
               <Download className="size-4" strokeWidth={1.75} aria-hidden />
               {t("downloadPdf")}
             </button>
-            <button type="button" className={buttonClass("outline")} disabled={!ready} onClick={() => download("docx")}>
+            <button type="button" className={buttonClass("outline")} disabled={!ready.docx} onClick={() => download("docx")}>
               <Download className="size-4" strokeWidth={1.75} aria-hidden />
               {t("downloadDocx")}
             </button>
           </div>
         </div>
+        {anyFailed && (
+          <div className="mt-4 flex flex-col gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <p>{t(failed.pdf && failed.docx ? "exportFailedBoth" : failed.pdf ? "exportFailedPdf" : "exportFailedDocx")}</p>
+            <button type="button" className={buttonClass("outline", "md", "shrink-0")} onClick={() => setAttempt((n) => n + 1)}>
+              <RotateCcw className="size-4" strokeWidth={1.75} aria-hidden />
+              {t("exportRetry")}
+            </button>
+          </div>
+        )}
+        {(shareHelp || inApp) && (
+          <div className="mt-4">
+            <InAppNotice />
+          </div>
+        )}
+        {canShareFiles && (ready.pdf || ready.docx) && (
+          <p className="mt-3 text-sm text-muted-foreground">
+            {t("shareHint")}{" "}
+            {ready.pdf && (
+              <button type="button" className="font-medium text-primary underline underline-offset-2" onClick={() => share("pdf")}>
+                {t("sharePdf")}
+              </button>
+            )}
+            {ready.pdf && ready.docx && " · "}
+            {ready.docx && (
+              <button type="button" className="font-medium text-primary underline underline-offset-2" onClick={() => share("docx")}>
+                {t("shareDocx")}
+              </button>
+            )}
+          </p>
+        )}
 
         {history && (
           <div className="mt-4">
@@ -316,11 +397,11 @@ export function PreviewStep({
 
       {/* Sur téléphone : téléchargement aussi sous l'aperçu, sans remonter en haut de la page */}
       <div className="grid grid-cols-2 gap-2 md:hidden">
-        <button type="button" className={buttonClass("primary")} disabled={!ready} onClick={() => download("pdf")}>
+        <button type="button" className={buttonClass("primary")} disabled={!ready.pdf} onClick={() => download("pdf")}>
           <Download className="size-4" strokeWidth={1.75} aria-hidden />
           PDF
         </button>
-        <button type="button" className={buttonClass("outline")} disabled={!ready} onClick={() => download("docx")}>
+        <button type="button" className={buttonClass("outline")} disabled={!ready.docx} onClick={() => download("docx")}>
           <Download className="size-4" strokeWidth={1.75} aria-hidden />
           Word
         </button>
