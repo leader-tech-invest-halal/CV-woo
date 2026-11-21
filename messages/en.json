@@ -444,7 +444,9 @@
       "offer_not_found": "No job ad found at this address: it may have expired or been removed. Check the link, or copy the ad text.",
       "offer_busy": "The site is receiving too many requests right now. Try again in a few minutes, or copy the ad text into the “Job ad text” tab.",
       "timeout": "This took too long (slow or interrupted connection). Try again with the page open; if it happens again, try the Word version or a lighter PDF.",
-      "file_unreadable": "This file could not be read on your phone. It may only be online (Drive, a messaging app): download it to your phone first (Downloads folder), then pick it again."
+      "file_unreadable": "This file could not be read on your phone. It may only be online (Drive, a messaging app): download it to your phone first (Downloads folder), then pick it again.",
+      "letter_quota": "You have used your 10 cover letters this month (2 per adaptation). You can generate more next month. You can still edit and download the letter shown.",
+      "letter_signup": "Your free cover letter has already been generated. Create a free account to adapt 5 resumes a month, with their cover letters."
     },
     "flow": {
       "steps": {

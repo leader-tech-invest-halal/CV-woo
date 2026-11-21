@@ -2,6 +2,7 @@ import "server-only";
 import { createHmac } from "node:crypto";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { UserFacingError } from "@/lib/cv/validate-file";
+import { networkId } from "@/lib/network";
 
 // Limites d'usage durables, partagées par tous les serveurs (table Supabase via rate_hit()).
 // Elles protègent le budget IA contre les scripts : la limite en mémoire (lib/http.ts) reste
@@ -9,7 +10,7 @@ import { UserFacingError } from "@/lib/cv/validate-file";
 // Clé : le compte si la personne est connectée, sinon une empreinte de l'adresse IP
 // (jamais l'adresse elle-même).
 
-const DAY = 24 * 60 * 60;
+export const DAY = 24 * 60 * 60;
 
 /** Secret serveur : APP_SECRET s'il existe, sinon dérivé de la clé Anthropic (jamais exposée). */
 export function serverSecret(): string {
@@ -18,9 +19,14 @@ export function serverSecret(): string {
   return process.env.APP_SECRET ? base : createHmac("sha256", "cv-woo-trial").update(base).digest("hex");
 }
 
+/**
+ * Connexion du visiteur : l’adresse IPv4, ou le début fixe (préfixe /64) d’une adresse IPv6,
+ * dont la fin change souvent (voir lib/network.ts).
+ */
 export function clientIp(request: Request): string {
   // Sur Vercel, x-real-ip et x-forwarded-for sont fixés par la plateforme (non falsifiables)
-  return request.headers.get("x-real-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const raw = request.headers.get("x-real-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  return networkId(raw);
 }
 
 /** Empreinte anonyme et stable d'une adresse IP. */
