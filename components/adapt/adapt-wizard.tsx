@@ -46,7 +46,7 @@ export function AdaptWizard() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ code: string; retry?: () => void } | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [authOpen, setAuthOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState<false | "gate" | "invite">(false);
   const top = useRef<HTMLDivElement>(null);
 
   const go = (next: FlowStep) => {
@@ -118,7 +118,7 @@ export function AdaptWizard() {
       setStep("offer");
       setReached(FLOW.indexOf("offer"));
       // Adaptation offerte déjà utilisée : on demande de créer un compte, sans perdre le CV ni l'offre
-      if (e instanceof ApiError && e.code === "auth_required") setAuthOpen(true);
+      if (e instanceof ApiError && e.code === "auth_required") setAuthOpen("gate");
       else setError({ code: codeOf(e), retry: onAnalyze });
     } finally {
       setBusy(false);
@@ -240,18 +240,20 @@ export function AdaptWizard() {
       )}
 
       <AuthDialog
-        open={authOpen}
+        open={authOpen !== false}
         onClose={() => setAuthOpen(false)}
         onSuccess={() => {
+          const reason = authOpen;
           setAuthOpen(false);
-          onAnalyze();
+          // Essai épuisé : l'analyse demandée est relancée une fois le compte créé
+          if (reason === "gate") onAnalyze();
         }}
       />
 
-      {result && !analyzing && FLOW.indexOf(step) >= FLOW.indexOf("requirements") && result.signedIn === false && (
+      {result && !analyzing && step === "preview" && result.signedIn === false && (
         <div className="flex flex-col gap-3 rounded-lg border border-primary/30 bg-accent p-4 text-sm text-accent-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>{ta("trialNotice")}</p>
-          <button type="button" className={buttonClass("outline", "md", "shrink-0")} onClick={() => setAuthOpen(true)}>
+          <button type="button" className={buttonClass("outline", "md", "shrink-0")} onClick={() => setAuthOpen("invite")}>
             {ta("trialCta")}
           </button>
         </div>

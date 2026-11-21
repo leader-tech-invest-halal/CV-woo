@@ -1,6 +1,5 @@
 import { use, type ReactNode } from "react";
 import { setRequestLocale } from "next-intl/server";
-import { useTranslations } from "next-intl";
 import { Logo } from "@/components/logo";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { BottomNav, SidebarNav } from "@/components/app/app-nav";
@@ -15,7 +14,6 @@ export default function AppLayout({
   params: Promise<{ locale: string }>;
 }) {
   setRequestLocale(use(params).locale);
-  const t = useTranslations("app");
 
   return (
     <div className="min-h-dvh bg-surface md:flex">
@@ -38,9 +36,6 @@ export default function AppLayout({
             <LocaleSwitcher />
           </div>
         </header>
-        <div className="border-b border-warning/30 bg-warning/10 px-4 py-2 text-center text-xs text-[oklch(0.42_0.1_60)] sm:text-sm">
-          {t("betaBanner")}
-        </div>
         <main className="mx-auto w-full max-w-[960px] flex-1 px-4 pt-8 pb-24 sm:px-6 md:pb-12">{children}</main>
       </div>
 

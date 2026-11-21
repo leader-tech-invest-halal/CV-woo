@@ -55,6 +55,8 @@ export type AccessContext = Awaited<ReturnType<typeof getCurrentUser>> & {
   remaining: number | null;
   /** L'analyse est déjà comptée (réservée avant l'appel à l'IA). */
   claimed: boolean;
+  /** Bon secret qui permet de rendre la réservation si l'analyse échoue (compte connecté). */
+  refundToken?: string | null;
 };
 
 /** À appeler avant une analyse : refuse si l'essai gratuit est épuisé ou si le quota est atteint. */
@@ -76,11 +78,19 @@ export async function checkAnalyzeAccess(request: Request): Promise<AccessContex
     return { ...ctx, remaining: null, claimed: !error };
   }
 
-  // Réservation atomique sur le quota (plusieurs analyses lancées en même temps ne passent plus toutes)
+  // Réservation atomique sur le quota (plusieurs analyses lancées en même temps ne passent plus toutes),
+  // avec un bon pour la rendre si l'analyse échoue
+  const claim = await ctx.supabase.rpc("claim_analysis_id");
+  const row = (Array.isArray(claim.data) ? claim.data[0] : claim.data) as { remaining?: number; refund_token?: string | null } | null;
+  if (!claim.error && row && typeof row.remaining === "number") {
+    if (row.remaining < 0) throw new UserFacingError("quota_reached", 429);
+    // 999 : compte administrateur, sans limite (aucun compteur affiché)
+    return { ...ctx, remaining: row.remaining >= 999 ? null : row.remaining + 1, claimed: true, refundToken: row.refund_token ?? null };
+  }
+  // Ancienne fonction (base pas encore à jour) : même réservation, sans remboursement possible
   const { data, error } = await ctx.supabase.rpc("claim_analysis");
   if (!error && typeof data === "number") {
     if (data < 0) throw new UserFacingError("quota_reached", 429);
-    // 999 : compte administrateur, sans limite (aucun compteur affiché)
     return { ...ctx, remaining: data >= 999 ? null : data + 1, claimed: true };
   }
   // Fonction indisponible : ancienne vérification (compte après réussite)
@@ -89,6 +99,44 @@ export async function checkAnalyzeAccess(request: Request): Promise<AccessContex
   if (unlimited) return { ...ctx, remaining: null, claimed: false };
   if (used >= quota) throw new UserFacingError("quota_reached", 429);
   return { ...ctx, remaining: quota - used, claimed: false };
+}
+
+/**
+ * Analyse échouée (erreur de l'IA, coupure) : on rend ce qui a été réservé, pour que la personne
+ * ne perde ni son essai gratuit ni une adaptation du mois. Sans compte, renvoie un jeton signé
+ * qui permet ensuite au navigateur d'effacer le cookie d'essai (voir /api/analyze/release).
+ */
+export async function refundAnalyze(request: Request, ctx: AccessContext): Promise<string | null> {
+  try {
+    if (ctx.user) {
+      if (ctx.refundToken) await ctx.supabase.rpc("refund_analysis", { p_token: ctx.refundToken });
+      return null;
+    }
+    if (ctx.claimed) await ctx.supabase.rpc("rate_refund", { p_bucket: "trial", p_key: ipKey(request) });
+    anonymousIps.delete(clientIp(request));
+    return releaseToken(request, Date.now());
+  } catch (error) {
+    console.error("Remboursement de l'analyse impossible", error);
+    return null;
+  }
+}
+
+/** Jeton signé (adresse + heure) qui autorise l'effacement du cookie d'essai après un échec. */
+function releaseToken(request: Request, at: number): string {
+  const sig = createHmac("sha256", serverSecret()).update(`release:${clientIp(request)}:${at}`).digest("base64url");
+  return `${at}.${sig}`;
+}
+
+/** Efface le cookie d'essai si le jeton est valide (même adresse, moins de 15 minutes). */
+export async function releaseTrialCookie(request: Request, token: string): Promise<boolean> {
+  const [at, sig] = token.split(".");
+  const time = Number(at);
+  if (!sig || !Number.isFinite(time) || Date.now() - time > 15 * 60 * 1000 || Date.now() < time) return false;
+  const expected = Buffer.from(releaseToken(request, time));
+  const got = Buffer.from(token);
+  if (expected.length !== got.length || !timingSafeEqual(expected, got)) return false;
+  (await cookies()).delete(TRIAL_COOKIE);
+  return true;
 }
 
 /** À appeler après une analyse réussie. */

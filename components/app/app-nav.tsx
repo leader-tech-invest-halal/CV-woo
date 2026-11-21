@@ -1,16 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Files, History, LayoutDashboard, Sparkles, User, type LucideIcon } from "lucide-react";
+import { History, LayoutDashboard, Sparkles, User, type LucideIcon } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 
 type Item = { href: string; key: "dashboard" | "adapt" | "resumes" | "history" | "profile"; icon: LucideIcon; ready: boolean };
 
-// Les pages marquées ready: false arrivent avec les comptes utilisateurs (étape 10).
+// Les pages pas encore prêtes ne sont pas affichées (rien de « bientôt » dans le menu pendant la bêta).
 const ITEMS: Item[] = [
   { href: "/dashboard", key: "dashboard", icon: LayoutDashboard, ready: true },
   { href: "/adapt", key: "adapt", icon: Sparkles, ready: true },
-  { href: "/resumes", key: "resumes", icon: Files, ready: false },
   { href: "/history", key: "history", icon: History, ready: true },
   { href: "/profile", key: "profile", icon: User, ready: true },
 ];

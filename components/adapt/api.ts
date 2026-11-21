@@ -57,7 +57,18 @@ async function longResult<T>(res: Response): Promise<T> {
     throw new ApiError("network");
   }
   const error = (body as { error?: unknown } | null)?.error;
-  if (typeof error === "string") throw new ApiError(error);
+  if (typeof error === "string") {
+    // Analyse échouée sans compte : l'essai gratuit a été rendu ; on efface aussi son cookie
+    const release = (body as { release?: unknown }).release;
+    if (typeof release === "string") {
+      await fetch("/api/analyze/release", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ token: release }),
+      }).catch(() => {});
+    }
+    throw new ApiError(error);
+  }
   return body as T;
 }
 

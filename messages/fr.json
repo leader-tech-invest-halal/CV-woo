@@ -177,8 +177,8 @@
     },
     "analyses": {
       "title": "Analyses récentes",
-      "emptyTitle": "Bientôt disponible",
-      "emptyText": "Vous retrouverez ici vos adaptations précédentes et leur score."
+      "emptyTitle": "Aucune analyse récente",
+      "emptyText": "Lancez une adaptation : enregistrez ensuite votre CV pour le retrouver dans l’historique."
     },
     "tip": {
       "title": "Conseil",

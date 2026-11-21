@@ -1,6 +1,6 @@
 import { analyze, AnalyzeInput } from "@/lib/ai/analyze";
 import { errorResponse, keepAliveJson, rateLimit } from "@/lib/http";
-import { checkAnalyzeAccess, recordAnalyze } from "@/lib/access";
+import { checkAnalyzeAccess, recordAnalyze, refundAnalyze } from "@/lib/access";
 import { UserFacingError } from "@/lib/cv/validate-file";
 
 export const runtime = "nodejs";
@@ -22,13 +22,20 @@ export async function POST(request: Request) {
 
     // Analyse par l'IA (souvent plus d'une minute) : la connexion est maintenue ouverte
     return keepAliveJson(async () => {
-      const result = await analyze(body.data);
-      if (access.user) await recordAnalyze(request, access);
-      return {
-        ...result,
-        remaining: access.remaining === null ? null : access.remaining - 1,
-        signedIn: !!access.user,
-      };
+      try {
+        const result = await analyze(body.data);
+        if (access.user) await recordAnalyze(request, access);
+        return {
+          ...result,
+          remaining: access.remaining === null ? null : access.remaining - 1,
+          signedIn: !!access.user,
+        };
+      } catch (error) {
+        // Échec : l'essai gratuit ou l'adaptation du mois est rendu (la personne peut réessayer)
+        const release = await refundAnalyze(request, access);
+        if (!(error instanceof UserFacingError)) console.error(error);
+        return { error: error instanceof UserFacingError ? error.code : "server_error", ...(release ? { release } : {}) };
+      }
     });
   } catch (error) {
     return errorResponse(error);
