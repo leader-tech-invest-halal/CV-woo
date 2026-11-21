@@ -81,3 +81,54 @@ export function verifyEvidence(match: SkillMatch, blocks: Map<string, Block>): S
   // Pas de preuve vérifiable : la compétence n'est pas considérée comme démontrée
   return { ...match, status: match.status === "present" ? "weak" : match.status, evidenceBlockId: null, evidenceQuote: null };
 }
+
+/** Lettres et chiffres seuls, sans accents, casse ni ponctuation : le « squelette » d'un texte. */
+const skeleton = (s: string) => normalize(s).replace(/[^a-z0-9]/g, "");
+
+/**
+ * Correction de forme seulement (majuscules, accents, ponctuation, espaces) : mêmes lettres et
+ * mêmes chiffres, dans le même ordre. Seul type de modification permis sur le nom, les
+ * coordonnées, les intitulés et les dates (ex. « camille exemple » → « Camille EXEMPLE »).
+ */
+export function formatOnlyChange(before: string, after: string): boolean {
+  const a = skeleton(after);
+  return a.length > 0 && a === skeleton(before) && after.trim() !== before.trim();
+}
+
+/**
+ * Bloc en double : même contenu qu'un autre bloc (à la forme près), ou entièrement contenu
+ * dans un autre bloc plus long. Renvoie l'autre bloc, ou null si ce n'est pas un doublon.
+ */
+export function duplicateOf(id: string, candidates: Block[]): Block | null {
+  const self = candidates.find((b) => b.id === id);
+  if (!self) return null;
+  const s = skeleton(self.text);
+  if (s.length < 4) return null;
+  for (const other of candidates) {
+    if (other.id === id) continue;
+    const o = skeleton(other.text);
+    if (o === s || (s.length >= 15 && o.length > s.length && o.includes(s))) return other;
+  }
+  return null;
+}
+
+/**
+ * Éléments d'une rubrique ajoutée (Disponibilités, Qualités) : chacun doit être prouvé par un
+ * extrait exact du CV. Un élément sans preuve vérifiable, ou qui contient un chiffre absent de
+ * sa preuve, est « à vérifier » par le candidat.
+ */
+export function checkSectionItems(
+  items: { text: string; evidence_block_id: string | null; evidence_quote: string | null }[],
+  blocks: Map<string, Block>,
+): { text: string; proven: boolean }[] {
+  return items
+    .map((item) => ({ ...item, text: item.text.replace(/\s+/g, " ").trim() }))
+    .filter((item) => item.text.length > 0 && item.text.length <= 120)
+    .map((item) => {
+      const block = item.evidence_block_id ? blocks.get(item.evidence_block_id) : undefined;
+      const quoted = !!block && !!item.evidence_quote && normalize(block.text).includes(normalize(item.evidence_quote));
+      const numbers = item.text.match(/\d+(?:[.,]\d+)?/g) ?? [];
+      const numbersOk = numbers.every((n) => (item.evidence_quote ?? "").includes(n));
+      return { text: item.text, proven: quoted && numbersOk };
+    });
+}

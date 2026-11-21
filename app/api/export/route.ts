@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { renderResumePdf } from "@/lib/export/pdf";
+import { renderBalanced, type BalanceReport } from "@/lib/export/balance";
 import { renderResumeDocx } from "@/lib/export/docx-template";
 import { hasTextBoxes, rewriteDocx } from "@/lib/cv/docx";
 import { detectFormat, UserFacingError } from "@/lib/cv/validate-file";
@@ -8,7 +8,15 @@ import type { ParsedResume } from "@/lib/cv/types";
 import { applyTemplate, TEMPLATES } from "@/lib/export/templates";
 import { LAYOUT_MODES } from "@/lib/export/layout";
 import { safeAtsReadiness } from "@/lib/ats/readiness";
-import { completeStructure, NEW_HEADLINE_ID, withNewHeadline } from "@/lib/cv/compose";
+import {
+  completeStructure,
+  isNewSectionId,
+  NEW_HEADLINE_ID,
+  NEW_SECTION_IDS,
+  withNewHeadline,
+  withNewSections,
+  withoutRemoved,
+} from "@/lib/cv/compose";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -29,7 +37,7 @@ const Payload = z.object({
     structure: z.any(),
     style: z.any(),
   }),
-  accepted: z.record(z.string().max(20), z.string().max(3000)),
+  accepted: z.record(z.string().max(40), z.string().max(3000)),
 });
 
 /**
@@ -57,17 +65,27 @@ export async function POST(request: Request) {
     const known = new Set(resume.blocks.map((b) => b.id));
     // Le titre créé sous le nom est le seul bloc nouveau autorisé (une ligne courte)
     if (!resume.structure.headlineBlockId) known.add(NEW_HEADLINE_ID);
+    // Rubriques ajoutées (Disponibilités, Qualités) : liste courte d'éléments
+    for (const id of Object.values(NEW_SECTION_IDS)) known.add(id);
     const safeAccepted = Object.fromEntries(
       Object.entries(accepted)
         .filter(([id]) => known.has(id))
-        .map(([id, text]) => [id, id === NEW_HEADLINE_ID ? text.replace(/\s+/g, " ").trim().slice(0, 120) : text]),
+        .map(([id, text]) => [
+          id,
+          id === NEW_HEADLINE_ID ? text.replace(/\s+/g, " ").trim().slice(0, 120) : isNewSectionId(id) ? text.slice(0, 900) : text,
+        ]),
     );
-    const withHeadline = withNewHeadline(resume, safeAccepted);
+    // CV à exporter : titre créé, rubriques ajoutées, doublons retirés (texte accepté vide)
+    const withHeadline = withoutRemoved(withNewSections(withNewHeadline(resume, safeAccepted), safeAccepted), safeAccepted);
+    // Structure changée (rubrique ajoutée ou bloc retiré) : un Word d'origine ne peut pas être
+    // modifié sur place sans casser sa mise en page ; il est alors recréé (et on le dit)
+    const restructured = Object.entries(safeAccepted).some(([id, text]) => (isNewSectionId(id) ? text.trim() !== "" : text.trim() === ""));
 
     const base = resume.fileName.replace(/\.(pdf|docx)$/i, "") || "cv";
     let body: Uint8Array;
     let type: string;
     let pages: number | null = null;
+    let report: BalanceReport | null = null;
 
     // Word d'origine + design d'origine : on modifie le fichier lui-même (mise en page identique)
     // (Depuis l'historique, le fichier d'origine n'est pas conservé : le Word est alors recomposé.)
@@ -84,6 +102,9 @@ export async function POST(request: Request) {
       if (await hasTextBoxes(sourceDocx)) {
         sourceDocx = null;
         notice = "docx_textboxes";
+      } else if (restructured) {
+        sourceDocx = null;
+        notice = "docx_restructured";
       }
     }
     if (sourceDocx) {
@@ -95,10 +116,18 @@ export async function POST(request: Request) {
       type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     } else {
       // Le PDF décide du réglage de mise en page ; le Word reprend exactement le même
-      const pdf = await renderResumePdf({ ...withHeadline, accepted: safeAccepted }, layout);
+      // Mise en page mesurée et équilibrée automatiquement (colonnes, une page), sans IA ;
+      // le Word reprend exactement les mêmes choix (rubriques déplacées, puces masquées, réglage)
+      const balanced = await renderBalanced(
+        { ...withHeadline, accepted: safeAccepted },
+        layout,
+        parsed.data.keywords.map((k) => k.term),
+      );
+      const pdf = balanced.pdf;
       pages = pdf.pages;
+      report = balanced.report;
       if (format === "docx") {
-        body = await renderResumeDocx({ ...withHeadline, accepted: safeAccepted }, pdf.level);
+        body = await renderResumeDocx(balanced.doc, pdf.level);
         type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
       } else {
         body = pdf.bytes;
@@ -118,6 +147,8 @@ export async function POST(request: Request) {
         ...(pages ? { "x-cv-pages": String(pages) } : {}),
         ...(ats ? { "x-cv-ats": encodeURIComponent(JSON.stringify(ats)) } : {}),
         ...(notice ? { "x-cv-notice": notice } : {}),
+        // Mesure de la page et ajustements faits (affichés dans l’aperçu)
+        ...(report ? { "x-cv-layout": encodeURIComponent(JSON.stringify({ ...report, hidden: report.hidden.slice(0, 20).map((h) => h.slice(0, 140)) })) } : {}),
       },
     });
   } catch (error) {

@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { ScoreGauge } from "@/components/analysis/score-gauge";
 import { SkillChip } from "@/components/analysis/skill-chip";
 import type { AnalysisResult, ParsedResume, Rewrite, SkillImportance, SkillStatus } from "@/lib/cv/types";
-import { NEW_HEADLINE_ID } from "@/lib/cv/compose";
+import { NEW_HEADLINE_ID, NEW_SECTION_IDS } from "@/lib/cv/compose";
 
 /**
  * Origine d'une phrase dans le CV : rubrique + expérience (ex. « Expérience professionnelle ·
@@ -20,6 +20,10 @@ export function useOrigin(resume: ParsedResume) {
   return (blockId: string): string | null => {
     const s = resume.structure;
     if (blockId === s.headlineBlockId || blockId === NEW_HEADLINE_ID) return t("headline");
+    if (blockId === NEW_SECTION_IDS.availability) return t("newAvailability");
+    if (blockId === NEW_SECTION_IDS.qualities) return t("newQualities");
+    if (blockId === s.nameBlockId || (s.nameExtraBlockIds ?? []).includes(blockId)) return t("name");
+    if (s.contactBlockIds.includes(blockId)) return t("contacts");
     if (s.summaryBlockIds.includes(blockId)) return t("summary");
     for (const section of s.sections) {
       for (const entry of section.entries) {
@@ -157,6 +161,17 @@ export function RequirementsStep({ result, onBack, onNext }: { result: AnalysisR
       <Card className="p-4 sm:p-6">
         <p className="text-sm text-muted-foreground">{result.offer.company ?? ""}</p>
         <h3 className="text-lg font-semibold">{result.offer.title}</h3>
+        {/* Conditions impératives (horaires, lieu, contrat…) : ce qui élimine d'office si elles manquent */}
+        {!!result.offer.conditions?.length && (
+          <div className="mt-4 rounded-lg border border-primary/25 bg-accent/40 p-3">
+            <p className="mb-2 text-xs font-semibold tracking-wide text-accent-foreground uppercase">{t("conditions")}</p>
+            <ul className="list-disc space-y-1 pl-5 text-sm">
+              {result.offer.conditions.map((c) => (
+                <li key={c}>{c}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         {result.matches.length === 0 ? (
           <p className="mt-4 text-sm text-muted-foreground">{t("empty")}</p>
         ) : (
@@ -179,6 +194,18 @@ export function RequirementsStep({ result, onBack, onNext }: { result: AnalysisR
                 </div>
               );
             })}
+          </div>
+        )}
+        {!!result.offer.qualities?.length && (
+          <div className="mt-5">
+            <p className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("qualities")}</p>
+            <ul className="flex flex-wrap gap-1.5">
+              {result.offer.qualities.map((q) => (
+                <li key={q} className="rounded-full border border-border bg-background px-3 py-1 text-sm">
+                  {q}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </Card>
@@ -284,6 +311,17 @@ export function ChangesStep({
       {unplaced.length > 0 && (
         <p className="rounded-lg border border-border bg-muted/50 p-4 text-sm">{t("unplaced", { skills: unplaced.join(", ") })}</p>
       )}
+      {/* Remarques de l'IA : ce qu'elle conseille sans le modifier elle-même (ordre, information manquante…) */}
+      {!!result.remarks?.length && (
+        <Card className="p-4 sm:p-6">
+          <p className="text-sm font-semibold">{t("remarks")}</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+            {result.remarks.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
+        </Card>
+      )}
       <Card className="p-4 sm:p-6">
         {result.rewrites.length === 0 ? (
           <p className="text-sm text-muted-foreground">{ta("noChanges")}</p>
@@ -361,11 +399,17 @@ function RewriteCard({
           <div className="grid gap-3 md:grid-cols-2">
             <div>
               <p className="mb-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">{tc("before")}</p>
-              <p className="rounded-md bg-muted/60 px-2 py-1 text-muted-foreground">{r.before || <em>{tc("noHeadline")}</em>}</p>
+              <p className="rounded-md bg-muted/60 px-2 py-1 text-muted-foreground">
+                {r.before || <em>{r.blockId === NEW_HEADLINE_ID ? tc("noHeadline") : tc("noSection")}</em>}
+              </p>
             </div>
             <div>
               <p className="mb-1 text-[11px] font-semibold tracking-wide text-accent-foreground uppercase">{tc("after")}</p>
-              <EditableText value={edit ?? r.after} edited={edit !== undefined} onChange={onEdit} />
+              {r.after === "" && edit === undefined ? (
+                <p className="rounded-md bg-muted/60 px-2 py-1 italic text-muted-foreground">{tc("removed")}</p>
+              ) : (
+                <EditableText value={edit ?? r.after} edited={edit !== undefined} onChange={onEdit} />
+              )}
             </div>
           </div>
           <p className="text-xs text-muted-foreground">{r.reason}</p>
@@ -393,7 +437,11 @@ function FlagList({ flags }: { flags: string[] }) {
         {flags.map((f) => {
           const [kind, ...rest] = f.split(":");
           const value = rest.join(":");
-          return <li key={f}>{kind === "number" || kind === "term" || kind === "keyword" || kind === "similar" ? t(`flag.${kind}`, { value }) : f}</li>;
+          return (
+            <li key={f}>
+              {kind === "number" || kind === "term" || kind === "keyword" || kind === "similar" || kind === "verify" ? t(`flag.${kind}`, { value }) : f}
+            </li>
+          );
         })}
       </ul>
       <p className="mt-1">{t("flagHelp")}</p>
@@ -437,7 +485,7 @@ export function ReviewStep({
                 </span>
                 <div className="min-w-0">
                   {origin(r.blockId) && <p className="text-xs text-muted-foreground">{origin(r.blockId)}</p>}
-                  <p>{edits[r.blockId] ?? r.after}</p>
+                  <p>{edits[r.blockId] ?? (r.after || <em className="text-muted-foreground">{t("removed", { text: r.before })}</em>)}</p>
                   {edits[r.blockId] !== undefined && <p className="text-xs text-muted-foreground">({t("edited")})</p>}
                 </div>
               </li>

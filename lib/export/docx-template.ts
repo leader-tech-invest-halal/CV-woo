@@ -107,7 +107,7 @@ export async function renderResumeDocx({ blocks, structure, style, accepted }: P
   const sideRun = (onSide: boolean) => (onSide && sideDark ? { color: "FFFFFF" } : {});
 
   const sectionParagraphs = (section: Section, onSide: boolean) => {
-    const compact = onSide || section.kind === "skills" || section.kind === "languages";
+    const compact = onSide || ["skills", "languages", "qualities", "availability"].includes(section.kind);
     const width = onSide ? sideWidth : mainWidth;
     const out: Paragraph[] = [heading(section.headingBlockId ? t(section.headingBlockId) : section.heading, onSide)];
     section.entries.forEach((e, i) => {

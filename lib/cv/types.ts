@@ -40,6 +40,9 @@ export type SectionKind =
   | "projects"
   | "certifications"
   | "interests"
+  /** Rubriques ajoutées par CV Woo à partir d’informations réelles du CV (voir compose.ts) */
+  | "availability"
+  | "qualities"
   | "other";
 
 export type ResumeStructure = {
@@ -61,6 +64,8 @@ export type ResumeStructure = {
     heading: string;
     kind: SectionKind;
     placement: "main" | "sidebar";
+    /** Colonne imposée par l'équilibrage automatique de la page (prioritaire sur le type de rubrique). */
+    forced?: "main" | "sidebar";
     entries: { headerBlockIds: string[]; bulletBlockIds: string[] }[];
   }[];
 };
@@ -125,7 +130,16 @@ export type ProfileFigure = {
 export type EnrichResult = { rewrites: Rewrite[]; unplaced: string[] };
 
 export type AnalysisResult = {
-  offer: { title: string; company: string | null };
+  offer: {
+    title: string;
+    company: string | null;
+    /** Conditions impératives de l’offre (horaires, lieu, contrat, disponibilités). */
+    conditions?: string[];
+    /** Savoir-être attendus (ex. rubrique « Ce que j’apporte »). */
+    qualities?: string[];
+  };
+  /** Remarques pour le candidat (ordre des expériences, information manquante…), sans modification du CV. */
+  remarks?: string[];
   score: number;
   matches: SkillMatch[];
   rewrites: Rewrite[];

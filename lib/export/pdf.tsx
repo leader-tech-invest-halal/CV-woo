@@ -151,7 +151,7 @@ function CvDocument({ blocks, structure, style, accepted, d: density }: Props & 
   };
 
   const SectionView = ({ section, onSide }: { section: Section; onSide: boolean }) => {
-    const compact = onSide || section.kind === "skills" || section.kind === "languages";
+    const compact = onSide || ["skills", "languages", "qualities", "availability"].includes(section.kind);
 
     const header = (e: Entry) => {
       // Modèles CV Woo : « intitulé ……… dates » sur une ligne, puis entreprise et lieu en gris.

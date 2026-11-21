@@ -18,7 +18,7 @@ export const EnrichInput = z.object({
   offerTitle: z.string().max(300),
   resume: AnalyzeInput.shape.resume,
   /** Texte actuellement proposé pour chaque bloc (réécritures de l'analyse), pour construire dessus. */
-  current: z.record(z.string().max(20), z.string().max(3000)).default({}),
+  current: z.record(z.string().max(40), z.string().max(3000)).default({}),
   answers: z
     .array(
       z.object({

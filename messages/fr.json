@@ -310,7 +310,8 @@
         "number": "Le chiffre « {value} » n'apparaît pas dans votre CV.",
         "term": "« {value} » n'apparaît pas dans votre CV.",
         "keyword": "Le mot-clé « {value} » n'est pas prouvé par votre CV.",
-        "similar": "« {value} » : vous avez indiqué une expérience similaire, pas cette compétence. Retirez ce mot ou modifiez la phrase."
+        "similar": "« {value} » : vous avez indiqué une expérience similaire, pas cette compétence. Retirez ce mot ou modifiez la phrase.",
+        "verify": "À confirmer : {value}"
       },
       "flagHelp": "Par sécurité, cette modification n'est pas cochée. Acceptez-la seulement si c'est vrai.",
       "accepted": "{count} sur {total} acceptées",
@@ -394,7 +395,8 @@
         "keywordsHint": "Ajoutez-les seulement s'ils correspondent vraiment à votre parcours."
       },
       "notice": {
-        "docx_textboxes": "Votre fichier Word utilise des zones de texte de taille fixe. Pour éviter que les textes se chevauchent, votre CV a été recréé avec vos couleurs, votre police et votre disposition, au lieu d'être modifié directement dans votre fichier. Vérifiez le résultat."
+        "docx_textboxes": "Votre fichier Word utilise des zones de texte de taille fixe. Pour éviter que les textes se chevauchent, votre CV a été recréé avec vos couleurs, votre police et votre disposition, au lieu d'être modifié directement dans votre fichier. Vérifiez le résultat.",
+        "docx_restructured": "Une rubrique a été ajoutée ou un doublon retiré : votre fichier Word a donc été recréé avec vos couleurs et votre police, au lieu d'être modifié directement. Vérifiez le résultat."
       },
       "templateHintTwoColumns": "Modèle deux colonnes : plus visuel. Pour les candidatures en ligne, préférez un modèle une colonne (Encre, Classique, Minimaliste ATS).",
       "exportFailedPdf": "Le PDF n'a pas pu être préparé. Le Word reste téléchargeable.",
@@ -403,7 +405,19 @@
       "exportRetry": "Réessayer",
       "shareHint": "Rien ne se télécharge ?",
       "sharePdf": "Enregistrer le PDF",
-      "shareDocx": "Enregistrer le Word"
+      "shareDocx": "Enregistrer le Word",
+      "balance": {
+        "title": "Équilibre de la page :",
+        "columns": "colonne latérale remplie à {side} %, colonne principale à {main} %.",
+        "movedSide": "« {heading} » a été placée dans la colonne latérale pour équilibrer la page.",
+        "movedMain": "« {heading} » a été placée dans la colonne principale pour éviter une deuxième page.",
+        "hidden": "{count, plural, one {Pour tenir sur une page, # puce moins liée à l'offre a été retirée.} other {Pour tenir sur une page, # puces moins liées à l'offre ont été retirées.}} Choisissez « Détaillé » pour tout garder.",
+        "showList": "Voir lesquelles",
+        "hideList": "Masquer la liste",
+        "sideShort": "La colonne latérale reste plus courte que la principale. Ajoutez dans votre CV une rubrique courte et vraie (outils, langues, qualités), ou choisissez un modèle à une colonne (Encre, Précis).",
+        "sideLong": "La colonne latérale est plus longue que la principale. Un modèle à une colonne (Encre, Précis) mettra mieux votre CV en valeur.",
+        "stillLong": "Votre CV dépasse encore une page, même resserré. Retirez une expérience ancienne ou peu liée à l'offre, ou choisissez « Détaillé » pour un CV sur deux pages."
+      }
     },
     "errors": {
       "file_too_large": "Le fichier dépasse 5 Mo.",
@@ -452,7 +466,9 @@
         "nice": "Souhaités",
         "keyword": "Mots-clés importants",
         "empty": "Aucune exigence n'a été détectée dans cette offre.",
-        "next": "Comparer avec mon CV"
+        "next": "Comparer avec mon CV",
+        "conditions": "Conditions impératives",
+        "qualities": "Qualités attendues"
       },
       "compare": {
         "title": "Ce que votre CV prouve déjà",
@@ -475,7 +491,14 @@
         "summary": "Profil / résumé",
         "fromProfile": "D'après vos réponses",
         "unplaced": "Ces compétences confirmées n'ont pas trouvé de place dans votre CV : {skills}. Vous pouvez les ajouter vous-même en modifiant une ligne de compétences ci-dessous.",
-        "noHeadline": "Aucun titre sous votre nom"
+        "noHeadline": "Aucun titre sous votre nom",
+        "newAvailability": "Nouvelle rubrique : Disponibilités",
+        "newQualities": "Nouvelle rubrique : Qualités",
+        "name": "Nom",
+        "contacts": "Coordonnées",
+        "removed": "Supprimé (doublon)",
+        "noSection": "Rubrique absente de votre CV",
+        "remarks": "Remarques sur votre CV"
       },
       "review": {
         "title": "Vérifiez avant de générer votre CV",
@@ -485,7 +508,8 @@
         "edited": "modifiée par vous",
         "missing": "Non ajouté à votre CV, car absent de votre parcours :",
         "next": "Générer mon CV",
-        "back": "Revoir les propositions"
+        "back": "Revoir les propositions",
+        "removed": "Supprimé (doublon) : « {text} »"
       },
       "success": {
         "parsed": "CV lu : {count, plural, one {# rubrique détectée} other {# rubriques détectées}}.",

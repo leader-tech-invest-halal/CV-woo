@@ -310,7 +310,8 @@
         "number": "The number “{value}” isn't in your resume.",
         "term": "“{value}” isn't in your resume.",
         "keyword": "The keyword “{value}” isn't backed by your resume.",
-        "similar": "“{value}”: you said you have similar experience, not this skill. Remove this word or edit the sentence."
+        "similar": "“{value}”: you said you have similar experience, not this skill. Remove this word or edit the sentence.",
+        "verify": "To confirm: {value}"
       },
       "flagHelp": "To be safe, this change is unticked. Accept it only if it's true.",
       "accepted": "{count} of {total} accepted",
@@ -394,7 +395,8 @@
         "keywordsHint": "Only add them if they truly match your background."
       },
       "notice": {
-        "docx_textboxes": "Your Word file uses fixed-size text boxes. To keep texts from overlapping, your resume was rebuilt with your colours, font and layout instead of being edited directly in your file. Please check the result."
+        "docx_textboxes": "Your Word file uses fixed-size text boxes. To keep texts from overlapping, your resume was rebuilt with your colours, font and layout instead of being edited directly in your file. Please check the result.",
+        "docx_restructured": "A section was added or a duplicate removed, so your Word file was recreated with your colours and font instead of being edited directly. Please check the result."
       },
       "templateHintTwoColumns": "Two-column template: more visual. For online applications, prefer a one-column template (Ink, Classic, Minimal ATS).",
       "exportFailedPdf": "The PDF couldn't be prepared. The Word file can still be downloaded.",
@@ -403,7 +405,19 @@
       "exportRetry": "Try again",
       "shareHint": "Nothing downloads?",
       "sharePdf": "Save the PDF",
-      "shareDocx": "Save the Word file"
+      "shareDocx": "Save the Word file",
+      "balance": {
+        "title": "Page balance:",
+        "columns": "side column {side}% full, main column {main}% full.",
+        "movedSide": "\"{heading}\" was moved to the side column to balance the page.",
+        "movedMain": "\"{heading}\" was moved to the main column to avoid a second page.",
+        "hidden": "{count, plural, one {To fit on one page, # bullet less related to the job was removed.} other {To fit on one page, # bullets less related to the job were removed.}} Choose \"Detailed\" to keep everything.",
+        "showList": "See which",
+        "hideList": "Hide the list",
+        "sideShort": "The side column is still shorter than the main one. Add a short, true section to your resume (tools, languages, qualities), or choose a one-column template (Ink, Precise).",
+        "sideLong": "The side column is longer than the main one. A one-column template (Ink, Precise) will showcase your resume better.",
+        "stillLong": "Your resume is still over one page, even tightened. Remove an old or less relevant experience, or choose \"Detailed\" for a two-page resume."
+      }
     },
     "errors": {
       "file_too_large": "The file is larger than 5 MB.",
@@ -452,7 +466,9 @@
         "nice": "Nice-to-haves",
         "keyword": "Important keywords",
         "empty": "No requirements were found in this posting.",
-        "next": "Compare with my resume"
+        "next": "Compare with my resume",
+        "conditions": "Firm requirements",
+        "qualities": "Expected qualities"
       },
       "compare": {
         "title": "What your resume already proves",
@@ -475,7 +491,14 @@
         "summary": "Profile / summary",
         "fromProfile": "From your answers",
         "unplaced": "These confirmed skills couldn't be placed in your resume: {skills}. You can add them yourself by editing a skills line below.",
-        "noHeadline": "No title under your name"
+        "noHeadline": "No title under your name",
+        "newAvailability": "New section: Availability",
+        "newQualities": "New section: Qualities",
+        "name": "Name",
+        "contacts": "Contact details",
+        "removed": "Removed (duplicate)",
+        "noSection": "Section not in your resume",
+        "remarks": "Notes on your resume"
       },
       "review": {
         "title": "Check before generating your resume",
@@ -485,7 +508,8 @@
         "edited": "edited by you",
         "missing": "Not added to your resume, since it isn't in your background:",
         "next": "Generate my resume",
-        "back": "Review the suggestions"
+        "back": "Review the suggestions",
+        "removed": "Removed (duplicate): \"{text}\""
       },
       "success": {
         "parsed": "Resume read: {count, plural, one {# section found} other {# sections found}}.",

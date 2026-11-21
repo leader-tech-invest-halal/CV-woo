@@ -4,6 +4,15 @@ import type { AnalysisResult, EnrichResult, ParsedResume, ProfileAnswer, Profile
 import type { AtsReadiness } from "@/lib/ats/checks";
 import type { OfferResult } from "@/lib/offer/fetch";
 
+/** Mesure de la page du CV généré et ajustements faits automatiquement (voir lib/export/balance.ts). */
+export type BalanceInfo = {
+  before: { pages: number; side: number | null; main: number; overflow: number };
+  after: { pages: number; side: number | null; main: number; overflow: number };
+  moved: { heading: string; to: "main" | "sidebar" }[];
+  hidden: string[];
+  attempts: number;
+};
+
 export class ApiError extends Error {
   constructor(public code: string) {
     super(code);
@@ -114,7 +123,7 @@ export async function exportResume(
   template = "original",
   layout: "compact" | "detailed" = "compact",
   keywords: { term: string; importance: "required" | "nice" }[] = [],
-): Promise<{ blob: Blob; pages: number | null; ats: AtsReadiness | null; notice: string | null }> {
+): Promise<{ blob: Blob; pages: number | null; ats: AtsReadiness | null; notice: string | null; balance: BalanceInfo | null }> {
   const form = new FormData();
   form.append("payload", JSON.stringify({ format, template, layout, resume, accepted, keywords }));
   if (resume.format === "docx" && file) form.append("file", file);
@@ -125,5 +134,11 @@ export async function exportResume(
     const raw = res.headers.get("x-cv-ats");
     if (raw) ats = JSON.parse(decodeURIComponent(raw));
   } catch {}
-  return { blob: await res.blob(), pages, ats, notice: res.headers.get("x-cv-notice") };
+  // Mesure de la page et ajustements automatiques (colonnes équilibrées, puces masquées)
+  let balance: BalanceInfo | null = null;
+  try {
+    const raw = res.headers.get("x-cv-layout");
+    if (raw) balance = JSON.parse(decodeURIComponent(raw));
+  } catch {}
+  return { blob: await res.blob(), pages, ats, notice: res.headers.get("x-cv-notice"), balance };
 }

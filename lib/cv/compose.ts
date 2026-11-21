@@ -31,6 +31,85 @@ export function withNewHeadline<T extends Pick<ParsedResume, "blocks" | "structu
 }
 
 /**
+ * Rubriques ajoutées par CV Woo à l'étape d'adaptation, quand l'offre le justifie et seulement
+ * avec des informations réelles du CV : « Disponibilités » (conditions impératives de l'offre,
+ * ex. horaires) et « Qualités » (savoir-être demandés, prouvés par le CV). Le texte accepté est
+ * une liste d'éléments séparés par « · ».
+ */
+export const NEW_SECTION_IDS = { availability: "section-new:availability", qualities: "section-new:qualities" } as const;
+export type NewSectionKind = keyof typeof NEW_SECTION_IDS;
+const NEW_SECTION_HEADINGS: Record<NewSectionKind, { fr: string; en: string }> = {
+  availability: { fr: "Disponibilités", en: "Availability" },
+  qualities: { fr: "Qualités", en: "Qualities" },
+};
+
+export const isNewSectionId = (id: string): boolean => (Object.values(NEW_SECTION_IDS) as string[]).includes(id);
+
+/** Éléments d'une rubrique ajoutée, à partir du texte accepté (« a · b · c »). */
+export function sectionItems(text: string): string[] {
+  return text
+    .split(/\s*(?:·|•|;|\n)\s*/)
+    .map((x) => x.replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .slice(0, 8)
+    .map((x) => x.slice(0, 120));
+}
+
+/** Ajoute au CV à exporter les rubriques créées que la personne a acceptées. */
+export function withNewSections<T extends Pick<ParsedResume, "blocks" | "structure" | "style">>(resume: T, accepted: Record<string, string>): T {
+  const fr = (resume.structure.language ?? "fr").startsWith("fr");
+  const twoColumns = resume.style.layout !== "single";
+  let blocks = resume.blocks;
+  let sections = resume.structure.sections;
+  for (const kind of Object.keys(NEW_SECTION_IDS) as NewSectionKind[]) {
+    const id = NEW_SECTION_IDS[kind];
+    const items = sectionItems(accepted[id] ?? "");
+    if (!items.length) continue;
+    const heading = NEW_SECTION_HEADINGS[kind][fr ? "fr" : "en"];
+    const headingId = `${id}:h`;
+    const itemIds = items.map((_, i) => `${id}:${i}`);
+    blocks = [...blocks, { id: headingId, text: heading }, ...items.map((text, i) => ({ id: itemIds[i], text }))];
+    const section: ResumeStructure["sections"][number] = {
+      headingBlockId: headingId,
+      heading,
+      kind,
+      placement: twoColumns ? "sidebar" : "main",
+      entries: [{ headerBlockIds: [], bulletBlockIds: itemIds }],
+    };
+    if (kind === "availability") {
+      // Condition impérative : mise en évidence en tête du CV
+      sections = [section, ...sections];
+    } else {
+      // Qualités : juste après les compétences (ou à la fin s'il n'y en a pas)
+      const skills = sections.findIndex((x) => x.kind === "skills");
+      sections = skills < 0 ? [...sections, section] : [...sections.slice(0, skills + 1), section, ...sections.slice(skills + 1)];
+    }
+  }
+  return { ...resume, blocks, structure: { ...resume.structure, sections } };
+}
+
+/**
+ * Retire du CV à exporter les blocs que la personne a choisi de supprimer (doublons) : leur
+ * texte accepté est vide. Une expérience ou une rubrique vidée par ce retrait disparaît.
+ */
+export function withoutRemoved<T extends Pick<ParsedResume, "structure">>(resume: T, accepted: Record<string, string>): T {
+  const removed = new Set(Object.entries(accepted).filter(([, text]) => text.trim() === "").map(([id]) => id));
+  if (!removed.size) return resume;
+  const sections = resume.structure.sections
+    .map((section) => ({
+      ...section,
+      entries: section.entries
+        .map((e) => ({ ...e, bulletBlockIds: e.bulletBlockIds.filter((id) => !removed.has(id)) }))
+        .filter((e) => e.headerBlockIds.length + e.bulletBlockIds.length > 0),
+    }))
+    .filter((section) => section.entries.length > 0);
+  return {
+    ...resume,
+    structure: { ...resume.structure, sections, summaryBlockIds: resume.structure.summaryBlockIds.filter((id) => !removed.has(id)) },
+  };
+}
+
+/**
  * Chaque bloc n'apparaît qu'une seule fois dans le CV. Si l'IA a rangé un même bloc à deux
  * endroits (cause des titres et dates affichés en double), on garde la première place, dans
  * l'ordre du CV : nom, accroche, coordonnées, résumé, puis les rubriques. Une rubrique ou une
@@ -152,19 +231,23 @@ export function orderedSections(structure: ResumeStructure, sidebar: boolean, de
     };
     const sorted = structure.sections.map((x, i) => ({ x, i })).sort((a, b) => rank(a.x.kind) - rank(b.x.kind) || a.i - b.i).map((o) => o.x);
     if (!sidebar) return { main: sorted, side: [] as typeof sorted };
-    return { main: sorted.filter((x) => !SIDE_KINDS.has(x.kind)), side: sorted.filter((x) => SIDE_KINDS.has(x.kind)) };
+    // Colonne imposée par l'équilibrage automatique (voir lib/export/balance.ts), sinon selon le type
+    const onSide = (x: (typeof sorted)[number]) => (x.forced ? x.forced === "sidebar" : SIDE_KINDS.has(x.kind));
+    return { main: sorted.filter((x) => !onSide(x)), side: sorted.filter(onSide) };
   }
-  const main = structure.sections.filter((x) => x.placement !== "sidebar");
-  const side = structure.sections.filter((x) => x.placement === "sidebar");
+  const placed = (x: ResumeStructure["sections"][number]) => x.forced ?? x.placement;
+  const main = structure.sections.filter((x) => placed(x) !== "sidebar");
+  const side = structure.sections.filter((x) => placed(x) === "sidebar");
   return sidebar ? { main, side } : { main: [...main, ...side], side: [] as typeof side };
 }
 
-/** Ordre standard des rubriques : profil (en-tête), expérience, formation, compétences, langues… */
-const KIND_ORDER = ["experience", "education", "skills", "languages", "certifications", "projects", "interests", "other"] as const;
+/** Ordre standard des rubriques : profil (en-tête), expérience, formation, compétences, langues…
+ *  « Disponibilités » (conditions impératives de l'offre) vient en tête, « Qualités » suit les compétences. */
+const KIND_ORDER = ["availability", "experience", "education", "skills", "qualities", "languages", "certifications", "projects", "interests", "other"] as const;
 /** Modèle Précis : compétences en tête (profils techniques, étudiants), projets avant la formation */
-const PRECIS_ORDER = ["skills", "experience", "projects", "education", "certifications", "languages", "interests", "other"] as const;
-/** Rubriques placées dans la colonne latérale des modèles à deux colonnes */
-const SIDE_KINDS = new Set(["skills", "languages", "interests"]);
+const PRECIS_ORDER = ["availability", "skills", "qualities", "experience", "projects", "education", "certifications", "languages", "interests", "other"] as const;
+/** Rubriques placées dans la colonne latérale des modèles à deux colonnes (éléments courts) */
+const SIDE_KINDS = new Set(["availability", "skills", "qualities", "languages", "interests"]);
 
 const DATE_PART =
   /\b(19|20)\d{2}\b|aujourd.hui|pr[ée]sent|actuel|en cours|depuis|\b(janv|f[ée]vr|mars|avr|mai|juin|juil|ao[uû]t|sept|oct|nov|d[ée]c)[a-zé]*\.?\s/i;

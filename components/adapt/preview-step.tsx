@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Download, FileText, RotateCcw } from "lucide-react";
+import { Check, CircleAlert, Download, FileText, RotateCcw } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { ParsedResume } from "@/lib/cv/types";
-import { ApiError, exportResume } from "./api";
+import { ApiError, exportResume, type BalanceInfo } from "./api";
 import { ATS_SAFE, TEMPLATES, type TemplateId } from "@/lib/export/templates";
 import { LAYOUT_MODES, type LayoutMode } from "@/lib/export/layout";
 import { LiveThumbnail } from "./live-thumbnail";
@@ -48,6 +48,8 @@ export function PreviewStep({
   const [template, setTemplate] = useState<TemplateId>("original");
   const [layout, setLayout] = useState<LayoutMode>("compact");
   const [pages, setPages] = useState<number | null>(null);
+  const [balance, setBalance] = useState<BalanceInfo | null>(null);
+  const [showHidden, setShowHidden] = useState(false);
   const [ats, setAts] = useState<{ pdf: AtsReadiness | null; docx: AtsReadiness | null }>({ pdf: null, docx: null });
   // Avertissement du serveur (ex. Word à zones de texte recréé au lieu d'être modifié sur place)
   const [notice, setNotice] = useState<string | null>(null);
@@ -68,6 +70,8 @@ export function PreviewStep({
     onError(null);
     setFiles({ pdf: null, docx: null });
     setPages(null);
+    setBalance(null);
+    setShowHidden(false);
     setAts({ pdf: null, docx: null });
     setProgress({ pdf: false, docx: false });
     setFailed({ pdf: false, docx: false });
@@ -85,6 +89,7 @@ export function PreviewStep({
         setProgress((p) => ({ ...p, pdf: true }));
         setFiles((f) => ({ ...f, pdf: pdf.blob }));
         setPages(pdf.pages);
+        setBalance(pdf.balance);
         setAts((a) => ({ ...a, pdf: pdf.ats }));
         setPdfUrl(URL.createObjectURL(pdf.blob));
       })
@@ -344,9 +349,56 @@ export function PreviewStep({
           </span>
         </p>
 
+        {/* Équilibre de la page, mesuré dans le PDF affiché, et ajustements faits automatiquement */}
+        {balance && (
+          <div className="mt-3 space-y-2 rounded-lg border border-border bg-muted/40 p-3 text-sm">
+            {balance.after.side !== null && (
+              <p>
+                <span className="font-medium">{t("balance.title")}</span>{" "}
+                {t("balance.columns", { side: balance.after.side, main: balance.after.main })}
+              </p>
+            )}
+            {balance.moved.map((m) => (
+              <p key={m.heading} className="text-muted-foreground">
+                {t(m.to === "sidebar" ? "balance.movedSide" : "balance.movedMain", { heading: m.heading })}
+              </p>
+            ))}
+            {balance.hidden.length > 0 && (
+              <div className="text-muted-foreground">
+                <p>
+                  {t("balance.hidden", { count: balance.hidden.length })}{" "}
+                  <button type="button" className="font-medium text-primary underline underline-offset-2" onClick={() => setShowHidden((v) => !v)}>
+                    {showHidden ? t("balance.hideList") : t("balance.showList")}
+                  </button>
+                </p>
+                {showHidden && (
+                  <ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs">
+                    {balance.hidden.map((h, i) => (
+                      <li key={i}>{h}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+            {/* Ce que le code n'a pas pu régler seul : on le dit clairement, avec quoi faire */}
+            {balance.after.side !== null && balance.after.pages === 1 && Math.abs(balance.after.main - balance.after.side) > 15 && (
+              <p className="flex gap-2 text-[oklch(0.42_0.1_60)]">
+                <CircleAlert className="mt-0.5 size-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                {t(balance.after.side < balance.after.main ? "balance.sideShort" : "balance.sideLong")}
+              </p>
+            )}
+            {balance.after.pages > 1 && layout === "compact" && (
+              <p className="flex gap-2 text-[oklch(0.42_0.1_60)]">
+                <CircleAlert className="mt-0.5 size-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                {t("balance.stillLong")}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Contrôle ATS du fichier affiché, comparé au CV d'origine */}
         <div className="mt-5 border-t border-border pt-5">
-          <AtsCompare before={atsBefore} after={ready ? ats[tab] : null} />
+          <AtsCompare before={atsBefore} after={ready[tab] ? ats[tab] : null} />
         </div>
 
         <div role="tablist" className="mt-5 inline-flex gap-1 rounded-lg bg-muted p-1">
