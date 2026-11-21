@@ -159,3 +159,21 @@ export const DEFAULT_STYLE: ResumeStyle = {
   headingCase: "upper",
   headingRule: true,
 };
+
+/** Lettre de motivation générée (voir lib/ai/letter.ts et prompts/lettre.ts). Tout reste modifiable. */
+export type CoverLetter = {
+  /** Expéditeur : nom puis coordonnées, tirés du CV. */
+  sender: string[];
+  /** Destinataire (entreprise de l'offre, adresse à compléter), sur plusieurs lignes. */
+  recipient: string;
+  /** Lieu et date (ex. « Lyon, le 21 novembre 2026 »). */
+  placeDate: string;
+  /** Objet (ex. « Candidature au poste de Vendeuse »). */
+  subject: string;
+  /** Formule d'appel, paragraphes et formule de politesse, séparés par une ligne vide. */
+  body: string;
+  signature: string;
+  /** Points à vérifier : signalés par l'IA et par les contrôles du code. */
+  checks: string[];
+  words: number;
+};

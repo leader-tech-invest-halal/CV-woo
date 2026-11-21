@@ -572,6 +572,48 @@
       "copy": "Copier le lien",
       "copied": "Lien copié",
       "copyPrompt": "Copiez ce lien et ouvrez-le dans votre navigateur :"
+    },
+    "letter": {
+      "title": "Lettre de motivation",
+      "subtitle": "Une lettre pour « {title} », écrite à partir de votre CV adapté. Rien n'est inventé.",
+      "start": "Générer la lettre de motivation",
+      "questionsHint": "Deux questions rapides, facultatives : cochez ce qui est vrai pour vous. La lettre n'utilise que vos réponses et votre CV.",
+      "q1": "Qu'est-ce qui vous attire dans ce poste ?",
+      "q1Placeholder": "Autre chose ? En quelques mots (facultatif)",
+      "q2": "Avez-vous un atout pratique ?",
+      "q2Placeholder": "Autre atout ? Ex. : j'habite à 10 minutes (facultatif)",
+      "optional": "(facultatif)",
+      "motivations": {
+        "clients": "Le contact avec les clients",
+        "missions": "Les missions du poste",
+        "brand": "L'entreprise ou la marque",
+        "learn": "Apprendre le métier",
+        "schedule": "Les horaires conviennent à mes études",
+        "stability": "Un emploi stable"
+      },
+      "canDo": "Je peux : {condition}",
+      "assets": {
+        "near": "J'habite près du lieu de travail",
+        "now": "Je peux commencer tout de suite",
+        "weekend": "Je suis disponible le week-end",
+        "license": "J'ai le permis B",
+        "flexible": "J'ai des horaires flexibles"
+      },
+      "honesty": "Ne cochez que ce qui est vrai : le recruteur peut vous poser la question en entretien.",
+      "generate": "Écrire ma lettre",
+      "writing": "Rédaction de votre lettre…",
+      "elapsed": "{seconds} s",
+      "editHint": "Relisez et modifiez librement : c'est votre lettre. Le PDF reprend exactement ce texte.",
+      "recipient": "Destinataire",
+      "placeDate": "Lieu et date",
+      "subject": "Objet",
+      "body": "Lettre",
+      "words": "{count} mots (conseillé : 250 à 320)",
+      "checks": "Points à vérifier avant d'envoyer",
+      "download": "Télécharger la lettre (PDF)",
+      "copy": "Copier le texte",
+      "copied": "Texte copié",
+      "again": "Refaire la lettre"
     }
   },
   "ats": {

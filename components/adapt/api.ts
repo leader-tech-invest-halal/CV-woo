@@ -1,6 +1,6 @@
 "use client";
 
-import type { AnalysisResult, EnrichResult, ParsedResume, ProfileAnswer, ProfileFigure } from "@/lib/cv/types";
+import type { AnalysisResult, CoverLetter, EnrichResult, ParsedResume, ProfileAnswer, ProfileFigure } from "@/lib/cv/types";
 import type { AtsReadiness } from "@/lib/ats/checks";
 import type { OfferResult } from "@/lib/offer/fetch";
 
@@ -152,4 +152,43 @@ export async function exportResume(
     if (raw) balance = JSON.parse(decodeURIComponent(raw));
   } catch {}
   return { blob: await res.blob(), pages, ats, notice: res.headers.get("x-cv-notice"), balance };
+}
+
+/** Lettre de motivation : un seul appel à l'IA (CV adapté + offre + réponses cochées par la personne). */
+export async function generateLetter(payload: {
+  locale: string;
+  offerText: string;
+  offer: { title: string; company: string | null; conditions: string[] };
+  resume: ParsedResume;
+  accepted: Record<string, string>;
+  answers: { motivation: string; asset: string };
+}): Promise<CoverLetter> {
+  return longResult<CoverLetter>(
+    await request(
+      "/api/letter",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          resume: { blocks: payload.resume.blocks, structure: payload.resume.structure, style: payload.resume.style },
+        }),
+      },
+      300_000,
+    ),
+  );
+}
+
+/** PDF d'une page de la lettre (texte relu par la personne), dans le style du modèle choisi. */
+export async function exportLetterPdf(
+  template: string,
+  style: ParsedResume["style"],
+  letter: Pick<CoverLetter, "sender" | "recipient" | "placeDate" | "subject" | "body" | "signature">,
+): Promise<Blob> {
+  const res = await request("/api/letter/pdf", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ template, style, letter }),
+  });
+  return res.blob();
 }

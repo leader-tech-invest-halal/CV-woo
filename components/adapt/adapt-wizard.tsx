@@ -353,6 +353,11 @@ export function AdaptWizard() {
               : undefined
           }
           keywords={offerKeywords}
+          letter={
+            result
+              ? { offerText, offer: { title: result.offer.title, company: result.offer.company, conditions: result.offer.conditions ?? [] } }
+              : undefined
+          }
         />
       )}
     </div>

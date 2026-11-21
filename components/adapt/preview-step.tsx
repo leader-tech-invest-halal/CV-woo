@@ -13,6 +13,7 @@ import { LiveThumbnail } from "./live-thumbnail";
 import { ProgressSteps } from "./analysis-step";
 import { PdfPages, useTouchDevice } from "./pdf-pages";
 import { InAppNotice } from "./in-app-notice";
+import { LetterCard } from "./letter-card";
 import { detectInAppBrowser } from "@/lib/in-app-browser";
 import { SaveToHistory } from "@/components/history/save-to-history";
 import type { HistoryMeta } from "@/components/history/history-api";
@@ -30,6 +31,7 @@ export function PreviewStep({
   onError,
   history,
   keywords = [],
+  letter,
 }: {
   file: File;
   resume: ParsedResume;
@@ -41,6 +43,8 @@ export function PreviewStep({
   history?: { meta: HistoryMeta; signedIn: boolean };
   /** Mots-clés de l'offre (analyse), comptés dans le score ATS avant et après */
   keywords?: { term: string; importance: "required" | "nice" }[];
+  /** Pour la lettre de motivation : texte de l'offre et ce que l'analyse en a compris. */
+  letter?: { offerText: string; offer: { title: string; company: string | null; conditions: string[] } };
 }) {
   const t = useTranslations("adapt.preview");
   const ta = useTranslations("adapt.analyzing");
@@ -458,6 +462,9 @@ export function PreviewStep({
           Word
         </button>
       </div>
+
+      {/* Lettre de motivation, dans le même style que le CV choisi */}
+      {letter && <LetterCard resume={resume} accepted={accepted} template={template} offerText={letter.offerText} offer={letter.offer} />}
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
         <button type="button" className={buttonClass("ghost")} onClick={onBack}>

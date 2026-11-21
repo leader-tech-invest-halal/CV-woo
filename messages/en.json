@@ -572,6 +572,48 @@
       "copy": "Copy link",
       "copied": "Link copied",
       "copyPrompt": "Copy this link and open it in your browser:"
+    },
+    "letter": {
+      "title": "Cover letter",
+      "subtitle": "A letter for \"{title}\", written from your adapted resume. Nothing is made up.",
+      "start": "Generate the cover letter",
+      "questionsHint": "Two quick, optional questions: tick what is true for you. The letter only uses your answers and your resume.",
+      "q1": "What attracts you to this job?",
+      "q1Placeholder": "Anything else? In a few words (optional)",
+      "q2": "Do you have a practical advantage?",
+      "q2Placeholder": "Another advantage? E.g. I live 10 minutes away (optional)",
+      "optional": "(optional)",
+      "motivations": {
+        "clients": "Working with customers",
+        "missions": "The job's tasks",
+        "brand": "The company or brand",
+        "learn": "Learning the trade",
+        "schedule": "The hours fit my studies",
+        "stability": "A stable job"
+      },
+      "canDo": "I can: {condition}",
+      "assets": {
+        "near": "I live close to the workplace",
+        "now": "I can start right away",
+        "weekend": "I'm available at weekends",
+        "license": "I have a driving licence",
+        "flexible": "My hours are flexible"
+      },
+      "honesty": "Only tick what is true: the recruiter may ask you about it in the interview.",
+      "generate": "Write my letter",
+      "writing": "Writing your letter…",
+      "elapsed": "{seconds} s",
+      "editHint": "Read it and change anything: it's your letter. The PDF uses exactly this text.",
+      "recipient": "Recipient",
+      "placeDate": "Place and date",
+      "subject": "Subject",
+      "body": "Letter",
+      "words": "{count} words (recommended: 250 to 320)",
+      "checks": "Points to check before sending",
+      "download": "Download the letter (PDF)",
+      "copy": "Copy the text",
+      "copied": "Text copied",
+      "again": "Redo the letter"
     }
   },
   "ats": {

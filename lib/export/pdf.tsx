@@ -21,7 +21,7 @@ const registered = new Set<FontKey>();
 const fontFile = (key: FontKey, weight: 400 | 700) =>
   path.join(process.cwd(), "node_modules", "@fontsource", key, "files", `${key}-latin-${weight}-normal.woff`);
 
-function fontFamily(name: string | null, fallback: "sans" | "serif"): string {
+export function fontFamily(name: string | null, fallback: "sans" | "serif"): string {
   const key = matchFont(name);
   if (!key) return fallback === "serif" ? "Times-Roman" : "Helvetica";
   if (!registered.has(key)) {
