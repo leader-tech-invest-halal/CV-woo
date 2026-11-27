@@ -27,7 +27,7 @@ export default function PricingPage({ params }: { params: Promise<{ locale: stri
             <span className="text-muted-foreground">{t("betaPeriod")}</span>
           </p>
           <ul className="mt-6 flex-1 space-y-3 text-sm">
-            {(["f1", "f2", "f3", "f4", "f5"] as const).map((k) => (
+            {(["f1", "f2", "f3", "f4", "f5", "f6"] as const).map((k) => (
               <li key={k} className="flex gap-2.5">
                 <Check className="size-4 shrink-0 text-primary" strokeWidth={1.75} aria-hidden />
                 {t(k)}

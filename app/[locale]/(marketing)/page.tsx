@@ -7,6 +7,7 @@ import {
   Download,
   FileSearch,
   Lock,
+  Mail,
   PenLine,
   ShieldCheck,
   Tags,
@@ -26,7 +27,7 @@ const FEATURES = [
   { icon: Tags, key: "keywords" },
   { icon: PenLine, key: "rewrite" },
   { icon: ShieldCheck, key: "truth" },
-  { icon: UserCheck, key: "control" },
+  { icon: Mail, key: "letter" },
   { icon: Download, key: "export" },
 ] as const;
 
@@ -155,7 +156,7 @@ export default function HomePage({ params }: { params: Promise<{ locale: string 
         <div className="mx-auto max-w-[960px] px-4 py-16 sm:px-6 md:py-20">
           <h2 className="text-3xl font-semibold tracking-tight">{t("faq.title")}</h2>
           <div className="mt-8 divide-y divide-border rounded-lg border border-border bg-card">
-            {([1, 2, 3, 4] as const).map((n) => (
+            {([1, 2, 3, 4, 5] as const).map((n) => (
               <details key={n} className="group p-5">
                 <summary className="flex min-h-6 cursor-pointer list-none items-center justify-between gap-4 font-medium [&::-webkit-details-marker]:hidden">
                   {t(`faq.q${n}`)}

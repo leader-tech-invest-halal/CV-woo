@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CV Woo — Tailor your resume to every job, without making anything up",
-    "description": "CV Woo reads a job posting and rewrites your resume to target it, keeping only what you have actually done."
+    "description": "CV Woo reads a job posting, rewrites your resume to target it and helps you write the cover letter, keeping only what you have actually done."
   },
   "nav": {
     "how": "How it works",
@@ -17,7 +17,7 @@
   "hero": {
     "badge": "Free beta",
     "title": "Before you apply, check that your resume matches the job.",
-    "subtitle": "Upload your resume and add a job posting. CV Woo analyzes how well they match, spots the skills and keywords the employer wants, then suggests improvements based on your real experience.",
+    "subtitle": "Upload your resume and add a job posting. CV Woo analyzes how well they match, spots the skills and keywords the employer wants, suggests improvements based on your real experience, then helps you write the cover letter for that job.",
     "tagline": "A more relevant resume for every application, without inventing your background.",
     "cta": "Analyze my resume for free",
     "secondary": "See how it works",
@@ -55,8 +55,8 @@
       "text": "An explained score: what your resume proves, what needs clarifying, what's missing."
     },
     "step4": {
-      "title": "Improve and download your resume",
-      "text": "Keep the rewrites you like, then export to PDF or Word."
+      "title": "Download your resume and cover letter",
+      "text": "Keep the rewrites you like, export your resume to PDF or Word, then generate the cover letter for the same job."
     },
     "visual": {
       "file": "my-resume.pdf",
@@ -85,9 +85,9 @@
       "title": "Your real background, respected",
       "text": "No experience, degree or number is added. Anything suspicious is flagged automatically."
     },
-    "control": {
-      "title": "You approve every change",
-      "text": "Before exporting, you review every suggestion and untick the ones you don't want to keep."
+    "letter": {
+      "title": "Cover letter included",
+      "text": "After your resume, generate a letter for the same job, written from your own background. You review it, edit it, then download it as a PDF."
     },
     "export": {
       "title": "Export your improved resume",
@@ -110,7 +110,9 @@
     "q3": "What happens to my resume and my data?",
     "a3": "Your file is never saved on our servers: it’s read in memory, analyzed, then forgotten. To perform the analysis, its text is sent to our artificial intelligence provider (Anthropic). If you create an account, we only keep your email and your number of tailorings this month. If you choose to, you can save a tailored resume to your history: its text is then kept for 90 days (or until you delete it), never the original file.",
     "q4": "Does the score guarantee an interview?",
-    "a4": "No, no tool can guarantee an interview. The score measures how well your resume matches the job, based on evidence found in your resume, and shows you what to strengthen."
+    "a4": "No, no tool can guarantee an interview. The score measures how well your resume matches the job, based on evidence found in your resume, and shows you what to strengthen.",
+    "q5": "Does CV Woo also write the cover letter?",
+    "a5": "Yes. Once your resume is tailored, you can generate a cover letter for the same job. It relies only on your resume and your answers to two optional questions: nothing is made up. You can edit it freely before downloading it as a PDF. During the beta: 2 letters a month without an account, 10 with a free account."
   },
   "finalCta": {
     "title": "Ready to send a resume that really fits?",
@@ -136,7 +138,8 @@
     "cta": "Start for free",
     "soonTitle": "Pro and Premium plans",
     "soonBadge": "Coming soon",
-    "soonText": "More tailorings, resume history, cover letters and application tracking. These features aren't available yet; beta users will hear about them first."
+    "soonText": "More tailorings and application tracking. These features aren't available yet; beta users will hear about them first.",
+    "f6": "A cover letter for every job (2 a month without an account, 10 with a free account)"
   },
   "app": {
     "nav": {
