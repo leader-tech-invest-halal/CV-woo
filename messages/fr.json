@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "CV Woo — Adaptez votre CV à chaque offre, sans rien inventer",
-    "description": "CV Woo analyse une offre d'emploi et réécrit votre CV pour la cibler, en gardant uniquement ce que vous avez vraiment fait."
+    "description": "CV Woo analyse une offre d'emploi, réécrit votre CV pour la cibler et vous aide à rédiger la lettre de motivation, en gardant uniquement ce que vous avez vraiment fait."
   },
   "nav": {
     "how": "Fonctionnement",
@@ -17,7 +17,7 @@
   "hero": {
     "badge": "Bêta gratuite",
     "title": "Avant de postuler, vérifiez que votre CV correspond à l'offre.",
-    "subtitle": "Importez votre CV et ajoutez une offre d'emploi. CV Woo analyse leur compatibilité, repère les compétences et les mots-clés recherchés, puis vous propose des améliorations fondées sur votre expérience réelle.",
+    "subtitle": "Importez votre CV et ajoutez une offre d'emploi. CV Woo analyse leur compatibilité, repère les compétences et les mots-clés recherchés, vous propose des améliorations fondées sur votre expérience réelle, puis rédige avec vous la lettre de motivation pour cette offre.",
     "tagline": "Un CV plus pertinent pour chaque candidature, sans inventer votre parcours.",
     "cta": "Analyser mon CV gratuitement",
     "secondary": "Voir comment ça marche",
@@ -55,8 +55,8 @@
       "text": "Un score expliqué : ce qui est prouvé dans votre CV, ce qui est à préciser, ce qui manque."
     },
     "step4": {
-      "title": "Améliorez et téléchargez votre CV",
-      "text": "Gardez les reformulations qui vous conviennent, puis exportez en PDF ou Word."
+      "title": "Téléchargez votre CV et votre lettre",
+      "text": "Gardez les reformulations qui vous conviennent, exportez votre CV en PDF ou Word, puis générez la lettre de motivation pour la même offre."
     },
     "visual": {
       "file": "mon-cv.pdf",
@@ -85,9 +85,9 @@
       "title": "Respect de votre parcours réel",
       "text": "Aucune expérience, aucun diplôme, aucun chiffre ajouté. Un ajout suspect est signalé automatiquement."
     },
-    "control": {
-      "title": "Vous validez chaque modification",
-      "text": "Avant l'export, vous relisez chaque suggestion et décochez celles que vous ne voulez pas garder."
+    "letter": {
+      "title": "Lettre de motivation incluse",
+      "text": "Après votre CV, générez une lettre pour la même offre, écrite à partir de votre parcours. Vous la relisez, la modifiez, puis la téléchargez en PDF."
     },
     "export": {
       "title": "Export du CV amélioré",
@@ -110,7 +110,9 @@
     "q3": "Que devient mon CV et mes données ?",
     "a3": "Votre fichier n’est jamais enregistré sur nos serveurs : il est lu en mémoire, analysé, puis oublié. Pour réaliser l’analyse, son texte est transmis à notre prestataire d’intelligence artificielle (Anthropic). Si vous créez un compte, nous conservons uniquement votre e-mail et le nombre d’adaptations du mois. Si vous le choisissez, vous pouvez enregistrer un CV adapté dans votre historique : son texte est alors conservé 90 jours (ou jusqu’à ce que vous le supprimiez), jamais le fichier d’origine.",
     "q4": "Le score garantit-il un entretien ?",
-    "a4": "Non, aucun outil ne peut garantir un entretien. Le score mesure à quel point votre CV correspond à l'offre, à partir des preuves trouvées dans votre CV, et vous montre ce qu'il faut renforcer."
+    "a4": "Non, aucun outil ne peut garantir un entretien. Le score mesure à quel point votre CV correspond à l'offre, à partir des preuves trouvées dans votre CV, et vous montre ce qu'il faut renforcer.",
+    "q5": "CV Woo rédige-t-il aussi la lettre de motivation ?",
+    "a5": "Oui. Une fois votre CV adapté, vous pouvez générer une lettre de motivation pour la même offre. Elle s'appuie uniquement sur votre CV et sur vos réponses à deux questions facultatives : rien n'est inventé. Vous la modifiez librement avant de la télécharger en PDF. Pendant la bêta : 2 lettres par mois sans compte, 10 avec un compte gratuit."
   },
   "finalCta": {
     "title": "Prêt à envoyer un CV qui correspond vraiment ?",
@@ -136,7 +138,8 @@
     "cta": "Commencer gratuitement",
     "soonTitle": "Offres Pro et Premium",
     "soonBadge": "Bientôt disponible",
-    "soonText": "Plus d'adaptations, historique de vos CV, lettres de motivation et suivi des candidatures. Ces fonctions ne sont pas encore disponibles ; les utilisateurs de la bêta seront prévenus en premier."
+    "soonText": "Plus d'adaptations et suivi des candidatures. Ces fonctions ne sont pas encore disponibles ; les utilisateurs de la bêta seront prévenus en premier.",
+    "f6": "Lettre de motivation pour chaque offre (2 par mois sans compte, 10 avec un compte gratuit)"
   },
   "app": {
     "nav": {
